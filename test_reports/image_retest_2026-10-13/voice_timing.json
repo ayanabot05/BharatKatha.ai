@@ -1,0 +1,18 @@
+{
+  "project_id": "689d06a42e2b4f86a66fdd4efdae0679",
+  "target_seconds": 30,
+  "audio": {
+    "mode": "ai",
+    "path": "vidbharat/audio/aafb74931f004c7a969391bf4edccdfa/e973c254198d47ab86338973b3e04bd6.mp3",
+    "speed": 1.0,
+    "voice": "fable",
+    "duration": 23.12
+  },
+  "scene_seconds": [
+    3.1,
+    5.35,
+    4.03,
+    4.9,
+    5.71
+  ]
+}

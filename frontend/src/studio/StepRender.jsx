@@ -35,6 +35,7 @@ export default function StepRender({ project, update }) {
   const unfinishedScenes = (project.scenes || []).flatMap((scene, index) => {
     if (scene.status === "ready" && scene.image_path && !scene.placeholder && scene.approved) return [];
     const reason = scene.status === "generating" ? "picture is generating"
+      : scene.status === "queued" ? "picture is queued"
       : scene.status === "failed" ? "picture generation failed"
       : scene.placeholder ? "picture is a placeholder"
       : !scene.image_path ? "needs a picture"

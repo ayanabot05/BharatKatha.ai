@@ -1,0 +1,208 @@
+{
+  "idea": "In an Andhra village, Ramayya and Somanna discover a leak at one rusty metal pipe joint with a four-bolt silver clamp. They first inspect it without touching tools, then fit the clamp and tighten its four bolts with a wrench. End with the same connected pipe and joint dry, with no water escaping. Keep both men's clothing and the exact joint consistent in every shot.",
+  "contract": {
+    "promise": "The viewer will see Ramayya and Somanna successfully repair a leaking pipe joint in an Andhra village using a four-bolt silver clamp.",
+    "requirements": [
+      {
+        "source": "In an Andhra village",
+        "requirement": "The setting must be an Andhra village.",
+        "action_words": []
+      },
+      {
+        "source": "Ramayya and Somanna",
+        "requirement": "The characters must be Ramayya.",
+        "action_words": []
+      },
+      {
+        "source": "Ramayya and Somanna",
+        "requirement": "The characters must be Somanna.",
+        "action_words": []
+      },
+      {
+        "source": "discover a leak at one rusty metal pipe joint",
+        "requirement": "The characters must discover a leak at a rusty metal pipe joint.",
+        "action_words": [
+          "discover"
+        ]
+      },
+      {
+        "source": "inspect it without touching tools",
+        "requirement": "The characters must inspect the joint.",
+        "action_words": [
+          "inspect"
+        ]
+      },
+      {
+        "source": "inspect it without touching tools",
+        "requirement": "The characters must not use tools during the inspection.",
+        "action_words": []
+      },
+      {
+        "source": "fit the clamp",
+        "requirement": "The characters must fit the four-bolt silver clamp onto the pipe joint.",
+        "action_words": [
+          "fit"
+        ]
+      },
+      {
+        "source": "tighten its four bolts with a wrench",
+        "requirement": "The characters must tighten the four bolts using a wrench.",
+        "action_words": [
+          "tighten"
+        ]
+      },
+      {
+        "source": "Keep both men's clothing and the exact joint consistent in every shot",
+        "requirement": "The clothing of the men must remain consistent in every shot.",
+        "action_words": []
+      },
+      {
+        "source": "Keep both men's clothing and the exact joint consistent in every shot",
+        "requirement": "The pipe joint must remain consistent in every shot.",
+        "action_words": []
+      },
+      {
+        "source": "End with the same connected pipe and joint dry, with no water escaping",
+        "requirement": "The pipe joint must be dry at the end.",
+        "action_words": []
+      },
+      {
+        "source": "End with the same connected pipe and joint dry, with no water escaping",
+        "requirement": "The pipe joint must have no water escaping at the end.",
+        "action_words": []
+      }
+    ]
+  },
+  "result": "contract extracted",
+  "responses": [
+    {
+      "promise": "The viewer will see Ramayya and Somanna successfully repair a leaking pipe joint in an Andhra village using a four-bolt silver clamp.",
+      "requirements": [
+        {
+          "source": "In an Andhra village",
+          "requirement": "The setting must be an Andhra village.",
+          "action_words": []
+        },
+        {
+          "source": "Ramayya and Somanna",
+          "requirement": "The characters must be Ramayya and Somanna.",
+          "action_words": []
+        },
+        {
+          "source": "discover a leak at one rusty metal pipe joint with a four-bolt silver clamp",
+          "requirement": "The characters must identify a leak at a rusty metal pipe joint.",
+          "action_words": [
+            "discover",
+            "inspect"
+          ]
+        },
+        {
+          "source": "They first inspect it without touching tools",
+          "requirement": "The characters must inspect the leak without using tools.",
+          "action_words": [
+            "inspect"
+          ]
+        },
+        {
+          "source": "fit the clamp",
+          "requirement": "The characters must place the silver clamp onto the pipe joint.",
+          "action_words": [
+            "fit"
+          ]
+        },
+        {
+          "source": "tighten its four bolts with a wrench",
+          "requirement": "The characters must use a wrench to secure the four bolts of the clamp.",
+          "action_words": [
+            "tighten"
+          ]
+        },
+        {
+          "source": "Keep both men's clothing and the exact joint consistent in every shot",
+          "requirement": "The men's clothing must remain consistent throughout the video.",
+          "action_words": []
+        },
+        {
+          "source": "Keep both men's clothing and the exact joint consistent in every shot",
+          "requirement": "The pipe joint must remain consistent throughout the video.",
+          "action_words": []
+        },
+        {
+          "source": "End with the same connected pipe and joint dry, with no water escaping",
+          "requirement": "The final shot must show the pipe joint dry with no water leaking.",
+          "action_words": []
+        }
+      ]
+    },
+    [
+      {
+        "source": "In an Andhra village",
+        "requirement": "The setting must be an Andhra village.",
+        "action_words": []
+      },
+      {
+        "source": "Ramayya and Somanna",
+        "requirement": "The characters must be Ramayya.",
+        "action_words": []
+      },
+      {
+        "source": "Ramayya and Somanna",
+        "requirement": "The characters must be Somanna.",
+        "action_words": []
+      },
+      {
+        "source": "discover a leak at one rusty metal pipe joint",
+        "requirement": "The characters must discover a leak at a rusty metal pipe joint.",
+        "action_words": [
+          "discover"
+        ]
+      },
+      {
+        "source": "inspect it without touching tools",
+        "requirement": "The characters must inspect the joint.",
+        "action_words": [
+          "inspect"
+        ]
+      },
+      {
+        "source": "inspect it without touching tools",
+        "requirement": "The characters must not use tools during the inspection.",
+        "action_words": []
+      },
+      {
+        "source": "fit the clamp",
+        "requirement": "The characters must fit the four-bolt silver clamp onto the pipe joint.",
+        "action_words": [
+          "fit"
+        ]
+      },
+      {
+        "source": "tighten its four bolts with a wrench",
+        "requirement": "The characters must tighten the four bolts using a wrench.",
+        "action_words": [
+          "tighten"
+        ]
+      },
+      {
+        "source": "Keep both men's clothing and the exact joint consistent in every shot",
+        "requirement": "The clothing of the men must remain consistent in every shot.",
+        "action_words": []
+      },
+      {
+        "source": "Keep both men's clothing and the exact joint consistent in every shot",
+        "requirement": "The pipe joint must remain consistent in every shot.",
+        "action_words": []
+      },
+      {
+        "source": "End with the same connected pipe and joint dry, with no water escaping",
+        "requirement": "The pipe joint must be dry at the end.",
+        "action_words": []
+      },
+      {
+        "source": "End with the same connected pipe and joint dry, with no water escaping",
+        "requirement": "The pipe joint must have no water escaping at the end.",
+        "action_words": []
+      }
+    ]
+  ]
+}

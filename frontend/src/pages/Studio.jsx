@@ -65,7 +65,7 @@ export default function Studio() {
 
   useEffect(() => { load(true); }, [load]);
 
-  const busy = project && (project.scenes?.some((s) => s.status === "generating") || project.render?.status === "rendering");
+  const busy = project && (project.scenes?.some((s) => s.status === "generating" || s.status === "queued") || project.render?.status === "rendering");
   useEffect(() => {
     if (!busy) return;
     const t = setInterval(() => load(false), 3000);

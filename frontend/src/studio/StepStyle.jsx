@@ -19,7 +19,7 @@ export default function StepStyle({ project, update }) {
         return update(data, 4);
       }
       const { data } = await api.post(`/projects/${project.id}/scenes/generate`);
-      toast.success("Generating your scenes…");
+      toast.success("Generating your scenes one picture at a time…");
       update(data, 4);
     } catch (e) { toast.error(errMsg(e)); } finally { setBusy(false); }
   };

@@ -154,13 +154,15 @@ def test_audio_upload_invalidates_old_export_and_returns_updated_project():
 
 
 def concept_review():
-    return {"aligned": True, "misses": [], "requirements": [{"source": "repair the pipe", "status": "met",
+    return {"aligned": True, "misses": [], "scene_checks": [{"scene": 1, "aligned": True,
+        "narration_quote": "The worker repairs the pipe", "visual_quote": "tightens the coupling", "issue": ""}],
+        "requirements": [{"source": "repair the pipe", "status": "met",
         "evidence": [{"scene": 1, "field": "visual", "quote": "tightens the coupling"}]}]}
 
 
 def test_concept_review_accepts_actual_requirement_and_scene_quotes():
     review = concept_review()
-    ai.validate_concept_evidence(review, {"scenes": [{"visual": "The worker tightens the coupling."}]}, "Show a worker repair the pipe.")
+    ai.validate_concept_evidence(review, {"scenes": [{"narration": "The worker repairs the pipe", "visual": "The worker tightens the coupling."}]}, "Show a worker repair the pipe.")
     assert review["aligned"]
 
 
@@ -175,14 +177,22 @@ def test_concept_review_rejects_invented_evidence(mutation):
     else:
         requirement["evidence"][0][mutation] = "Invented action" if mutation == "quote" else 9
     with pytest.raises(RuntimeError):
-        ai.validate_concept_evidence(review, {"scenes": [{"visual": "The worker tightens the coupling."}]}, "Show a worker repair the pipe.")
+        ai.validate_concept_evidence(review, {"scenes": [{"narration": "The worker repairs the pipe", "visual": "The worker tightens the coupling."}]}, "Show a worker repair the pipe.")
 
 
 def test_missing_requirement_overrides_optimistic_alignment_boolean():
     review = concept_review()
     review["requirements"][0].update(status="missing", evidence=[])
-    ai.validate_concept_evidence(review, {"scenes": []}, "Show a worker repair the pipe.")
+    ai.validate_concept_evidence(review, {"scenes": [{"narration": "The worker repairs the pipe", "visual": "The worker tightens the coupling."}]}, "Show a worker repair the pipe.")
     assert not review["aligned"] and "repair the pipe" in review["misses"]
+
+
+def test_scene_mismatch_overrides_optimistic_concept_score():
+    review = concept_review()
+    review["scene_checks"][0].update(aligned=False, issue="Repair appears before the narration reaches it")
+    ai.validate_concept_evidence(review, {"scenes": [{"narration": "The worker repairs the pipe", "visual": "The worker tightens the coupling."}]}, "Show a worker repair the pipe.")
+    assert not review["aligned"]
+    assert "Scene 1: Repair appears before" in review["misses"][0]
 
 
 def test_is_detail_or_closeup_detection():
@@ -209,6 +219,15 @@ def test_closeup_scene_prompt_enforces_strict_mechanical_continuity():
     assert "Primary Character Profile: Ranga: 52-year-old Telugu farmer" in prompt
 
 
+def test_first_image_prompt_does_not_spoil_later_action():
+    project = {"region": "Andhra Pradesh", "style": "cartoon",
+               "script": {"story": "Later, they repair the pipe with a wrench.", "characters": []}}
+    prompt = ai.scene_prompt(project, {"visual": "A rusty pipe leaks while nobody touches it."}, False)
+    assert "Later, they repair" not in prompt
+    assert "A rusty pipe leaks while nobody touches it" in prompt
+    assert "do not introduce a tool" in prompt
+
+
 def test_best_scene_reference_prefers_immediate_predecessor_for_closeups():
     project = {
         "script": {"characters": [{"name": "Ranga", "look": "farmer"}, {"name": "Meena", "look": "mechanic"}]},
@@ -227,6 +246,59 @@ def test_best_scene_reference_prefers_immediate_predecessor_for_closeups():
     assert selected == b"img_3"
 
 
+def test_best_scene_reference_preserves_prop_when_characters_enter_later():
+    project = {"script": {"characters": [{"name": "Ranga", "look": "farmer"},
+                                           {"name": "Meena", "look": "mechanic"}]}}
+    pipe = {"visual": "A rusted metal pipe leaks at its joint."}
+    people = {"visual": "Ranga and Meena walk through a coconut grove."}
+    inspection = {"visual": "Ranga and Meena inspect the damaged pipe joint."}
+    assert projects.best_scene_reference(project, inspection,
+                                         [(pipe, b"pipe"), (people, b"people")]) == b"pipe"
+
+
+def test_paused_image_batch_resumes_only_missing_scenes():
+    scenes = [{"id": "one", "status": "ready", "image_path": "saved.png", "placeholder": False},
+              {"id": "two", "status": "ready", "image_path": "saved2.png", "placeholder": False},
+              {"id": "three", "status": "pending", "image_path": None, "placeholder": False},
+              {"id": "four", "status": "failed", "image_path": None, "placeholder": False}]
+    assert projects.missing_scene_ids(scenes) == ["three", "four"]
+
+
+def test_image_batch_starts_only_one_queued_scene_at_a_time():
+    async def check():
+        scenes = [{"id": str(i), "status": "queued", "image_path": None} for i in range(5)]
+        project = {"id": "p-serial", "scenes": scenes}
+        snapshots = []
+
+        async def mark(_pid, ids, status):
+            for scene in scenes:
+                if scene["id"] in ids:
+                    scene["status"] = status
+
+        async def generate(_pid, _uid, sid, instruction=None, ref=None):
+            snapshots.append((sid, [scene["status"] for scene in scenes]))
+            await asyncio.sleep(0)
+            scenes[int(sid)]["status"] = "ready"
+            return b"image", False
+
+        fake_db = type("DB", (), {})()
+        fake_db.projects = type("Projects", (), {})()
+        fake_db.projects.find_one = AsyncMock(return_value=project)
+        fake_db.projects.update_one = AsyncMock()
+        with patch.object(projects, "db", fake_db), \
+             patch.object(projects, "mark_scene_status", new=mark), \
+             patch.object(projects, "_scene_job", new=generate), \
+             patch.dict("os.environ", {"IMAGE_SCENE_GAP_SECONDS": "0"}):
+            await projects._all_scenes_job("p-serial", "u-serial", [str(i) for i in range(5)])
+
+        assert [sid for sid, _ in snapshots] == [str(i) for i in range(5)]
+        for i, (_, statuses) in enumerate(snapshots):
+            assert statuses == ["ready"] * i + ["generating"] + ["queued"] * (4 - i)
+        assert all(scene["status"] == "ready" for scene in scenes)
+
+    asyncio.run(check())
+
+
 def test_words_per_second_calibration_and_budget():
     for lang in SAMPLES:
         assert lang in ram_ai.WORDS_PER_SECOND
@@ -236,7 +308,24 @@ def test_words_per_second_calibration_and_budget():
     scenes = [{"narration": "ఒక రెండు మూడు నాలుగు ఐదు ఆరు ఏడు ఎనిమిది తొమ్మిది పది పదకొండు"} for _ in range(5)]
     passed, msg = ram_ai.check_narration_budget(scenes, 30, "te")
     assert passed
-    assert "planning budget" in msg
+    assert "Duration is an estimate" in msg
+
+    too_short = [{"narration": "ఒక రెండు మూడు నాలుగు ఐదు ఆరు"} for _ in range(5)]
+    passed, msg = ram_ai.check_narration_budget(too_short, 30, "te")
+    assert not passed
+    assert "original idea" in msg
+
+    # Timing estimates must not veto a script that satisfies its idea.
+    script = {"title": "A pipe repair", "hook": "Why is the pipe leaking?",
+              "scenes": [{"narration": "They find the leak", "visual": "Two villagers inspect the leak", "beat": "setup"},
+                         {"narration": "They plan a repair", "visual": "They inspect the pipe", "beat": "setup"},
+                         {"narration": "They fit a clamp", "visual": "They fit a clamp", "beat": "conflict"},
+                         {"narration": "They tighten it", "visual": "They tighten its bolt", "beat": "twist"},
+                         {"narration": "The leak stops", "visual": "The pipe is dry", "beat": "ending"}]}
+    checks = ram_ai.run_ram_ai_checks(script, "en", 30)
+    timing = next(c for c in checks["checks"] if c["check"] == "Narration Length (Advisory)")
+    assert timing["advisory"] and not timing["passed"]
+    assert checks["all_passed"]
 
 
 def test_camera_motion_modes():

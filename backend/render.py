@@ -61,6 +61,12 @@ def concat_audio(files, dst):
     run(["-f", "concat", "-safe", "0", "-i", str(lst), "-ac", "1", "-ar", "44100", "-b:a", "128k", str(dst)])
 
 
+def pad_audio(src, dst, target_seconds):
+    """Add a brief silent tail without changing the spoken words or their timing."""
+    run(["-i", str(src), "-af", "apad", "-t", f"{target_seconds:.2f}",
+         "-ac", "1", "-ar", "44100", "-b:a", "128k", str(dst)])
+
+
 def prep_image(src, dst):
     ImageOps.fit(Image.open(src).convert("RGB"), (W * 2, H * 2), Image.LANCZOS).save(dst, quality=92)
 
@@ -202,7 +208,8 @@ def caption_ass(caps, lang, dst, placement="bottom"):
     if placement == "top":
         alignment, margin, size = 8, 80, round(cfg["size"] * 1.5)
     else:
-        alignment, margin, size = 2, cfg["margin"], cfg["size"]
+        # Keep subtitles below the center action area while clearing platform controls.
+        alignment, margin, size = 2, 140, cfg["size"]
     header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {W}

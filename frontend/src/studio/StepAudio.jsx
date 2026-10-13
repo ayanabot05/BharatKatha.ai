@@ -53,6 +53,7 @@ export default function StepAudio({ project, update }) {
   const [busy, setBusy] = useState("");
   const previewPlayer = useRef(null);
   const previewRequest = useRef(0);
+  useEffect(() => { if (project.audio?.speed) setSpeed(project.audio.speed); }, [project.audio?.speed]);
   const stopPreview = () => {
     previewRequest.current += 1;
     if (previewPlayer.current) {
@@ -123,7 +124,7 @@ export default function StepAudio({ project, update }) {
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-300">Speed · {speed.toFixed(2)}x</div>
             <Slider data-testid="voice-speed-slider" className="mt-3" min={0.75} max={1.25} step={0.05} value={[speed]} onValueChange={([s]) => setSpeed(s)} />
           </div>
-          <p className="mt-3 text-xs text-slate-400">Speed changes pacing, not the voice. Listen to a preview for pronunciation; you can also record or upload your own narration.</p>
+          <p className="mt-3 text-xs text-slate-400">At 1.00x, narration is measured and paced toward your video length. Choose another speed to keep manual control. Listen to a preview for pronunciation.</p>
           <button data-testid="generate-voice-btn" onClick={genAI} disabled={!!busy || project.language === "or"} className="mt-5 inline-flex items-center gap-2 btn-primary px-6 py-3 disabled:opacity-50">
             {busy === "ai" ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} Generate narration for all scenes
           </button>
@@ -145,6 +146,7 @@ export default function StepAudio({ project, update }) {
             <div className="text-xs uppercase tracking-wider text-slate-300">Current voice-over · {project.audio.mode}</div>
             <audio controls src={mediaUrl(project.audio.path)} className="mt-2" data-testid="current-audio-player" />
             <div className="text-xs text-slate-300 mt-1">{project.audio.duration?.toFixed(1)}s</div>
+            {project.audio.duration_matched && <p className="mt-2 text-xs text-cyan-200">Paced to {project.audio.speed?.toFixed(2)}x after measuring the first read.</p>}
             {project.duration && Math.abs(project.audio.duration - project.duration) > 1 && <p className="mt-2 text-sm text-amber-200">
               Narration is {project.audio.duration?.toFixed(1)} seconds; your target is {project.duration} seconds. Adjust the script or speaking speed if you need that duration.
             </p>}

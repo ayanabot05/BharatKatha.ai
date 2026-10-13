@@ -1,0 +1,38 @@
+{
+  "project_id": "074b063c09b94c2db026524354671d39",
+  "target_seconds": 30,
+  "requested_speed": 1.0,
+  "applied_speed": 0.875,
+  "duration_matched": true,
+  "narration_words": 57,
+  "audio_seconds": 29.75,
+  "scene_seconds": [
+    5.54,
+    5.54,
+    5.9,
+    7.06,
+    5.66
+  ],
+  "scenes": [
+    {
+      "narration": "మన ఊరి పొలాల్లో ఈ పాత పైపు ఎందుకు లీక్ అవుతోందో ఒకసారి చూశారా?",
+      "visual": "Ramayya and Somanna walking through a bright green rice field in an Andhra village, stopping as they see water spraying from a rusty metal pipe."
+    },
+    {
+      "narration": "ఇక్కడ ఈ తుప్పు పట్టిన పైపు జాయింట్ నుండి నీరు వృథాగా పోతోంది, చూడు.",
+      "visual": "Close-up shot of the rusty metal joint. Ramayya and Somanna lean in close, pointing at the specific crack where water is escaping."
+    },
+    {
+      "narration": "రామయ్య, ఈ మెటల్ క్లాంప్‌ను సరిగ్గా ఆ జాయింట్ మీద ఉంచి గట్టిగా పట్టుకో.",
+      "visual": "Somanna fits a silver metal clamp around the leaking joint while Ramayya uses his hands to hold it perfectly in place."
+    },
+    {
+      "narration": "నేను రెంచ్ తో బోల్టులను గట్టిగా బిగిస్తాను, అప్పుడు ఈ లీకేజీ సమస్య పూర్తిగా పోతుంది.",
+      "visual": "Close-up of Ramayya’s hands using a heavy metal wrench to tighten the bolts on the clamp until it is snug against the pipe."
+    },
+    {
+      "narration": "ఇప్పుడు చూడండి, ఆ జాయింట్ దగ్గర ఒక్క చుక్క నీరు కూడా వృథా కావడం లేదు.",
+      "visual": "The camera zooms in on the repaired joint. The metal clamp is tight, and the ground beneath is no longer getting wet. No water is escaping."
+    }
+  ]
+}

@@ -135,13 +135,20 @@ export default function StepIdea({ project, update }) {
               const titleEn = it.title_en || it.title || "";
               const logline = it.logline || it.description || it.summary || "";
               const hook = it.hook || "";
+              const payoff = it.payoff || "";
               const why = it.why_it_works || it.why || "";
-              const fullIdea = [titleEn || title, logline, hook ? `Hook: ${hook}` : ""].filter(Boolean).join(". ");
+              const fullIdea = [
+                `Selected story: ${titleEn || title}`,
+                logline ? `Story promise: ${logline}` : "",
+                hook ? `Opening question or hook: ${hook}` : "",
+                payoff ? `Required payoff: ${payoff}` : "",
+              ].filter(Boolean).join("\n");
               return (
                 <div key={i} className="rounded-2xl border border-[#65546B] p-5 bg-[#3A3040] rise" data-testid={`idea-card-${i}`}>
                   <div className="indic font-bold text-white">{title}</div>
                   {titleEn && titleEn !== title && <div className="text-xs text-slate-300">{titleEn}</div>}
                   {logline && <p className="indic mt-2 text-sm text-slate-300">{logline}</p>}
+                  {payoff && <p className="indic mt-2 text-xs text-cyan-200">Payoff: {payoff}</p>}
                   {why && <p className="mt-2 text-xs text-violet-300 bg-violet-500/10 rounded-lg px-2.5 py-1.5">Why: {why}</p>}
                   <button data-testid={`use-idea-btn-${i}`} disabled={!!busy} onClick={() => { setIdea(fullIdea); write(fullIdea); }}
                     className="mt-3 text-sm font-semibold text-violet-300 hover:text-violet-300 inline-flex items-center gap-1 disabled:opacity-50">

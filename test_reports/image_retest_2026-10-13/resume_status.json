@@ -1,0 +1,165 @@
+{
+  "project_id": "689d06a42e2b4f86a66fdd4efdae0679",
+  "scenes": [
+    {
+      "id": "25c5572f474948be9b634301eee2f849",
+      "beat": "hook",
+      "error": null,
+      "status": "ready",
+      "visual": "A close-up shot of a rusty, dark brown metal water pipe in an Andhra village with water spurting out from a jagged crack at the joint.",
+      "approved": false,
+      "versions": [
+        "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/01ffb99c26b94c36a8939e08aa92f35c.png"
+      ],
+      "narration": "మన ఊరి నీటి పైపు ఎందుకు లీక్ అవుతోంది?",
+      "audio_path": "vidbharat/audio/aafb74931f004c7a969391bf4edccdfa/268d01fe3cbf42d39498f37d7633960a.mp3",
+      "image_path": "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/01ffb99c26b94c36a8939e08aa92f35c.png",
+      "placeholder": false,
+      "audio_captions": [
+        {
+          "end": 1.425,
+          "text": "మన ఊరి నీటి పైపు",
+          "start": 0.1
+        },
+        {
+          "end": 2.9125,
+          "text": "ఎందుకు లీక్ అవుతోంది",
+          "start": 1.4375
+        }
+      ],
+      "audio_duration": 3.1,
+      "caption_timing": "provider"
+    },
+    {
+      "id": "9d191e1a02df46d1b8647fb62f284c18",
+      "beat": "setup",
+      "error": null,
+      "status": "ready",
+      "visual": "Ramayya and Somanna kneel beside the same rusty pipe, pointing at the exact same leaking joint while discussing it in a sunny village field.",
+      "approved": false,
+      "versions": [
+        "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/2c2225978efa4d75ade8da1f78b76086.png"
+      ],
+      "narration": "రామయ్య, సోమన్న ఇద్దరూ ఆ పగిలిన పైపు జాయింట్‌ను నిశితంగా పరిశీలిస్తున్నారు.",
+      "audio_path": "vidbharat/audio/aafb74931f004c7a969391bf4edccdfa/e450138dcc5d4d789a4581ccfca5cab6.mp3",
+      "image_path": "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/2c2225978efa4d75ade8da1f78b76086.png",
+      "placeholder": false,
+      "audio_captions": [
+        {
+          "end": 2.1,
+          "text": "రామయ్య సోమన్న ఇద్దరూ ఆ",
+          "start": 0.1
+        },
+        {
+          "end": 4.125,
+          "text": "పగిలిన పైపు జాయింట్‌ను నిశితంగా",
+          "start": 2.1125
+        },
+        {
+          "end": 5.175,
+          "text": "పరిశీలిస్తున్నారు",
+          "start": 4.1375
+        }
+      ],
+      "audio_duration": 5.35,
+      "caption_timing": "provider"
+    },
+    {
+      "id": "f3ae754ebe034f00bab81f7a5ce197c6",
+      "beat": "conflict",
+      "error": null,
+      "status": "ready",
+      "visual": "Somanna holds a heavy metal clamp against the rusty joint while Ramayya uses a large silver wrench to tighten the bolt, locking the clamp in place.",
+      "approved": false,
+      "versions": [
+        "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/a8a4c5bce0a14c0a93ece9c5519ecc34.png"
+      ],
+      "narration": "చూడండి, ఇక్కడ తుప్పు పట్టి నీరు బయటకు వస్తోంది చూడండి.",
+      "audio_path": "vidbharat/audio/aafb74931f004c7a969391bf4edccdfa/449ca093c06e4974833be0236ce27b3b.mp3",
+      "image_path": "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/a8a4c5bce0a14c0a93ece9c5519ecc34.png",
+      "placeholder": false,
+      "audio_captions": [
+        {
+          "end": 1.925,
+          "text": "చూడండి ఇక్కడ తుప్పు పట్టి",
+          "start": 0.1
+        },
+        {
+          "end": 3.85,
+          "text": "నీరు బయటకు వస్తోంది చూడండి",
+          "start": 1.9375
+        }
+      ],
+      "audio_duration": 4.03,
+      "caption_timing": "provider"
+    },
+    {
+      "id": "a3e5947c3f4f473398bebd64165fa019",
+      "beat": "twist",
+      "error": null,
+      "status": "ready",
+      "visual": "Close-up of the wrench turning the bolt on the silver metal clamp, which is now firmly secured over the rusty, damaged pipe joint.",
+      "approved": false,
+      "versions": [
+        "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/8248815e81d746e79a3890a84ed1ab43.png"
+      ],
+      "narration": "ఇద్దరూ కలిసి క్లాంప్‌ను గట్టిగా బిగించి లీకును ఆపే ప్రయత్నం చేశారు.",
+      "audio_path": "vidbharat/audio/aafb74931f004c7a969391bf4edccdfa/8523c9038a7545748e0d71f16d20b854.mp3",
+      "image_path": "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/8248815e81d746e79a3890a84ed1ab43.png",
+      "placeholder": false,
+      "audio_captions": [
+        {
+          "end": 2.025,
+          "text": "ఇద్దరూ కలిసి క్లాంప్‌ను గట్టిగా",
+          "start": 0.1
+        },
+        {
+          "end": 4.075,
+          "text": "బిగించి లీకును ఆపే ప్రయత్నం",
+          "start": 2.0375
+        },
+        {
+          "end": 4.725,
+          "text": "చేశారు",
+          "start": 4.0875
+        }
+      ],
+      "audio_duration": 4.9,
+      "caption_timing": "provider"
+    },
+    {
+      "id": "9710b6b0afc04941bfd2967813973734",
+      "beat": "ending",
+      "error": null,
+      "status": "ready",
+      "visual": "The same rusty pipe joint is shown with the metal clamp fixed perfectly; the water flow has stopped completely and the area around the pipe is dry.",
+      "approved": false,
+      "versions": [
+        "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/a33ba2d4951c4cd38e4569a2499d6b55.png"
+      ],
+      "narration": "ఇప్పుడు పైపు నుండి నీరు పడటం లేదు. ఇలాగే మనం నీటిని కాపాడుకుందాం.",
+      "audio_path": "vidbharat/audio/aafb74931f004c7a969391bf4edccdfa/d38cdd319d014f92a5078d4a8356c364.mp3",
+      "image_path": "vidbharat/scenes/aafb74931f004c7a969391bf4edccdfa/a33ba2d4951c4cd38e4569a2499d6b55.png",
+      "placeholder": false,
+      "audio_captions": [
+        {
+          "end": 1.4875,
+          "text": "ఇప్పుడు పైపు నుండి నీరు",
+          "start": 0.1
+        },
+        {
+          "end": 2.3875,
+          "text": "పడటం లేదు",
+          "start": 1.5
+        },
+        {
+          "end": 5.525,
+          "text": "ఇలాగే మనం నీటిని కాపాడుకుందాం",
+          "start": 3.2625
+        }
+      ],
+      "audio_duration": 5.71,
+      "caption_timing": "provider"
+    }
+  ]
+}

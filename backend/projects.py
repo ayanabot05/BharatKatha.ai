@@ -4,6 +4,9 @@ import asyncio
 import hashlib
 import json
 import math
+import re
+import tempfile
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional, List
 
@@ -41,9 +44,9 @@ async def owned(pid, user):
     scenes = p.get("scenes") or []
     if pid not in _active_generations:
         for s in scenes:
-            if s.get("status") == "generating":
+            if s.get("status") in ("generating", "queued"):
                 s["status"] = "failed"
-                s["error"] = "Generation was interrupted. Please click Regenerate to try again."
+                s["error"] = "Generation was interrupted. Retry missing pictures to continue."
                 needs_update = True
 
     if needs_update:
@@ -165,7 +168,8 @@ def script_with_scenes(script, scenes):
 @router.post("")
 async def create(body: ProjectIn, user=Depends(current_user)):
     p = {"id": new_id(), "user_id": user["id"], "title": body.title or "Untitled story", "language": body.language,
-         "region": body.region, "idea": "", "script": None, "validation": None, "approved": False, "style": None,
+         "region": body.region, "idea": "", "script": None, "content_contract": None,
+         "validation": None, "approved": False, "style": None,
          "scenes": [], "audio": None, "captions_on": True, "render": {"status": "idle", "progress": 0},
          "step": 1, "created_at": now_iso(), "updated_at": now_iso()}
     await db.projects.insert_one(dict(p))
@@ -190,7 +194,7 @@ async def patch(pid: str, body: ProjectPatch, user=Depends(current_user)):
     if context_changed:
         if (p.get("render") or {}).get("status") == "rendering":
             raise HTTPException(409, "Wait for the current render to finish before changing the story")
-        fields.update(validation=None, approved=False, audio=None, srt=None,
+        fields.update(validation=None, approved=False, content_contract=None, audio=None, srt=None,
                       render={"status": "idle", "progress": 0})
     if "script" in fields:
         if (p.get("render") or {}).get("status") == "rendering":
@@ -265,11 +269,13 @@ async def gen_script(pid: str, body: ScriptIn, user=Depends(current_user)):
         raise HTTPException(409, "Wait for the current render to finish before making a new script")
     await check_daily_limit(user, "script_generated")
     try:
-        script = await ai.write_script(body.idea, body.language, body.region, body.duration, body.tone)
+        script = await ai.write_script(body.idea, body.language, body.region, body.duration, body.tone, user_id=user["id"])
     except Exception as e:
         log.exception("script")
         raise HTTPException(502, f"Script generation failed: {e}")
+    contract = script.pop("_content_contract", None)
     await upd(pid, idea=body.idea, language=body.language, region=body.region, duration=body.duration, tone=body.tone,
+              content_contract=contract,
               script=script, scenes=scenes_from_script(script), title=script.get("title") or script.get("title_en") or "Untitled",
               validation=None, approved=False, audio=None, render={"status": "idle", "progress": 0}, step=2)
     await pulse.log_event(
@@ -286,7 +292,8 @@ async def validate(pid: str, user=Depends(current_user)):
     if not p.get("script"):
         raise HTTPException(400, "Generate a script first")
     try:
-        v = await ai.validate_script(p["script"], p["language"], p["region"], p.get("duration", 45), p.get("idea", ""))
+        v = await ai.validate_script(p["script"], p["language"], p["region"], p.get("duration", 45),
+                                     p.get("idea", ""), p.get("content_contract"))
     except Exception as e:
         raise HTTPException(502, f"Validation failed: {e}")
     v["content_fingerprint"] = review_fingerprint(p)
@@ -307,14 +314,19 @@ async def improve(pid: str, user=Depends(current_user)):
             fixes[agent["name"]] = fixes.get(agent["name"], []) + agent["misses"]
     if p["validation"].get("ram_ai_fixes"):
         fixes["Ram AI Hard Checks"] = p["validation"]["ram_ai_fixes"]
+    if p["validation"].get("content_gaps"):
+        fixes["Missing story content"] = p["validation"]["content_gaps"]
     try:
         script = await ai.write_script(p["idea"], p["language"], p["region"], p.get("duration", 45),
-                                       p.get("tone", "Emotional"), feedback=fixes, previous=p["script"])
-        v = await ai.validate_script(script, p["language"], p["region"], p.get("duration", 45), p.get("idea", ""))
+                                       p.get("tone", "Emotional"), feedback=fixes, previous=p["script"],
+                                       user_id=user["id"], content_contract=p.get("content_contract"))
+        contract = script.pop("_content_contract", None)
+        v = await ai.validate_script(script, p["language"], p["region"], p.get("duration", 45),
+                                     p.get("idea", ""), contract)
     except Exception as e:
         raise HTTPException(502, f"Improve failed: {e}")
     v["content_fingerprint"] = review_fingerprint({**p, "script": script})
-    await upd(pid, script=script, scenes=scenes_from_script(script, p.get("scenes")), validation=v,
+    await upd(pid, script=script, content_contract=contract, scenes=scenes_from_script(script, p.get("scenes")), validation=v,
               approved=False, audio=None, render={"status": "idle", "progress": 0})
     return await owned(pid, user)
 
@@ -360,7 +372,9 @@ async def _scene_job(pid, uid, sid, instruction=None, ref=None):
         if instruction and scene.get("image_path") and not scene.get("placeholder"):
             # real image: edit it in place
             base = (await get_object(scene["image_path"]))[0]
-            data, mime, placeholder = await ai.gen_image(ai.edit_prompt(p, instruction), [base])
+            refs = [base, ref] if ref else [base]
+            data, mime, placeholder = await ai.gen_image(
+                ai.edit_prompt(p, instruction, scene, continuity_ref=bool(ref)), refs)
         elif instruction:
             # no real image to edit (placeholder or none yet): regenerate the scene with the instruction applied
             edited = dict(scene, visual=f"{scene.get('visual', '')}. Also: {instruction}")
@@ -374,6 +388,11 @@ async def _scene_job(pid, uid, sid, instruction=None, ref=None):
                                                "scenes.$.error": "Placeholder image (Gemini quota). Not a real scene." if placeholder else None},
                                       "$push": {"scenes.$.versions": path}})
         return data, placeholder
+    except ai.ImageQuotaError as e:
+        await db.projects.update_one({"id": pid, "scenes.id": sid},
+                                     {"$set": {"scenes.$.status": "pending", "scenes.$.approved": False,
+                                               "scenes.$.error": str(e)[:200]}})
+        raise
     except Exception as e:
         log.exception("scene image")
         await db.projects.update_one({"id": pid, "scenes.id": sid},
@@ -385,74 +404,104 @@ async def _scene_job(pid, uid, sid, instruction=None, ref=None):
 def best_scene_reference(project, current, references):
     """
     Select the optimal reference image for visual and object continuity:
-    1. If the current scene is a close-up/detail shot, prefer the immediate previous scene
-       where the object/action was shown.
-    2. Otherwise, prefer the newest earlier image sharing the most named characters.
+    Prefer the newest earlier shot with the same concrete prop, then match characters.
     """
     if not references:
         return None
-    if ai.is_detail_or_closeup(current.get("visual", "")):
-        return references[-1][1]
+    def prop_terms(scene):
+        visual = (scene.get("visual") or "").lower()
+        return {term for term in ("pipe", "joint", "clamp", "wrench", "tap", "valve", "well",
+                                   "bucket", "door", "cart", "bicycle", "tree", "bridge", "boat",
+                                   "phone", "book", "field", "house", "machine", "rope")
+                if term in re.findall(r"[a-z]+", visual)}
+
+    current_props = prop_terms(current)
     names = ai.scene_character_names(project, current)
-    best, best_overlap = references[-1][1], -1
-    for previous, data in references:
-        overlap = len(names & ai.scene_character_names(project, previous))
-        if overlap >= best_overlap:
-            best, best_overlap = data, overlap
+    best, best_score = references[-1][1], (-1, -1, -1)
+    for index, (previous, data) in enumerate(references):
+        prop_overlap = len(current_props & prop_terms(previous))
+        character_overlap = len(names & ai.scene_character_names(project, previous))
+        score = (prop_overlap, character_overlap, index)
+        if score >= best_score:
+            best, best_score = data, score
     return best
+
+
+def missing_scene_ids(scenes):
+    """Keep finished images when a paused batch resumes."""
+    return [s["id"] for s in scenes
+            if s.get("status") != "ready" or not s.get("image_path") or s.get("placeholder")]
+
+
+def image_batch_active(scenes):
+    return any(s.get("status") in ("queued", "generating") for s in scenes)
 
 
 async def _all_scenes_job(pid, uid, ids):
     _active_generations.add(pid)
     try:
-        first = await _scene_job(pid, uid, ids[0])
-        if first:
-            data, placeholder = first
-            # Prefer the latest earlier image containing the same named characters.
-            # A first-scene-only reference loses characters who enter later.
-            project = await db.projects.find_one({"id": pid}, {"_id": 0})
-            first_scene = next(s for s in project["scenes"] if s["id"] == ids[0])
-            references = [] if placeholder else [(first_scene, data)]
-            for sid in ids[1:]:
-                current = next(s for s in project["scenes"] if s["id"] == sid)
-                result = await _scene_job(pid, uid, sid, ref=best_scene_reference(project, current, references))
-                if result and not result[1]:
-                    references.append((current, result[0]))
-        else:
-            p = await db.projects.find_one({"id": pid}, {"_id": 0})
-            scenes = p.get("scenes") or []
-            s1 = next((s for s in scenes if s["id"] == ids[0]), None)
-            err = (s1.get("error") if s1 else None) or "Scene 1 generation failed"
-            for sid in ids[1:]:
-                await db.projects.update_one({"id": pid, "scenes.id": sid},
-                                             {"$set": {"scenes.$.status": "failed", "scenes.$.error": err}})
+        project = await db.projects.find_one({"id": pid}, {"_id": 0})
+        selected = set(ids)
+        references = []
+        generated = 0
+        gap = max(0.0, float(os.environ.get("IMAGE_SCENE_GAP_SECONDS", "20")))
+        for index, current in enumerate(project["scenes"]):
+            sid = current["id"]
+            if sid not in selected:
+                if current.get("status") == "ready" and current.get("image_path") and not current.get("placeholder"):
+                    references.append((current, (await get_object(current["image_path"]))[0]))
+                continue
+            if generated:
+                await asyncio.sleep(gap)
+            await mark_scene_status(pid, [sid], "generating")
+            try:
+                result = await _scene_job(pid, uid, sid,
+                                          ref=best_scene_reference(project, current, references))
+            except ai.ImageQuotaError as exc:
+                for remaining in project["scenes"][index + 1:]:
+                    if remaining["id"] in selected:
+                        await db.projects.update_one({"id": pid, "scenes.id": remaining["id"]},
+                                                     {"$set": {"scenes.$.status": "pending",
+                                                               "scenes.$.error": str(exc)[:200]}})
+                break
+            generated += 1
+            if not result or result[1]:
+                for remaining in project["scenes"][index + 1:]:
+                    if remaining["id"] in selected:
+                        await db.projects.update_one({"id": pid, "scenes.id": remaining["id"]},
+                                                     {"$set": {"scenes.$.status": "pending",
+                                                               "scenes.$.error": "An earlier picture failed. Retry missing pictures after resolving it."}})
+                break
+            references.append((current, result[0]))
     finally:
-        _active_generations.discard(pid)
+        try:
+            # A cancelled worker must not leave later scenes permanently queued.
+            for sid in ids:
+                await db.projects.update_one(
+                    {"id": pid, "scenes": {"$elemMatch": {"id": sid, "status": "queued"}}},
+                    {"$set": {"scenes.$.status": "pending",
+                               "scenes.$.error": "Generation was interrupted. Retry missing pictures to continue."}})
+        finally:
+            _active_generations.discard(pid)
 
 
 async def _single_scene_job(pid, uid, sid, instruction=None, ref=None):
     _active_generations.add(pid)
     try:
-        await _scene_job(pid, uid, sid, instruction, ref)
+        try:
+            await _scene_job(pid, uid, sid, instruction, ref)
+        except ai.ImageQuotaError:
+            pass  # The scene is pending with a clear provider message.
     finally:
         _active_generations.discard(pid)
 
 
-async def mark_generating(pid, ids):
-    row = await db.projects.find_one({"id": pid}, {"_id": 0})
-    if not row:
-        return
-    scenes = row.get("scenes") or []
-    id_set = set(ids)
-    changed = False
-    for sc in scenes:
-        if sc.get("id") in id_set:
-            sc["status"] = "generating"
-            sc["error"] = None
-            sc["approved"] = False
-            changed = True
-    if changed:
-        await db.projects.update_one({"id": pid}, {"$set": {"scenes": scenes}})
+async def mark_scene_status(pid, ids, status):
+    for sid in ids:
+        await db.projects.update_one(
+            {"id": pid, "scenes.id": sid},
+            {"$set": {"scenes.$.status": status, "scenes.$.error": None,
+                       "scenes.$.approved": False}})
 
 
 @router.post("/{pid}/scenes/generate")
@@ -460,15 +509,19 @@ async def gen_scenes(pid: str, user=Depends(current_user)):
     p = await owned(pid, user)
     if not p.get("approved") or not p.get("style"):
         raise HTTPException(400, "Approve the script and choose a style first")
-    if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or any(s.get("status") == "generating" for s in p["scenes"]):
+    if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or image_batch_active(p["scenes"]):
         raise HTTPException(409, "Wait for the current generation or render to finish")
     await check_daily_limit(user, "scene_generated")
-    ids = [s["id"] for s in p["scenes"]]
-    if not ids:
+    if not p["scenes"]:
         raise HTTPException(400, "Add a scene before generating pictures")
+    ids = missing_scene_ids(p["scenes"])
+    if not ids:
+        raise HTTPException(400, "All scene pictures are already generated")
+    if pid in _active_generations:
+        raise HTTPException(409, "Wait for the current generation to finish")
     _active_generations.add(pid)
     try:
-        await mark_generating(pid, ids)
+        await mark_scene_status(pid, ids, "queued")
         await upd(pid, step=max(p.get("step", 1), 4), render={"status": "idle", "progress": 0})
         spawn(_all_scenes_job(pid, user["id"], ids))
         await pulse.log_event(user["id"], "scene_generated", p.get("language", ""), p.get("region", ""), project_id=pid)
@@ -483,17 +536,21 @@ async def regen_scene(pid: str, sid: str, body: EditIn, user=Depends(current_use
     p = await owned(pid, user)
     if not any(s["id"] == sid for s in p["scenes"]):
         raise HTTPException(404, "Scene not found")
-    if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or any(s.get("status") == "generating" for s in p["scenes"]):
+    if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or image_batch_active(p["scenes"]):
         raise HTTPException(409, "Wait for the current generation or render to finish")
     await check_daily_limit(user, "scene_generated")
-    ref = None
-    # only real images make useful style references
-    others = [s for s in p["scenes"] if s["id"] != sid and s.get("image_path") and not s.get("placeholder")]
-    if others:
-        ref = (await get_object(others[0]["image_path"]))[0]
+    if pid in _active_generations:
+        raise HTTPException(409, "Wait for the current generation to finish")
     _active_generations.add(pid)
     try:
-        await mark_generating(pid, [sid])
+        ref = None
+        # Only real earlier images make useful continuity references.
+        scene_index = next(i for i, scene in enumerate(p["scenes"]) if scene["id"] == sid)
+        earlier = [s for s in p["scenes"][:scene_index] if s.get("image_path") and not s.get("placeholder")]
+        if earlier:
+            references = [(scene, (await get_object(scene["image_path"]))[0]) for scene in earlier]
+            ref = best_scene_reference(p, p["scenes"][scene_index], references)
+        await mark_scene_status(pid, [sid], "generating")
         await upd(pid, render={"status": "idle", "progress": 0})
         spawn(_single_scene_job(pid, user["id"], sid, body.instruction, ref))
     except Exception:
@@ -532,7 +589,7 @@ async def patch_scene(pid: str, sid: str, body: SceneTextIn, user=Depends(curren
     scene = next((s for s in p.get("scenes", []) if s["id"] == sid), None)
     if not scene:
         raise HTTPException(404, "Scene not found")
-    if p.get("render", {}).get("status") == "rendering" or scene.get("status") == "generating":
+    if p.get("render", {}).get("status") == "rendering" or image_batch_active(p.get("scenes", [])):
         raise HTTPException(409, "Wait for scene generation or rendering to finish")
     fields = {f"scenes.$.{k}": v.strip() for k, v in body.model_dump(exclude_none=True).items()}
     if any(not v for v in fields.values()):
@@ -563,7 +620,7 @@ class SceneCreateIn(BaseModel):
 @router.post("/{pid}/scenes")
 async def add_scene(pid: str, body: SceneCreateIn, user=Depends(current_user)):
     p = await owned(pid, user)
-    if p.get("render", {}).get("status") == "rendering" or any(s.get("status") == "generating" for s in p.get("scenes", [])):
+    if p.get("render", {}).get("status") == "rendering" or image_batch_active(p.get("scenes", [])):
         raise HTTPException(409, "Wait for current generation or rendering to finish")
     scenes = list(p.get("scenes") or [])
     if len(scenes) >= 12:
@@ -610,7 +667,7 @@ async def remove_scene(pid: str, sid: str, user=Depends(current_user)):
         raise HTTPException(404, "Scene not found")
     if len(scenes) <= 1:
         raise HTTPException(400, "Keep at least one scene")
-    if p.get("render", {}).get("status") == "rendering" or any(s.get("status") == "generating" for s in scenes):
+    if p.get("render", {}).get("status") == "rendering" or image_batch_active(scenes):
         raise HTTPException(409, "Wait for current generation or rendering to finish")
     remaining = [s for s in scenes if s["id"] != sid]
     await upd(pid, scenes=remaining, script=script_with_scenes(p.get("script"), remaining),
@@ -627,32 +684,66 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
         raise HTTPException(409, "Wait for the render to finish before replacing narration")
     if not p["scenes"]:
         raise HTTPException(400, "No scenes")
+    async def synthesize(speed, work):
+        clips = await asyncio.gather(*[ai.tts_timed(s["narration"], body.voice, speed, p.get("language", ""))
+                                       for s in p["scenes"]])
+        locals_, durations = [], []
+        for index, speech in enumerate(clips):
+            local = work / f"scene_{index}.mp3"
+            local.write_bytes(speech["audio"])
+            measured = round(await asyncio.to_thread(render.duration, local), 2)
+            if measured <= 0:
+                raise ValueError("Voice provider returned unreadable audio")
+            locals_.append(local)
+            durations.append(measured)
+        combined = work / "combined.mp3"
+        await asyncio.to_thread(render.concat_audio, locals_, combined)
+        return clips, durations, combined.read_bytes(), round(await asyncio.to_thread(render.duration, combined), 2)
+
     try:
-        clips = await asyncio.gather(*[ai.tts_timed(s["narration"], body.voice, body.speed, p.get("language", "")) for s in p["scenes"]])
+        with tempfile.TemporaryDirectory(prefix="voice_", dir=CACHE) as temp:
+            work = Path(temp)
+            clips, durations, combined_data, measured_total = await synthesize(body.speed, work)
+            applied_speed = body.speed
+            padded_seconds = 0.0
+            target = p.get("duration") or 0
+            if body.speed == 1.0 and target > 0 and abs(measured_total - target) > 1.0:
+                adjusted = round(max(0.75, min(1.25, measured_total / target)), 3)
+                if abs(adjusted - body.speed) >= 0.02:
+                    clips, durations, combined_data, measured_total = await synthesize(adjusted, work)
+                    applied_speed = adjusted
+                # A short pause on the final frame can cover the residual gap
+                # when the safe voice-speed range cannot reach the target.
+                remaining = target - measured_total
+                if 0.05 < remaining <= 2.0:
+                    source = work / "combined.mp3"
+                    padded = work / "padded.mp3"
+                    await asyncio.to_thread(render.pad_audio, source, padded, target)
+                    padded_total = round(await asyncio.to_thread(render.duration, padded), 2)
+                    padded_seconds = max(0.0, padded_total - measured_total)
+                    durations[-1] = round(durations[-1] + padded_seconds, 2)
+                    combined_data, measured_total = padded.read_bytes(), padded_total
     except Exception as e:
         raise HTTPException(502, f"Voice generation failed: {e}")
-    scenes, locals_ = p["scenes"], []
-    for s, speech in zip(scenes, clips):
-        data = speech["audio"]
-        path = await save_media(user["id"], "audio", data, "mp3", "audio/mpeg")
-        local = await cached(path)
-        s["audio_path"], s["audio_duration"] = path, round(await asyncio.to_thread(render.duration, local), 2)
-        if s["audio_duration"] <= 0:
-            raise HTTPException(502, "Voice provider returned unreadable audio")
-        s["audio_captions"] = render.timed_captions(speech["words"], s["audio_duration"]) if speech["words"] else []
-        s["caption_timing"] = speech["timing_source"]
-        locals_.append(local)
-    combined = CACHE / f"combined_{pid}.mp3"
-    await asyncio.to_thread(render.concat_audio, locals_, combined)
-    path = await save_media(user["id"], "audio", combined.read_bytes(), "mp3", "audio/mpeg")
     current = await owned(pid, user)
     if review_fingerprint(current) != review_fingerprint(p) or (current.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "The story changed while narration was generating. Generate it again for the current scenes.")
+    scenes = p["scenes"]
+    for s, speech, duration in zip(scenes, clips, durations):
+        s["audio_path"] = await save_media(user["id"], "audio", speech["audio"], "mp3", "audio/mpeg")
+        s["audio_duration"] = duration
+        s["audio_captions"] = render.timed_captions(speech["words"], duration) if speech["words"] else []
+        s["caption_timing"] = speech["timing_source"]
+    path = await save_media(user["id"], "audio", combined_data, "mp3", "audio/mpeg")
     # Preserve any image approvals or generation results that arrived while TTS ran.
     timing = {s["id"]: {k: s[k] for k in ("audio_path", "audio_duration", "audio_captions", "caption_timing")} for s in scenes}
     scenes = [{**s, **timing[s["id"]]} for s in current["scenes"]]
-    await upd(pid, scenes=scenes, audio={"mode": "ai", "voice": body.voice, "speed": body.speed, "path": path,
-                                         "duration": round(render.duration(combined), 2)},
+    await upd(pid, scenes=scenes, audio={"mode": "ai", "voice": body.voice, "speed": applied_speed,
+                                         "requested_speed": body.speed,
+                                         "duration_matched": (applied_speed != body.speed or padded_seconds > 0)
+                                         and abs(measured_total - target) <= 1.0,
+                                         "padded_seconds": round(padded_seconds, 2),
+                                         "path": path, "duration": measured_total},
               render={"status": "idle", "progress": 0}, srt=None, step=max(p.get("step", 1), 6))
     return await owned(pid, user)
 

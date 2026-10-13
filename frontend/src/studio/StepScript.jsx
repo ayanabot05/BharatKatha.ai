@@ -78,6 +78,19 @@ export default function StepScript({ project, update }) {
         </div>
       </StepHeader>
 
+      {project.content_contract?.promise && (
+        <div className="mt-6 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4 text-sm text-slate-100">
+          <div className="text-xs font-bold uppercase tracking-wider text-cyan-200">Your story promise</div>
+          <p className="mt-1">{project.content_contract.promise}</p>
+          <details className="mt-2 text-xs text-slate-300">
+            <summary className="cursor-pointer font-semibold">Content the script must deliver</summary>
+            <ul className="mt-2 list-disc pl-5 space-y-1">
+              {project.content_contract.requirements?.map((item, i) => <li key={i}>{item.requirement}</li>)}
+            </ul>
+          </details>
+        </div>
+      )}
+
       <div className="mt-6 grid lg:grid-cols-[1fr_320px] gap-6">
         <div className="space-y-4">
           <Input data-testid="script-title-input" className="indic text-lg font-bold bg-[#3A3040]" value={script.title || ""} onChange={(e) => setScript({ ...script, title: e.target.value })} />
@@ -129,20 +142,27 @@ export default function StepScript({ project, update }) {
 
           {v?.ram_ai_checks && (
             <div className="rounded-2xl border border-[#65546B] p-4 bg-[#3A3040] rise">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Ram AI Hard Checks</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Ram AI Script Checks</div>
               <ul className="space-y-2 text-xs">
                 {v.ram_ai_checks.map((c, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className={`h-4 w-4 rounded-full shrink-0 flex items-center justify-center text-[10px] mt-0.5 ${c.passed ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" : "bg-rose-500/20 text-rose-400 border border-rose-500/40"}`}>
-                      {c.passed ? "✓" : "✗"}
+                    <span className={`h-4 w-4 rounded-full shrink-0 flex items-center justify-center text-[10px] mt-0.5 ${c.advisory ? "bg-amber-500/20 text-amber-400 border border-amber-500/40" : c.passed ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" : "bg-rose-500/20 text-rose-400 border border-rose-500/40"}`}>
+                      {c.advisory ? "i" : c.passed ? "✓" : "✗"}
                     </span>
                     <div>
-                      <div className={`font-semibold ${c.passed ? "text-slate-200" : "text-rose-300"}`}>{c.check}</div>
+                      <div className={`font-semibold ${c.advisory ? "text-amber-300" : c.passed ? "text-slate-200" : "text-rose-300"}`}>{c.check}</div>
                       <div className="text-[11px] text-slate-400">{c.detail}</div>
                     </div>
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {v?.content_gaps?.length > 0 && (
+            <div role="alert" className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-100">
+              <div className="font-semibold">The script does not yet deliver the selected idea</div>
+              <ul className="mt-2 list-disc pl-5">{v.content_gaps.map((gap, i) => <li key={i}>{gap}</li>)}</ul>
             </div>
           )}
 
@@ -153,7 +173,7 @@ export default function StepScript({ project, update }) {
             <CheckCircle2 size={16} /> Approve script
           </button>
           {!v?.safe && v && <p className="text-xs text-rose-400 text-center">Safety checks flagged. Apply fixes to enable approval.</p>}
-          {v?.safe && !v?.all_passed && <p className="text-xs text-rose-400 text-center">Resolve the concept review and any failed hard checks, then re-run review to enable approval.</p>}
+          {v?.safe && !v?.all_passed && <p className="text-xs text-rose-400 text-center">Resolve missing story content and failed script checks, then re-run review to enable approval.</p>}
           {dirty && <p className="text-xs text-slate-300 text-center">Save or re-run the review after editing.</p>}
         </aside>
       </div>

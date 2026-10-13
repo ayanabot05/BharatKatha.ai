@@ -220,6 +220,7 @@ class LocalSetupTests(unittest.TestCase):
                 "scenes": [
                     {"id": "s-1", "status": "generating"},
                     {"id": "s-2", "status": "ready"},
+                    {"id": "s-3", "status": "queued"},
                 ],
             }
             fake_db = unittest.mock.MagicMock()
@@ -234,6 +235,7 @@ class LocalSetupTests(unittest.TestCase):
                 self.assertIn("interrupted", healed["render"]["message"].lower())
                 self.assertEqual(healed["scenes"][0]["status"], "failed")
                 self.assertEqual(healed["scenes"][1]["status"], "ready")
+                self.assertEqual(healed["scenes"][2]["status"], "failed")
                 mock_upd.assert_awaited_once()
         asyncio.run(check())
 

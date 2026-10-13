@@ -123,7 +123,7 @@ class IdeasIn(BaseModel):
 @api.post("/ideas/suggest")
 async def ideas(body: IdeasIn, user=Depends(current_user)):
     try:
-        data = await ai.suggest_ideas(body.language, body.region, body.category, body.platform, body.audience)
+        data = await ai.suggest_ideas(body.language, body.region, body.category, body.platform, body.audience, user["id"])
     except Exception as e:
         raise HTTPException(502, f"Idea generation failed: {e}")
     for idea in data:

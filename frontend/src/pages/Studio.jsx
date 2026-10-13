@@ -9,15 +9,18 @@ import StepStyle from "@/studio/StepStyle";
 import StepScenes from "@/studio/StepScenes";
 import StepAudio from "@/studio/StepAudio";
 import StepRender from "@/studio/StepRender";
+import { useLocale } from "@/context/LocaleContext";
 
 const VIEWS = { 1: StepIdea, 2: StepScript, 3: StepStyle, 4: StepScenes, 5: StepAudio, 6: StepRender };
 
 function Stepper({ view, maxStep, setView }) {
+  const { t } = useLocale();
   return (
     <ol className="flex items-center gap-1 overflow-x-auto pb-1" data-testid="studio-stepper">
       {STEPS.map((s, i) => {
         const allowed = s.n <= maxStep;
         const active = s.n === view;
+        const label = t(`step_${s.n}_label`) || s.label;
         return (
           <li key={s.n} className="flex items-center gap-1 shrink-0">
             <button data-testid={`stepper-step-${s.n}`} disabled={!allowed} onClick={() => setView(s.n)}
@@ -25,7 +28,7 @@ function Stepper({ view, maxStep, setView }) {
               <span className={`h-5 w-5 rounded-full grid place-items-center text-[11px] ${active ? "bg-[#A33D52] text-white" : s.n < maxStep ? "bg-[#A33D52] text-white" : "bg-[#65546B] text-slate-200"}`}>
                 {s.n < maxStep && !active ? <Check size={12} /> : s.n}
               </span>
-              {s.label}
+              {label}
             </button>
             {i < STEPS.length - 1 && <span className="w-4 h-px bg-[#65546B]" />}
           </li>

@@ -6,6 +6,7 @@ import { api, errMsg, mediaUrl } from "@/lib/api";
 import { StepHeader } from "@/components/StepHeader";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
+import { useLocale } from "@/context/LocaleContext";
 
 const copy = (t) => { navigator.clipboard.writeText(t); toast.success("Copied"); };
 
@@ -22,6 +23,7 @@ function Meta({ label, value, testid }) {
 }
 
 export default function StepRender({ project, update }) {
+  const { t } = useLocale();
   const [busy, setBusy] = useState(false);
   const [thumbnailScene, setThumbnailScene] = useState(project.scenes?.find((scene) => scene.image_path && !scene.placeholder && scene.approved)?.id || "");
   const [thumbnailTitle, setThumbnailTitle] = useState(project.script?.thumbnail_title || project.script?.title || "");
@@ -100,7 +102,7 @@ export default function StepRender({ project, update }) {
               {(project.scenes || []).map((scene, index) => <option key={scene.id} value={scene.id} disabled={!scene.image_path || scene.placeholder || !scene.approved}>Scene {index + 1}{scene.placeholder ? " (preview only)" : !scene.approved ? " (needs approval)" : ""}</option>)}
             </select>
             <input value={thumbnailTitle} onChange={(e) => setThumbnailTitle(e.target.value)} maxLength={80} aria-label="Thumbnail title" className="indic w-full rounded-lg bg-[#181A26] p-2 text-white" />
-            <button onClick={createThumbnail} disabled={busy || !thumbnailScene || !thumbnailTitle.trim()} className="btn-primary px-4 py-2 text-sm disabled:opacity-40">Create thumbnail</button>
+            <button onClick={createThumbnail} disabled={busy || !thumbnailScene || !thumbnailTitle.trim()} className="btn-primary px-4 py-2 text-sm disabled:opacity-40">{t("create_thumbnail")}</button>
           </div>
           <div className="rounded-2xl border border-[#65546B] p-5">
             {!scriptApproved && <div role="alert" className="mb-4 rounded-lg bg-amber-500/15 p-3 text-sm text-amber-100">
@@ -113,7 +115,7 @@ export default function StepRender({ project, update }) {
               <button onClick={() => update(project, 4)} className="mt-3 rounded-lg bg-amber-100 px-3 py-2 font-semibold text-slate-950">Go to Scene editor</button>
             </div>}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-semibold"><Captions size={16} />Burn-in captions</div>
+              <div className="flex items-center gap-2 font-semibold"><Captions size={16} />{t("burn_in_captions")}</div>
               <Switch data-testid="captions-switch" checked={project.captions_on !== false} onCheckedChange={toggleCaps} disabled={rendering} />
             </div>
             {project.audio?.mode !== "ai" && <p className="mt-3 text-sm text-slate-300">Scene cuts for uploaded or recorded narration are estimated. Watch the final video to check that each picture matches your words.</p>}
@@ -122,7 +124,7 @@ export default function StepRender({ project, update }) {
             <button data-testid="render-btn" onClick={start} disabled={busy || rendering || !scenesApproved || !scriptApproved || !project.audio}
               className="mt-5 w-full btn-primary py-3 flex items-center justify-center gap-2 disabled:opacity-50">
               {busy || rendering ? <Loader2 size={16} className="animate-spin" /> : <Film size={16} />}
-              {rendering ? "Rendering…" : r.status === "done" ? "Re-render video" : "Render my video"}
+              {rendering ? "Rendering…" : r.status === "done" ? "Re-render video" : t("render_my_video")}
             </button>
             {(rendering || r.status === "failed") && (
               <div className="mt-4" data-testid="render-progress">
@@ -132,6 +134,18 @@ export default function StepRender({ project, update }) {
             )}
           </div>
           <div className="grid gap-3">
+            <button
+              data-testid="copy-full-package-btn"
+              onClick={() => {
+                const pkg = `${s.title || ""}\n\n${s.description || ""}\n\n${(s.hashtags || []).join(" ")}\n\nTags:\n${(s.tags || []).join(", ")}`;
+                copy(pkg);
+                toast.success(t("copied_package"));
+              }}
+              className="w-full rounded-xl border border-violet-500/40 bg-violet-600/20 py-2.5 px-4 text-xs font-semibold text-violet-200 hover:bg-violet-600/30 flex items-center justify-center gap-2 transition-colors"
+            >
+              <Copy size={14} />
+              {t("copy_package")}
+            </button>
             <Meta label="Title" value={s.title || ""} testid="title" />
             <Meta label="Description" value={s.description || ""} testid="description" />
             <Meta label="Tags" value={(s.tags || []).join(", ")} testid="tags" />

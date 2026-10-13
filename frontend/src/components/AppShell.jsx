@@ -1,8 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutGrid, Plus, TrendingUp, Settings, LogOut, Clapperboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api, errMsg } from "@/lib/api";
 import { toast } from "sonner";
+import { useLocale, UI_LANGUAGES } from "@/context/LocaleContext";
+import { Globe, LayoutGrid, Plus, TrendingUp, Settings, LogOut, Clapperboard } from "lucide-react";
 
 export const Logo = ({ light = false }) => (
   <div className="flex items-center gap-2.5" data-testid="app-logo">
@@ -17,9 +18,9 @@ export const Logo = ({ light = false }) => (
 );
 
 const NAV = [
-  { to: "/dashboard", label: "My videos", icon: LayoutGrid, id: "nav-dashboard" },
-  { to: "/coach", label: "Growth Coach", icon: TrendingUp, id: "nav-coach" },
-  { to: "/settings", label: "Settings", icon: Settings, id: "nav-settings" },
+  { to: "/dashboard", key: "my_videos", defaultLabel: "My videos", icon: LayoutGrid, id: "nav-dashboard" },
+  { to: "/coach", key: "growth_coach", defaultLabel: "Growth Coach", icon: TrendingUp, id: "nav-coach" },
+  { to: "/settings", key: "settings", defaultLabel: "Settings", icon: Settings, id: "nav-settings" },
 ];
 
 export function useNewProject() {
@@ -34,6 +35,7 @@ export function useNewProject() {
 
 export default function AppShell({ children }) {
   const { user, logout } = useAuth();
+  const { locale, changeLocale, t } = useLocale();
   const newProject = useNewProject();
   return (
     <div className="min-h-screen flex bg-[#261F2C] text-slate-100">
@@ -41,23 +43,36 @@ export default function AppShell({ children }) {
         <div className="orb w-64 h-64 bg-rose-700 -bottom-24 -left-24 !opacity-15" />
         <div className="relative"><Logo /></div>
         <button data-testid="sidebar-new-video-btn" onClick={newProject} className="relative btn-primary mt-8 w-full">
-          <Plus size={16} /> New video
+          <Plus size={16} /> {t("new_video")}
         </button>
         <nav className="relative mt-6 space-y-1">
-          {NAV.map(({ to, label, icon: Icon, id }) => (
+          {NAV.map(({ to, key, defaultLabel, icon: Icon, id }) => (
             <NavLink key={to} to={to} data-testid={id}
               className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isActive ? "bg-white/[0.06] text-white border border-white/10" : "text-slate-400 hover:text-white hover:bg-white/[0.03]"}`}>
-              <Icon size={16} /> {label}
+              <Icon size={16} /> {t(key) || defaultLabel}
             </NavLink>
           ))}
         </nav>
-        <div className="relative mt-auto glass rounded-2xl p-4">
-          <div className="text-sm font-semibold text-white truncate" data-testid="sidebar-user-name">{user?.name}</div>
-          <div className="text-xs text-slate-300 truncate">{user?.email}</div>
-          <div className="mt-2 inline-flex rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider" data-testid="sidebar-plan">{user?.plan} plan</div>
-          <button data-testid="logout-btn" onClick={logout} className="mt-3 flex items-center gap-2 text-sm text-slate-400 hover:text-white">
-            <LogOut size={14} /> Sign out
-          </button>
+        <div className="relative mt-auto space-y-3">
+          <div className="flex items-center justify-between px-1 text-xs text-slate-300">
+            <span className="flex items-center gap-1 text-slate-400"><Globe size={13} /> UI</span>
+            <div className="flex gap-1" data-testid="ui-lang-switcher">
+              {UI_LANGUAGES.map((l) => (
+                <button key={l.id} onClick={() => changeLocale(l.id)}
+                  className={`px-1.5 py-0.5 rounded text-[11px] transition-colors ${locale === l.id ? "bg-[#A33D52] text-white font-semibold" : "text-slate-400 hover:text-white"}`}>
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="glass rounded-2xl p-4">
+            <div className="text-sm font-semibold text-white truncate" data-testid="sidebar-user-name">{user?.name}</div>
+            <div className="text-xs text-slate-300 truncate">{user?.email}</div>
+            <div className="mt-2 inline-flex rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider" data-testid="sidebar-plan">{user?.plan} plan</div>
+            <button data-testid="logout-btn" onClick={logout} className="mt-3 flex items-center gap-2 text-sm text-slate-400 hover:text-white">
+              <LogOut size={14} /> {t("sign_out")}
+            </button>
+          </div>
         </div>
       </aside>
       <div className="flex-1 min-w-0 relative">

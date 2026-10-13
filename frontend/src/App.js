@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { LocaleProvider } from "@/context/LocaleContext";
 import AppShell from "@/components/AppShell";
 import Landing from "@/pages/Landing";
 import AuthPage from "@/pages/AuthPage";
@@ -28,21 +29,23 @@ function PublicOnly({ children }) {
 export default function App() {
   return (
     <div className="App">
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<PublicOnly><AuthPage mode="login" /></PublicOnly>} />
-            <Route path="/register" element={<PublicOnly><AuthPage mode="register" /></PublicOnly>} />
-            <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-            <Route path="/studio/:id" element={<Protected><Studio /></Protected>} />
-            <Route path="/coach" element={<Protected><Coach /></Protected>} />
-            <Route path="/settings" element={<Protected><Settings /></Protected>} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-        <Toaster position="top-right" richColors />
-      </AuthProvider>
+      <LocaleProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<PublicOnly><AuthPage mode="login" /></PublicOnly>} />
+              <Route path="/register" element={<PublicOnly><AuthPage mode="register" /></PublicOnly>} />
+              <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+              <Route path="/studio/:id" element={<Protected><Studio /></Protected>} />
+              <Route path="/coach" element={<Protected><Coach /></Protected>} />
+              <Route path="/settings" element={<Protected><Settings /></Protected>} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
+      </LocaleProvider>
     </div>
   );
 }

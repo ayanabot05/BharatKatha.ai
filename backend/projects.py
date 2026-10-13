@@ -16,6 +16,8 @@ from core import db, current_user, now_iso, new_id, save_media, cached, get_obje
 
 router = APIRouter(prefix="/api/projects")
 _tasks = set()
+_active_renders = set()
+_active_generations = set()
 
 def spawn(coro):
     t = asyncio.create_task(coro)
@@ -27,6 +29,25 @@ async def owned(pid, user):
     p = await db.projects.find_one({"id": pid, "user_id": user["id"]}, {"_id": 0})
     if not p:
         raise HTTPException(404, "Project not found")
+
+    # Self-heal orphaned stuck states if no background task is actively running
+    needs_update = False
+    render = p.get("render") or {}
+    if render.get("status") == "rendering" and pid not in _active_renders:
+        p["render"] = {"status": "failed", "progress": 0, "message": "Render was interrupted. Please click Render to try again."}
+        needs_update = True
+
+    scenes = p.get("scenes") or []
+    if pid not in _active_generations:
+        for s in scenes:
+            if s.get("status") == "generating":
+                s["status"] = "failed"
+                s["error"] = "Generation was interrupted. Please click Regenerate to try again."
+                needs_update = True
+
+    if needs_update:
+        await upd(pid, render=p.get("render"), scenes=scenes)
+
     return p
 
 
@@ -69,8 +90,20 @@ class VoiceIn(BaseModel):
     speed: float = Field(default=1.0, ge=0.75, le=1.25)
 
 
+def clean_script_for_fingerprint(script):
+    if not isinstance(script, dict):
+        return script
+    return {k: v for k, v in script.items() if not k.startswith("thumbnail_")}
+
+
 def review_fingerprint(project):
-    content = {key: project.get(key) for key in ("script", "idea", "language", "region", "duration")}
+    content = {
+        "script": clean_script_for_fingerprint(project.get("script")),
+        "idea": project.get("idea"),
+        "language": project.get("language"),
+        "region": project.get("region"),
+        "duration": project.get("duration"),
+    }
     return hashlib.sha256(json.dumps(content, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
@@ -162,9 +195,42 @@ async def patch(pid: str, body: ProjectPatch, user=Depends(current_user)):
 
 @router.delete("/{pid}")
 async def delete(pid: str, user=Depends(current_user)):
-    await owned(pid, user)
+    p = await owned(pid, user)
+    paths = []
+    for s in p.get("scenes") or []:
+        if s.get("image_path"):
+            paths.append(s["image_path"])
+        for v in s.get("versions") or []:
+            paths.append(v)
+        if s.get("audio_path"):
+            paths.append(s["audio_path"])
+    if (p.get("audio") or {}).get("path"):
+        paths.append(p["audio"]["path"])
+    if (p.get("render") or {}).get("video_path"):
+        paths.append(p["render"]["video_path"])
+    if (p.get("script") or {}).get("thumbnail_path"):
+        paths.append(p["script"]["thumbnail_path"])
+
+    clean_paths = list({path for path in paths if path})
+    if clean_paths:
+        try:
+            if hasattr(db.files, "update_many"):
+                await db.files.update_many({"storage_path": {"$in": clean_paths}}, {"$set": {"is_deleted": True}})
+            else:
+                for path in clean_paths:
+                    await db.files.update_one({"storage_path": path}, {"$set": {"is_deleted": True}})
+        except Exception as e:
+            log.warning(f"Could not mark media files deleted for project {pid}: {e}")
+
+    try:
+        if hasattr(db, "pulse_events"):
+            await db.pulse_events.delete_many({"project_id": pid})
+    except Exception as e:
+        log.warning(f"Could not clear pulse events for project {pid}: {e}")
+
     await db.projects.delete_one({"id": pid})
     return {"ok": True}
+
 
 
 # ---------- script ----------
@@ -303,27 +369,39 @@ def best_scene_reference(project, current, references):
 
 
 async def _all_scenes_job(pid, uid, ids):
-    first = await _scene_job(pid, uid, ids[0])
-    if first:
-        data, placeholder = first
-        # Prefer the latest earlier image containing the same named characters.
-        # A first-scene-only reference loses characters who enter later.
-        project = await db.projects.find_one({"id": pid}, {"_id": 0})
-        first_scene = next(s for s in project["scenes"] if s["id"] == ids[0])
-        references = [] if placeholder else [(first_scene, data)]
-        for sid in ids[1:]:
-            current = next(s for s in project["scenes"] if s["id"] == sid)
-            result = await _scene_job(pid, uid, sid, ref=best_scene_reference(project, current, references))
-            if result and not result[1]:
-                references.append((current, result[0]))
-    else:
-        p = await db.projects.find_one({"id": pid}, {"_id": 0})
-        scenes = p.get("scenes") or []
-        s1 = next((s for s in scenes if s["id"] == ids[0]), None)
-        err = (s1.get("error") if s1 else None) or "Scene 1 generation failed"
-        for sid in ids[1:]:
-            await db.projects.update_one({"id": pid, "scenes.id": sid},
-                                         {"$set": {"scenes.$.status": "failed", "scenes.$.error": err}})
+    _active_generations.add(pid)
+    try:
+        first = await _scene_job(pid, uid, ids[0])
+        if first:
+            data, placeholder = first
+            # Prefer the latest earlier image containing the same named characters.
+            # A first-scene-only reference loses characters who enter later.
+            project = await db.projects.find_one({"id": pid}, {"_id": 0})
+            first_scene = next(s for s in project["scenes"] if s["id"] == ids[0])
+            references = [] if placeholder else [(first_scene, data)]
+            for sid in ids[1:]:
+                current = next(s for s in project["scenes"] if s["id"] == sid)
+                result = await _scene_job(pid, uid, sid, ref=best_scene_reference(project, current, references))
+                if result and not result[1]:
+                    references.append((current, result[0]))
+        else:
+            p = await db.projects.find_one({"id": pid}, {"_id": 0})
+            scenes = p.get("scenes") or []
+            s1 = next((s for s in scenes if s["id"] == ids[0]), None)
+            err = (s1.get("error") if s1 else None) or "Scene 1 generation failed"
+            for sid in ids[1:]:
+                await db.projects.update_one({"id": pid, "scenes.id": sid},
+                                             {"$set": {"scenes.$.status": "failed", "scenes.$.error": err}})
+    finally:
+        _active_generations.discard(pid)
+
+
+async def _single_scene_job(pid, uid, sid, instruction=None, ref=None):
+    _active_generations.add(pid)
+    try:
+        await _scene_job(pid, uid, sid, instruction, ref)
+    finally:
+        _active_generations.discard(pid)
 
 
 async def mark_generating(pid, ids):
@@ -348,14 +426,19 @@ async def gen_scenes(pid: str, user=Depends(current_user)):
     p = await owned(pid, user)
     if not p.get("approved") or not p.get("style"):
         raise HTTPException(400, "Approve the script and choose a style first")
-    if p.get("render", {}).get("status") == "rendering" or any(s.get("status") == "generating" for s in p["scenes"]):
+    if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or any(s.get("status") == "generating" for s in p["scenes"]):
         raise HTTPException(409, "Wait for the current generation or render to finish")
     ids = [s["id"] for s in p["scenes"]]
     if not ids:
         raise HTTPException(400, "Add a scene before generating pictures")
-    await mark_generating(pid, ids)
-    await upd(pid, step=max(p.get("step", 1), 4), render={"status": "idle", "progress": 0})
-    spawn(_all_scenes_job(pid, user["id"], ids))
+    _active_generations.add(pid)
+    try:
+        await mark_generating(pid, ids)
+        await upd(pid, step=max(p.get("step", 1), 4), render={"status": "idle", "progress": 0})
+        spawn(_all_scenes_job(pid, user["id"], ids))
+    except Exception:
+        _active_generations.discard(pid)
+        raise
     return await owned(pid, user)
 
 
@@ -364,18 +447,24 @@ async def regen_scene(pid: str, sid: str, body: EditIn, user=Depends(current_use
     p = await owned(pid, user)
     if not any(s["id"] == sid for s in p["scenes"]):
         raise HTTPException(404, "Scene not found")
-    if p.get("render", {}).get("status") == "rendering" or any(s.get("status") == "generating" for s in p["scenes"]):
+    if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or any(s.get("status") == "generating" for s in p["scenes"]):
         raise HTTPException(409, "Wait for the current generation or render to finish")
     ref = None
     # only real images make useful style references
     others = [s for s in p["scenes"] if s["id"] != sid and s.get("image_path") and not s.get("placeholder")]
     if others:
         ref = (await get_object(others[0]["image_path"]))[0]
-    await mark_generating(pid, [sid])
-    await upd(pid, render={"status": "idle", "progress": 0})
-    spawn(_scene_job(pid, user["id"], sid, body.instruction, ref))
+    _active_generations.add(pid)
+    try:
+        await mark_generating(pid, [sid])
+        await upd(pid, render={"status": "idle", "progress": 0})
+        spawn(_single_scene_job(pid, user["id"], sid, body.instruction, ref))
+    except Exception:
+        _active_generations.discard(pid)
+        raise
     await pulse.log_event(user["id"], "scene_regenerated", p.get("language", ""), p.get("region", ""), project_id=pid)
     return await owned(pid, user)
+
 
 
 @router.post("/{pid}/scenes/{sid}/approve")
@@ -591,6 +680,7 @@ async def render_timeline(project, audio_local):
 
 # ---------- render ----------
 async def _render_job(pid, uid):
+    _active_renders.add(pid)
     p = await db.projects.find_one({"id": pid}, {"_id": 0})
     lang, scenes, audio = p["language"], p["scenes"], p["audio"]
     work = CACHE / f"render_{pid}_{new_id()}"
@@ -634,6 +724,7 @@ async def _render_job(pid, uid):
         log.exception("render")
         await upd(pid, render={"status": "failed", "progress": 0, "message": str(e)[:300]})
     finally:
+        _active_renders.discard(pid)
         shutil.rmtree(work, ignore_errors=True)
 
 
@@ -653,8 +744,14 @@ async def start_render(pid: str, user=Depends(current_user)):
     unapproved = [i + 1 for i, s in enumerate(p["scenes"]) if not s.get("approved")]
     if unapproved:
         raise HTTPException(400, f"Review and approve scene(s) {', '.join(map(str, unapproved))} before rendering.")
-    if p.get("render", {}).get("status") == "rendering":
+    if p.get("render", {}).get("status") == "rendering" or pid in _active_renders:
         raise HTTPException(409, "Already rendering")
-    await upd(pid, render={"status": "rendering", "progress": 1, "message": "Queued"})
-    spawn(_render_job(pid, user["id"]))
+    _active_renders.add(pid)
+    try:
+        await upd(pid, render={"status": "rendering", "progress": 1, "message": "Queued"})
+        spawn(_render_job(pid, user["id"]))
+    except Exception:
+        _active_renders.discard(pid)
+        raise
     return await owned(pid, user)
+

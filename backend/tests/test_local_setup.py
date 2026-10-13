@@ -164,3 +164,97 @@ class LocalSetupTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertIn("Max-Age=0", response.headers["set-cookie"])
         asyncio.run(check())
+
+    def test_thumbnail_does_not_invalidate_script_review(self):
+        project = {
+            "id": "p-1",
+            "idea": "Anantapur water",
+            "language": "te",
+            "region": "Andhra Pradesh",
+            "duration": 45,
+            "script": {"title": "నీరు", "scenes": [{"narration": "నీరు లేదు", "visual": "dry"}]},
+            "scenes": [{"id": "s-1", "image_path": "vidbharat/scenes/u/s1.jpg", "placeholder": False, "approved": True}],
+        }
+        fp = projects.review_fingerprint(project)
+        project["validation"] = {"all_passed": True, "content_fingerprint": fp}
+        project["approved"] = True
+        self.assertTrue(projects.review_is_current(project))
+
+        # Adding thumbnail metadata to script
+        project["script"]["thumbnail_path"] = "vidbharat/thumbnails/u/thumb.png"
+        project["script"]["thumbnail_scene_id"] = "s-1"
+        project["script"]["thumbnail_title"] = "నీరు కథ"
+        # Must still be current!
+        self.assertTrue(projects.review_is_current(project))
+
+    def test_project_delete_cleans_files_and_pulse(self):
+        async def check():
+            project = {
+                "id": "p-del", "user_id": "u-1",
+                "scenes": [{"image_path": "p1.jpg", "versions": ["p1.jpg", "p0.jpg"], "audio_path": "a1.mp3"}],
+                "audio": {"path": "combined.mp3"},
+                "render": {"video_path": "final.mp4"},
+                "script": {"thumbnail_path": "thumb.png"},
+            }
+            fake_db = unittest.mock.MagicMock()
+            fake_db.projects.delete_one = AsyncMock()
+            fake_db.files.update_many = AsyncMock()
+            fake_db.pulse_events.delete_many = AsyncMock()
+            with patch.object(projects, "owned", new=AsyncMock(return_value=project)), \
+                 patch.object(projects, "db", fake_db):
+                res = await projects.delete("p-del", {"id": "u-1"})
+                self.assertEqual(res, {"ok": True})
+                fake_db.projects.delete_one.assert_awaited_once_with({"id": "p-del"})
+                fake_db.files.update_many.assert_awaited_once()
+                marked_paths = fake_db.files.update_many.call_args[0][0]["storage_path"]["$in"]
+                for expected in ("p1.jpg", "p0.jpg", "a1.mp3", "combined.mp3", "final.mp4", "thumb.png"):
+                    self.assertIn(expected, marked_paths)
+                fake_db.pulse_events.delete_many.assert_awaited_once_with({"project_id": "p-del"})
+        asyncio.run(check())
+
+    def test_owned_auto_heals_stuck_rendering_and_generating(self):
+        async def check():
+            stuck_project = {
+                "id": "p-stuck", "user_id": "u-1",
+                "render": {"status": "rendering", "progress": 40},
+                "scenes": [
+                    {"id": "s-1", "status": "generating"},
+                    {"id": "s-2", "status": "ready"},
+                ],
+            }
+            fake_db = unittest.mock.MagicMock()
+            fake_db.projects.find_one = AsyncMock(return_value=stuck_project)
+            with patch.object(projects, "db", fake_db), \
+                 patch.object(projects, "upd", new=AsyncMock()) as mock_upd:
+                # Ensure no active tasks
+                projects._active_renders.discard("p-stuck")
+                projects._active_generations.discard("p-stuck")
+                healed = await projects.owned("p-stuck", {"id": "u-1"})
+                self.assertEqual(healed["render"]["status"], "failed")
+                self.assertIn("interrupted", healed["render"]["message"].lower())
+                self.assertEqual(healed["scenes"][0]["status"], "failed")
+                self.assertEqual(healed["scenes"][1]["status"], "ready")
+                mock_upd.assert_awaited_once()
+        asyncio.run(check())
+
+
+    def test_pulse_endpoints_require_admin_role(self):
+        async def check():
+            regular_user = {"id": "u-reg", "role": "user", "email": "reg@example.com"}
+            admin_user = {"id": "u-adm", "role": "admin", "email": "adm@example.com"}
+            with self.assertRaises(HTTPException) as ctx:
+                await server.pulse_weekly("te", "AP", user=regular_user)
+            self.assertEqual(ctx.exception.status_code, 403)
+
+            with self.assertRaises(HTTPException) as ctx:
+                await server.pulse_report(user=regular_user)
+            self.assertEqual(ctx.exception.status_code, 403)
+
+            with patch.object(server.pulse, "weekly_pulse", new=AsyncMock(return_value={"total_events": 5})), \
+                 patch.object(server.pulse, "learning_report", new=AsyncMock(return_value={"total_events": 5})):
+                w = await server.pulse_weekly("te", "AP", user=admin_user)
+                self.assertEqual(w["total_events"], 5)
+                r = await server.pulse_report(user=admin_user)
+                self.assertEqual(r["total_events"], 5)
+        asyncio.run(check())
+

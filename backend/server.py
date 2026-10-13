@@ -170,17 +170,21 @@ async def voice_preview(body: PreviewIn, user=Depends(current_user)):
 # ---------- pulse ----------
 @api.get("/pulse/weekly")
 async def pulse_weekly(language: str = "", region: str = "", user=Depends(current_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(403, "Admin access required")
     return await pulse.weekly_pulse(language, region)
 
 
 @api.get("/pulse/report")
 async def pulse_report(user=Depends(current_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(403, "Admin access required")
     return await pulse.learning_report(user["id"])
 
 
 @api.get("/pulse/winners")
 async def pulse_winners(language: str = "te", region: str = "", limit: int = 6, user=Depends(current_user)):
-    return {"hooks": await pulse.pulse_hooks_for(language, region, limit)}
+    return {"hooks": await pulse.pulse_hooks_for(language, region, limit, user_id=user["id"])}
 
 
 # ---------- growth coach ----------

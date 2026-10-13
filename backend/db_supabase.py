@@ -341,6 +341,22 @@ class FilesCollection:
             (doc["id"], doc["user_id"], doc["storage_path"], doc.get("content_type", "application/octet-stream"),
              doc.get("size", 0), doc.get("is_deleted", False), doc.get("created_at")), commit=True)
 
+    async def update_one(self, filt, update):
+        path = filt.get("storage_path")
+        if not path: return
+        sets = update.get("$set", {})
+        if "is_deleted" in sets:
+            await self.db.execute("UPDATE files SET is_deleted = %s WHERE storage_path = %s",
+                                  (sets["is_deleted"], path), commit=True)
+
+    async def update_many(self, filt, update):
+        paths = filt.get("storage_path", {}).get("$in", []) if isinstance(filt.get("storage_path"), dict) else []
+        if not paths: return
+        sets = update.get("$set", {})
+        if "is_deleted" in sets:
+            await self.db.execute("UPDATE files SET is_deleted = %s WHERE storage_path = ANY(%s)",
+                                  (sets["is_deleted"], paths), commit=True)
+
 
 # ---------- coach_reports ----------
 class CoachCursor:
@@ -422,3 +438,8 @@ class PulseEventsCollection:
         where, params = _pulse_where(filt)
         row = await self.db.execute(f"SELECT COUNT(*) AS n FROM pulse_events {where}", tuple(params), fetchone=True)
         return int(row["n"]) if row else 0
+
+    async def delete_many(self, filt):
+        where, params = _pulse_where(filt)
+        if where:
+            await self.db.execute(f"DELETE FROM pulse_events {where}", tuple(params), commit=True)

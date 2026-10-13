@@ -53,7 +53,7 @@ async def log_event(
 
 # ---------- 2. QUERIES ----------
 
-async def _recent(days: int, language: str = "", region: str = "", event: str = "", limit: int = 20000) -> List[dict]:
+async def _recent(days: int, language: str = "", region: str = "", event: str = "", limit: int = 20000, user_id: str = "") -> List[dict]:
     since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     q: Dict[str, Any] = {"created_at": {"$gte": since}}
     if language:
@@ -62,12 +62,14 @@ async def _recent(days: int, language: str = "", region: str = "", event: str = 
         q["region"] = region
     if event:
         q["event"] = event
+    if user_id:
+        q["user_id"] = user_id
     return await db.pulse_events.find(q, {"_id": 0}).sort("created_at", -1).to_list(limit)
 
 
-async def pulse_hooks_for(language: str, region: str, limit: int = 6, days: int = 30) -> List[Dict[str, Any]]:
-    """Real hooks that survived approvals for this language + region. Empty until the loop warms up."""
-    rows = await _recent(days, language=language, region=region, event="script_approved")
+async def pulse_hooks_for(language: str, region: str, limit: int = 6, days: int = 30, user_id: str = "") -> List[Dict[str, Any]]:
+    """Real hooks that survived approvals. Scoped to user_id when provided to prevent privacy leakage."""
+    rows = await _recent(days, language=language, region=region, event="script_approved", user_id=user_id)
     counts: Counter = Counter()
     genres: Dict[str, str] = {}
     for r in rows:

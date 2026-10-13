@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import json
 import math
+from datetime import datetime, timezone
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
@@ -49,6 +50,29 @@ async def owned(pid, user):
         await upd(pid, render=p.get("render"), scenes=scenes)
 
     return p
+
+
+DAILY_LIMITS = {
+    "script_generated": 15,
+    "scene_generated": 80,
+    "render_started": 10,
+}
+
+
+async def check_daily_limit(user: dict, action: str):
+    if user.get("role") == "admin":
+        return
+    limit = DAILY_LIMITS.get(action, 50)
+    since = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    filt = {"user_id": user["id"], "event": action, "created_at": {"$gte": since}}
+    try:
+        count = await db.pulse_events.count_documents(filt)
+        if count >= limit:
+            raise HTTPException(429, f"Daily limit reached ({count}/{limit}) for {action.replace('_', ' ')}. Please try again tomorrow.")
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.warning(f"Quota check skipped: {e}")
 
 
 async def upd(pid, **fields):
@@ -239,6 +263,7 @@ async def gen_script(pid: str, body: ScriptIn, user=Depends(current_user)):
     p = await owned(pid, user)
     if (p.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "Wait for the current render to finish before making a new script")
+    await check_daily_limit(user, "script_generated")
     try:
         script = await ai.write_script(body.idea, body.language, body.region, body.duration, body.tone)
     except Exception as e:
@@ -428,6 +453,7 @@ async def gen_scenes(pid: str, user=Depends(current_user)):
         raise HTTPException(400, "Approve the script and choose a style first")
     if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or any(s.get("status") == "generating" for s in p["scenes"]):
         raise HTTPException(409, "Wait for the current generation or render to finish")
+    await check_daily_limit(user, "scene_generated")
     ids = [s["id"] for s in p["scenes"]]
     if not ids:
         raise HTTPException(400, "Add a scene before generating pictures")
@@ -436,6 +462,7 @@ async def gen_scenes(pid: str, user=Depends(current_user)):
         await mark_generating(pid, ids)
         await upd(pid, step=max(p.get("step", 1), 4), render={"status": "idle", "progress": 0})
         spawn(_all_scenes_job(pid, user["id"], ids))
+        await pulse.log_event(user["id"], "scene_generated", p.get("language", ""), p.get("region", ""), project_id=pid)
     except Exception:
         _active_generations.discard(pid)
         raise
@@ -449,6 +476,7 @@ async def regen_scene(pid: str, sid: str, body: EditIn, user=Depends(current_use
         raise HTTPException(404, "Scene not found")
     if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or any(s.get("status") == "generating" for s in p["scenes"]):
         raise HTTPException(409, "Wait for the current generation or render to finish")
+    await check_daily_limit(user, "scene_generated")
     ref = None
     # only real images make useful style references
     others = [s for s in p["scenes"] if s["id"] != sid and s.get("image_path") and not s.get("placeholder")]
@@ -463,7 +491,9 @@ async def regen_scene(pid: str, sid: str, body: EditIn, user=Depends(current_use
         _active_generations.discard(pid)
         raise
     await pulse.log_event(user["id"], "scene_regenerated", p.get("language", ""), p.get("region", ""), project_id=pid)
+    await pulse.log_event(user["id"], "scene_generated", p.get("language", ""), p.get("region", ""), project_id=pid)
     return await owned(pid, user)
+
 
 
 
@@ -746,12 +776,15 @@ async def start_render(pid: str, user=Depends(current_user)):
         raise HTTPException(400, f"Review and approve scene(s) {', '.join(map(str, unapproved))} before rendering.")
     if p.get("render", {}).get("status") == "rendering" or pid in _active_renders:
         raise HTTPException(409, "Already rendering")
+    await check_daily_limit(user, "render_started")
     _active_renders.add(pid)
     try:
         await upd(pid, render={"status": "rendering", "progress": 1, "message": "Queued"})
         spawn(_render_job(pid, user["id"]))
+        await pulse.log_event(user["id"], "render_started", p.get("language", ""), p.get("region", ""), project_id=pid)
     except Exception:
         _active_renders.discard(pid)
         raise
     return await owned(pid, user)
+
 

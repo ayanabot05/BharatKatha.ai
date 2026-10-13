@@ -258,3 +258,29 @@ class LocalSetupTests(unittest.TestCase):
                 self.assertEqual(r["total_events"], 5)
         asyncio.run(check())
 
+    def test_daily_limits_enforced_for_users_bypassed_for_admin(self):
+        async def check():
+            regular_user = {"id": "u-reg", "role": "user"}
+            admin_user = {"id": "u-adm", "role": "admin"}
+            fake_db = unittest.mock.MagicMock()
+
+            # Under limit: count = 5 < 15
+            fake_db.pulse_events.count_documents = AsyncMock(return_value=5)
+            with patch.object(projects, "db", fake_db):
+                await projects.check_daily_limit(regular_user, "script_generated")
+
+            # At/over limit: count = 15 >= 15 -> 429
+            fake_db.pulse_events.count_documents = AsyncMock(return_value=15)
+            with patch.object(projects, "db", fake_db):
+                with self.assertRaises(HTTPException) as ctx:
+                    await projects.check_daily_limit(regular_user, "script_generated")
+                self.assertEqual(ctx.exception.status_code, 429)
+                self.assertIn("Daily limit reached", ctx.exception.detail)
+
+            # Admin bypasses even if count would be huge
+            fake_db.pulse_events.count_documents = AsyncMock(return_value=999)
+            with patch.object(projects, "db", fake_db):
+                await projects.check_daily_limit(admin_user, "script_generated")
+                fake_db.pulse_events.count_documents.assert_not_called()
+        asyncio.run(check())
+

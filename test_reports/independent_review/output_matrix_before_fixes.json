@@ -1,0 +1,332 @@
+{
+  "scope": "11 caption rasterizations, 20 short speech samples, 10 captioned diagnostic videos",
+  "native_speaker_approved": false,
+  "generated_story_quality_tested": false,
+  "results": [
+    {
+      "language": "hi",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 000001f00f5e7200] Glyph 0x41 not found, selecting one more font for (Noto Sans Devanagari, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.58,
+          "words": 7,
+          "latency": 3.37,
+          "mean_volume_db": -21.3,
+          "max_volume_db": -3.8,
+          "decoded": true,
+          "video_duration": 3.58
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.98,
+          "words": 7,
+          "latency": 1.55,
+          "mean_volume_db": -17.5,
+          "max_volume_db": -1.7,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "bn",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 000001c8a5b77200] Glyph 0x41 not found, selecting one more font for (Noto Sans Bengali, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "failed",
+          "error": "ValueError: Caption timing is invalid"
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.07,
+          "words": 5,
+          "latency": 1.4,
+          "mean_volume_db": -21.1,
+          "max_volume_db": -4.8,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "mr",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 000001a223d37200] Glyph 0x41 not found, selecting one more font for (Noto Sans Devanagari, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.65,
+          "words": 5,
+          "latency": 1.47,
+          "mean_volume_db": -21.7,
+          "max_volume_db": -3.7,
+          "decoded": true,
+          "video_duration": 3.65
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.74,
+          "words": 5,
+          "latency": 1.55,
+          "mean_volume_db": -19.6,
+          "max_volume_db": -5.3,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "te",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 000001f10a5e7200] Glyph 0x41 not found, selecting one more font for (Noto Sans Telugu, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.05,
+          "words": 5,
+          "latency": 2.23,
+          "mean_volume_db": -20.9,
+          "max_volume_db": -6.2,
+          "decoded": true,
+          "video_duration": 3.05
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.05,
+          "words": 5,
+          "latency": 1.61,
+          "mean_volume_db": -18.7,
+          "max_volume_db": -5.9,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "ta",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 0000023303cc7200] Glyph 0x41 not found, selecting one more font for (Noto Sans Tamil, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.17,
+          "words": 6,
+          "latency": 2.83,
+          "mean_volume_db": -20.4,
+          "max_volume_db": -4.4,
+          "decoded": true,
+          "video_duration": 3.17
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.12,
+          "words": 6,
+          "latency": 2.01,
+          "mean_volume_db": -21.7,
+          "max_volume_db": -5.2,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "gu",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 0000015a5e187200] Glyph 0x41 not found, selecting one more font for (Noto Sans Gujarati, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.89,
+          "words": 6,
+          "latency": 1.63,
+          "mean_volume_db": -21.4,
+          "max_volume_db": -5.2,
+          "decoded": true,
+          "video_duration": 3.89
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 4.01,
+          "words": 6,
+          "latency": 2.65,
+          "mean_volume_db": -17.7,
+          "max_volume_db": -3.3,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "ur",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 000001669ee67200] Glyph 0x41 not found, selecting one more font for (Noto Sans Arabic, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.22,
+          "words": 7,
+          "latency": 1.36,
+          "mean_volume_db": -22.8,
+          "max_volume_db": -4.2,
+          "decoded": true,
+          "video_duration": 3.22
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.22,
+          "words": 7,
+          "latency": 1.91,
+          "mean_volume_db": -21.5,
+          "max_volume_db": -3.9,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "kn",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 00000187f7d97200] Glyph 0x41 not found, selecting one more font for (Noto Sans Kannada, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.89,
+          "words": 5,
+          "latency": 1.82,
+          "mean_volume_db": -21.6,
+          "max_volume_db": -6.6,
+          "decoded": true,
+          "video_duration": 3.89
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.67,
+          "words": 5,
+          "latency": 1.45,
+          "mean_volume_db": -18.9,
+          "max_volume_db": -4.6,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "or",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 000002080f147200] Glyph 0x41 not found, selecting one more font for (Noto Sans Oriya, 400, 0)"
+        ]
+      },
+      "voices": [],
+      "voice_status": "unavailable"
+    },
+    {
+      "language": "ml",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 000001c333deeec0] Glyph 0x41 not found, selecting one more font for (Noto Sans Malayalam, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.53,
+          "words": 5,
+          "latency": 2.14,
+          "mean_volume_db": -21.6,
+          "max_volume_db": -6.7,
+          "decoded": true,
+          "video_duration": 3.53
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.48,
+          "words": 5,
+          "latency": 1.4,
+          "mean_volume_db": -24.3,
+          "max_volume_db": -8.3,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 000001e51ec77200] Glyph 0x54 not found, selecting one more font for (Noto Sans Devanagari, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.6,
+          "words": 7,
+          "latency": 1.92,
+          "mean_volume_db": -22.8,
+          "max_volume_db": -6.6,
+          "decoded": true,
+          "video_duration": 3.6
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.86,
+          "words": 7,
+          "latency": 1.52,
+          "mean_volume_db": -17.3,
+          "max_volume_db": -2.4,
+          "decoded": true
+        }
+      ]
+    }
+  ]
+}

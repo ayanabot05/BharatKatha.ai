@@ -1,0 +1,336 @@
+{
+  "scope": "11 caption rasterizations, 20 short speech samples, 10 captioned diagnostic videos",
+  "native_speaker_approved": false,
+  "generated_story_quality_tested": false,
+  "results": [
+    {
+      "language": "hi",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.58,
+          "words": 7,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -21.3,
+          "max_volume_db": -3.8,
+          "decoded": true,
+          "video_duration": 3.58
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.98,
+          "words": 7,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -17.5,
+          "max_volume_db": -1.7,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "bn",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.19,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -20.5,
+          "max_volume_db": -4.5,
+          "decoded": true,
+          "video_duration": 3.19
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.07,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -21.1,
+          "max_volume_db": -4.8,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "mr",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.65,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -21.7,
+          "max_volume_db": -3.7,
+          "decoded": true,
+          "video_duration": 3.65
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.74,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -19.6,
+          "max_volume_db": -5.3,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "te",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.05,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -20.9,
+          "max_volume_db": -6.2,
+          "decoded": true,
+          "video_duration": 3.05
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.05,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -18.7,
+          "max_volume_db": -5.9,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "ta",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.17,
+          "words": 6,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -20.4,
+          "max_volume_db": -4.4,
+          "decoded": true,
+          "video_duration": 3.17
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.12,
+          "words": 6,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -21.7,
+          "max_volume_db": -5.2,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "gu",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.89,
+          "words": 6,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -21.4,
+          "max_volume_db": -5.2,
+          "decoded": true,
+          "video_duration": 3.89
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 4.01,
+          "words": 6,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -17.7,
+          "max_volume_db": -3.3,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "ur",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.22,
+          "words": 7,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -22.8,
+          "max_volume_db": -4.2,
+          "decoded": true,
+          "video_duration": 3.22
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.22,
+          "words": 7,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -21.5,
+          "max_volume_db": -3.9,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "kn",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.89,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -21.6,
+          "max_volume_db": -6.6,
+          "decoded": true,
+          "video_duration": 3.89
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.67,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -18.9,
+          "max_volume_db": -4.6,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "or",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [],
+      "voice_status": "unavailable"
+    },
+    {
+      "language": "ml",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.53,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -21.6,
+          "max_volume_db": -6.7,
+          "decoded": true,
+          "video_duration": 3.53
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.48,
+          "words": 5,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -24.3,
+          "max_volume_db": -8.3,
+          "decoded": true
+        }
+      ]
+    },
+    {
+      "language": "en",
+      "caption": {
+        "rendered": true,
+        "unresolved_glyph_messages": []
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "passed",
+          "duration": 3.6,
+          "words": 7,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -22.8,
+          "max_volume_db": -6.6,
+          "decoded": true,
+          "video_duration": 3.6
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.86,
+          "words": 7,
+          "latency": null,
+          "cached_audio": true,
+          "mean_volume_db": -17.3,
+          "max_volume_db": -2.4,
+          "decoded": true
+        }
+      ]
+    }
+  ]
+}

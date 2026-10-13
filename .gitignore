@@ -1,0 +1,30 @@
+**/node_modules/
+**/build/
+**/.env
+**/env.txt
+**/.venv/
+**/venv/
+**/__pycache__/
+.pytest_cache/
+**/.pytest_cache/
+.benchmarks/
+backend/storage/
+backend/media_cache/
+*.log
+deploy/beta.env
+backend/evaluations/
+
+# Credentials and test accounts must never be committed.
+memory/test_credentials.md
+**/test_account.json
+**/*credentials*.json
+**/oauth-client*.json
+
+# Large datasets and generated media stay out of history.
+backend/training/data/*.zip
+*.mp4
+*.mp3
+/sc*.jpg
+test_reports/output_proof_*/
+test_reports/independent_review/*.png
+deliverables/

@@ -1,0 +1,18 @@
+{
+  "text": {
+    "status": "unavailable",
+    "quota": true,
+    "error_type": "RuntimeError",
+    "model": "gemini-3-flash-preview"
+  },
+  "image": {
+    "status": "generated",
+    "provider": "worker",
+    "size": [
+      768,
+      1376
+    ],
+    "seconds": 17.55,
+    "file": "repair_scene.png"
+  }
+}

@@ -1,0 +1,15 @@
+.gcloudignore
+.git
+#!include:.gitignore
+**/*.env
+**/env.txt
+**/node_modules/**
+**/build/**
+**/__pycache__/**
+backend/storage/**
+backend/media_cache/**
+backend/evaluations/**
+backend/tests/**
+test_reports/**
+*.mp4
+sc*.jpg

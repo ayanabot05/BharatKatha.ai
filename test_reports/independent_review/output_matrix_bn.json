@@ -1,0 +1,33 @@
+{
+  "scope": "11 caption rasterizations, 20 short speech samples, 10 captioned diagnostic videos",
+  "native_speaker_approved": false,
+  "generated_story_quality_tested": false,
+  "results": [
+    {
+      "language": "bn",
+      "caption": {
+        "rendered": true,
+        "missing_glyph_messages": [
+          "[Parsed_ass_0 @ 0000017292c87200] Glyph 0x41 not found, selecting one more font for (Noto Sans Bengali, 400, 0)"
+        ]
+      },
+      "voices": [
+        {
+          "voice": "coral",
+          "status": "failed",
+          "error": "ValueError: Caption timing is invalid"
+        },
+        {
+          "voice": "fable",
+          "status": "passed",
+          "duration": 3.07,
+          "words": 5,
+          "latency": 1.85,
+          "mean_volume_db": -21.1,
+          "max_volume_db": -4.8,
+          "decoded": true
+        }
+      ]
+    }
+  ]
+}

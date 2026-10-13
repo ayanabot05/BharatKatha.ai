@@ -1,0 +1,7 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: [build, -t, '${_IMAGE}', .]
+images: ['${_IMAGE}']
+substitutions:
+  _IMAGE: 'REPLACE_REGION-docker.pkg.dev/REPLACE_PROJECT/vidbharat/beta:latest'
+timeout: 1800s

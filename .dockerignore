@@ -1,0 +1,17 @@
+**/node_modules
+**/build
+**/.env
+**/*.env
+**/env.txt
+**/__pycache__
+**/.pytest_cache
+**/.venv
+backend/storage
+backend/media_cache
+backend/evaluations
+backend/tests
+.git
+*.mp4
+/sc*.jpg
+*.log
+test_reports

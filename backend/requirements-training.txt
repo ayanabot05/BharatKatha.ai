@@ -1,0 +1,4 @@
+# Offline CPU model training only; serving uses exported numeric weights.
+scikit-learn==1.9.1
+numpy==2.4.6
+requests==2.34.2

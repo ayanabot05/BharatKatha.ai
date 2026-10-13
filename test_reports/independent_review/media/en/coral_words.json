@@ -1,0 +1,37 @@
+[
+  {
+    "text": "Two",
+    "start": 0.1,
+    "end": 0.2875
+  },
+  {
+    "text": "neighbours",
+    "start": 0.3,
+    "end": 0.8375
+  },
+  {
+    "text": "save",
+    "start": 0.85,
+    "end": 1.1625
+  },
+  {
+    "text": "their",
+    "start": 1.175,
+    "end": 1.3625
+  },
+  {
+    "text": "village",
+    "start": 1.375,
+    "end": 1.725
+  },
+  {
+    "text": "water",
+    "start": 1.7375,
+    "end": 2.125
+  },
+  {
+    "text": "together",
+    "start": 2.1375,
+    "end": 2.725
+  }
+]

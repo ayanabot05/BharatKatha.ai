@@ -1,0 +1,96 @@
+{
+  "project_name": "Bharat AI Video Studio",
+  "app_type": "saas_app + marketing landing",
+  "theme": "Dark Obsidian & Cinematic Studio Neon Glow",
+  "archetype": "Electric & Neon Cinematic Studio (Performance Pro meets Digital Cyberpunk)",
+  "typography": {
+    "heading_font": "Outfit, sans-serif",
+    "body_font": "Plus Jakarta Sans, sans-serif",
+    "mono_font": "JetBrains Mono, monospace",
+    "google_fonts_import": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Outfit:wght@400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap",
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-outfit",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-outfit",
+      "h3": "text-xl sm:text-2xl font-semibold font-outfit",
+      "h4": "text-lg sm:text-xl font-medium font-outfit",
+      "body": "text-base font-normal leading-relaxed font-jakarta",
+      "subtext": "text-sm text-slate-400 font-jakarta",
+      "label": "text-xs font-semibold uppercase tracking-widest text-amber-400 font-mono"
+    }
+  },
+  "colors": {
+    "background_main": "#08090D",
+    "background_card": "#10121B",
+    "background_elevated": "#181A26",
+    "border_subtle": "#252838",
+    "border_highlight": "#383D54",
+    "primary_cyan": "#00F0FF",
+    "primary_amber": "#FFB800",
+    "primary_rose": "#FF2E63",
+    "accent_violet": "#8B5CF6",
+    "text_primary": "#F8FAFC",
+    "text_secondary": "#94A3B8",
+    "text_muted": "#64748B",
+    "gradients": {
+      "hero_glow": "bg-gradient-to-r from-cyan-500/20 via-violet-500/20 to-rose-500/20 blur-3xl",
+      "card_hover_border": "hover:border-transparent hover:bg-gradient-to-r hover:from-cyan-500 hover:to-amber-500",
+      "cta_button": "bg-gradient-to-r from-cyan-500 via-indigo-500 to-rose-500 hover:opacity-95 text-white shadow-lg shadow-cyan-500/20",
+      "pill_badge": "bg-amber-500/10 text-amber-300 border border-amber-500/30"
+    }
+  },
+  "exact_tailwind_classes": {
+    "page_container": "min-h-screen bg-[#08090D] text-slate-100 font-jakarta selection:bg-cyan-500 selection:text-black",
+    "header_nav": "sticky top-0 z-50 backdrop-blur-xl bg-[#08090D]/80 border-b border-[#252838]",
+    "card_base": "bg-[#10121B] border border-[#252838] rounded-2xl transition-all duration-300 hover:border-[#383D54] hover:shadow-xl hover:shadow-cyan-500/5",
+    "card_interactive": "bg-[#10121B] border border-[#252838] rounded-2xl p-6 transition-all duration-300 hover:border-cyan-500/50 hover:bg-[#181A26] hover:-translate-y-1 cursor-pointer group",
+    "button_primary": "px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-slate-950 font-bold tracking-wide shadow-lg shadow-cyan-500/25 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2",
+    "button_secondary": "px-6 py-3 rounded-xl bg-[#181A26] hover:bg-[#222536] text-slate-200 border border-[#252838] hover:border-[#383D54] font-semibold transition-all duration-200 active:scale-95 flex items-center justify-center gap-2",
+    "stepper_active": "w-10 h-10 rounded-full bg-cyan-500 text-slate-950 font-bold flex items-center justify-center ring-4 ring-cyan-500/20 shadow-lg shadow-cyan-500/40",
+    "stepper_completed": "w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 flex items-center justify-center",
+    "stepper_pending": "w-10 h-10 rounded-full bg-[#181A26] text-slate-500 border border-[#252838] flex items-center justify-center",
+    "style_card_grid": "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6",
+    "style_card_image": "aspect-square w-full object-cover rounded-2xl border-2 border-transparent group-hover:border-cyan-400 transition-all duration-300 shadow-md",
+    "pill_badge": "inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
+  },
+  "specific_page_implementations": {
+    "landing_page": {
+      "hero_section": "Dark cinematic layout with radial ambient glow. Left column featuring bold Indian creator tagline ('Viral Shorts in Telugu, Hindi & Tamil in 60s'), language selector pills, primary CTA ('Launch Studio'). Right column featuring a sleek 9:16 mobile frame mockup with animated playing Short, Ken Burns effect simulation, live caption overlay, and engagement counter.",
+      "style_showcase": "3-column grid highlighting the 6 aesthetic styles (Human AI, Cartoon, Cinematic, Emoji, Animals, Storybook) with hover zoom effects.",
+      "workflow_stepper": "Visual timeline breakdown showing the 6-step creation flow from Idea to AI Script Review to MP4 Render.",
+      "pricing_section": "4-tier pricing grid (₹0 Free, ₹399 Creator, ₹999 Studio Pro, ₹2499 Empire) with popular tier highlighting and feature checkmarks."
+    },
+    "studio_wizard": {
+      "step_1_idea": "Two prominent interactive choice cards: 'I have an idea' (with prompt input area & category chips) and 'Find me an idea' (with trending viral topics in Telugu/Hindi/Tamil). Features 'Entry' pill badge and icon accents.",
+      "step_2_script": "3 AI reviewer agent panels (Trend Reviewer, Hook Specialist, Brand Safety Guard) providing real-time script feedback scores and suggestion bubbles.",
+      "step_3_style": "Heading 'Step 3 — Choose a video style' with a prominent 3-column grid of large rounded square image cards using /styles/{human,cartoon,cinematic,emoji,animals,storybook}.jpg with bold text labels beneath.",
+      "step_4_scenes": "Interactive 9:16 aspect ratio scene cards with image preview, keyframe text editor ('add rat near cat'), scene sequence sorter, and style prompt tuner.",
+      "step_5_audio": "AI voiceover selection with regional language audio samples (Telugu, Hindi, Tamil), voice record/upload tabs, and prominent 'Bharat Voice coming soon' feature banner.",
+      "step_6_render": "Live render progress stage with Ken Burns zoom preview toggle, automated caption styling selector, trending tag generator, and instant MP4 export button."
+    },
+    "growth_coach": {
+      "features": "Audience Retention Chart (line chart with drop-off diagnostic points), AI Video Diagnosis card, and personalized 7-Day Weekly Action Plan for regional content dominance."
+    },
+    "settings_page": {
+      "features": "AI Engine Roadmap showcasing integration statuses (Flux.1, Luma Dream Machine, ElevenLabs Regional, Bharat Voice Engine)."
+    }
+  },
+  "media_assets": {
+    "hero_studio_bg": "https://images.unsplash.com/photo-1768885510237-9238a40a4f93?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "creator_working": "https://images.unsplash.com/photo-1765539160785-e7953620488f?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "local_style_images": [
+      "/styles/human.jpg",
+      "/styles/cartoon.jpg",
+      "/styles/cinematic.jpg",
+      "/styles/emoji.jpg",
+      "/styles/animals.jpg",
+      "/styles/storybook.jpg"
+    ]
+  },
+  "general_ui_ux_guidelines": [
+    "Ensure dark mode contrast meets APCA standard with clear slate-100 text on #08090D and #10121B backgrounds.",
+    "Do NOT use pure #000000 background; use #08090D for depth and richness.",
+    "Do NOT leave interactive states plain; always add hover:border-cyan-500/50, transition effects, and focus rings.",
+    "All interactive elements (buttons, step cards, inputs, style selections, audio triggers) MUST include descriptive data-testid attributes (e.g. data-testid='choose-style-human', data-testid='step-idea-choice-own').",
+    "Include responsive layouts that look exceptional on both mobile and desktop screens."
+  ]
+}

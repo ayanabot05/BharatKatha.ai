@@ -1,0 +1,400 @@
+{
+  "target_seconds": 30,
+  "results": [
+    {
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "An original fictional 30-second story: two adult neighbours notice a leaking village water pipe, tell the local repair worker, and help shut the valve while the worker repairs the leak. Keep the same two neighbours throughout. Show an ordinary believable repair, no miracle, invented farming method, income claim, or request to like and subscribe.",
+      "script": {
+        "title": "बूंद-बूंद की हिफाजत",
+        "title_en": "Saving Every Drop",
+        "category": "Village",
+        "hook": "इतना साफ़ पानी सड़क पर क्यों बह रहा है?",
+        "story": "गाँव की गली में पाइप फटने पर दो पड़ोसियों ने समझदारी दिखाई। उन्होंने समय पर मिस्त्री को बुलाया और वाल्व बंद कर लीकेज ठीक कराया।",
+        "characters": [
+          {
+            "name": "रमेश",
+            "look": "A 40-year-old North Indian villager with a short moustache, wearing an earthy beige kurta and a red cotton gamcha over his shoulder."
+          },
+          {
+            "name": "सुरेश",
+            "look": "A 42-year-old North Indian villager with neatly parted oiled hair, wearing a light blue collared shirt and traditional white dhoti."
+          },
+          {
+            "name": "रामू मिस्त्री",
+            "look": "A 38-year-old local repair mechanic in a faded khaki shirt, carrying a rusted metal toolbox and a large pipe wrench."
+          }
+        ],
+        "scenes": [
+          {
+            "narration": "इतना साफ़ पानी सड़क पर क्यों बह रहा है?",
+            "visual": "Eye-level vertical shot of Ramesh and Suresh standing on a village dirt road, looking down with worry at clean water spurting from a broken iron pipe.",
+            "beat": "hook"
+          },
+          {
+            "narration": "दोनों फौरन मिस्त्री रामू को बुला लाए।",
+            "visual": "Medium vertical shot of Ramesh and Suresh walking alongside Ramu the mechanic carrying his iron pipe wrench along the village brick lane.",
+            "beat": "setup"
+          },
+          {
+            "narration": "बहाव रोकने के लिए मुख्य वाल्व बंद करना था।",
+            "visual": "Close-up vertical shot of Ramesh and Suresh gripping and turning a stiff iron wheel valve fixed against a weathered brick wall.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "पानी रुकते ही मिस्त्री ने नया क्लैंप कस दिया।",
+            "visual": "Low-angle vertical shot of Ramu kneeling on the ground tightly screwing bolts onto a rubber clamp around the cracked pipeline.",
+            "beat": "twist"
+          },
+          {
+            "narration": "मिलकर काम करें तो हर समस्या हल हो जाती है।",
+            "visual": "Warm medium vertical shot of Ramesh, Suresh, and Ramu standing together smiling beside the successfully repaired, dry water pipe.",
+            "beat": "ending"
+          }
+        ],
+        "ending": "मिलकर काम करें तो हर समस्या हल हो जाती है।",
+        "description": "गाँव की सड़क पर टूटे पाइप से पानी बहते देख दो पड़ोसियों ने तुरंत पहल की। एकजुट होकर सही समय पर की गई मदद ने पानी की बर्बादी रोक ली।",
+        "tags": [
+          "गांव की कहानी",
+          "पानी बचाओ",
+          "उत्तर प्रदेश",
+          "प्रेरणादायक कहानी",
+          "गाँव का जीवन",
+          "हिंदी लघुकथा",
+          "सच्ची कहानी",
+          "एकता की शक्ति"
+        ],
+        "hashtags": [
+          "#shorts",
+          "#villagevibes",
+          "#uttarpradesh",
+          "#savewater",
+          "#hindistory",
+          "#community"
+        ]
+      },
+      "hard_checks": {
+        "Native Script": true,
+        "Hook Length (Text Estimate)": true,
+        "Narration Length (Text Estimate)": true,
+        "5-7 Scene Cadence": true,
+        "Complete Scene Directions": true,
+        "No Repeated Narration": true,
+        "Climactic Ending / Payoff": true,
+        "Cliché Opener Block": true,
+        "Safety & Brand Protection": true
+      },
+      "error_stage": "review",
+      "error": "RuntimeError",
+      "error_status": null,
+      "error_kind": "PERMISSION_DENIED"
+    },
+    {
+      "language": "bn",
+      "region": "West Bengal",
+      "idea": "An original fictional 30-second story: two adult neighbours notice a leaking village water pipe, tell the local repair worker, and help shut the valve while the worker repairs the leak. Keep the same two neighbours throughout. Show an ordinary believable repair, no miracle, invented farming method, income claim, or request to like and subscribe.",
+      "script": {
+        "title": "জলের সুরক্ষা",
+        "title_en": "Saving the Village Water",
+        "category": "Village",
+        "hook": "এত দামি জল এভাবে কেন নষ্ট হচ্ছে?",
+        "story": "গ্রামের রাস্তায় জলের পাইপ ফেটে যেতে দেখে দুই প্রতিবেশী চুপ করে থাকেননি। তাঁরা দ্রুত মেকানিক ডেকে ভালভ বন্ধ করে পাইপ সারাতে সাহায্য করলেন। সাধারণ সচেতনতায় রক্ষা পেল মূল্যবান জল।",
+        "characters": [
+          {
+            "name": "Subhash",
+            "look": "A middle-aged Bengali villager with short hair, wearing a simple white cotton kurta and dhoti."
+          },
+          {
+            "name": "Madhab",
+            "look": "A middle-aged Bengali villager with a gamchha resting on his shoulder, wearing a check lungi and round spectacles."
+          },
+          {
+            "name": "Biren",
+            "look": "An older village repair worker wearing a faded blue shirt and carrying a metal toolbox and wrench."
+          }
+        ],
+        "scenes": [
+          {
+            "narration": "এত দামি জল এভাবে কেন নষ্ট হচ্ছে?",
+            "visual": "A low-angle close-up of water spraying continuously from a cracked metal pipe beside a rural dirt road in a Bengal village, while Subhash in a white kurta and Madhab in a check lungi stand nearby looking worried.",
+            "beat": "hook"
+          },
+          {
+            "narration": "সুভাষ আর মাধব ছুটলেন মেকানিক বীরেনদাকে ডাকতে।",
+            "visual": "A medium shot of Subhash and Madhab urgently explaining the situation to Biren, who stands beside his bicycle holding an iron pipe wrench under a banyan tree.",
+            "beat": "setup"
+          },
+          {
+            "narration": "বীরেনদা পাইপ সারাতে দুজনে মূল ভালভটা বন্ধ করলেন।",
+            "visual": "An eye-level shot of Subhash and Madhab bending down together to firmly turn a heavy rusty iron wheel valve near the roadside ditch to stop the water flow.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "বীরেনদা রেঞ্জ দিয়ে ফাটলটা শক্ত করে বাঁধলেন।",
+            "visual": "A close-up shot of Biren kneeling in damp soil, carefully wrapping a rubber seal and tightening a metal clamp around the pipe with his wrench.",
+            "beat": "twist"
+          },
+          {
+            "narration": "ছোট উদ্যোগে বাঁচল গ্রামের সারা বেলার জল।",
+            "visual": "A warm wide shot of Subhash, Madhab, and Biren standing beside the completely dry, repaired pipe, smiling under the soft afternoon village sunlight.",
+            "beat": "ending"
+          }
+        ],
+        "ending": "সচেতন থাকলে কি অপচয় সহজেই আটকানো যায় না?",
+        "description": "গ্রামের ভাঙা জলের পাইপ সারাই করে অপচয় আটকালো দুই প্রতিবেশী।\nসচেতনতাই বাঁচিয়ে দেয় সবার সম্পদ।",
+        "tags": [
+          "Bengali short story",
+          "village life Bengal",
+          "water conservation story",
+          "Bengali audio story",
+          "Bengal village video",
+          "community help",
+          "Bengali moral video",
+          "Bangla mini story"
+        ],
+        "hashtags": [
+          "#shorts",
+          "#bengalistories",
+          "#villagelife",
+          "#savewater",
+          "#bangla",
+          "#bengalishorts"
+        ]
+      },
+      "hard_checks": {
+        "Native Script": true,
+        "Hook Length (Text Estimate)": true,
+        "Narration Length (Text Estimate)": true,
+        "5-7 Scene Cadence": true,
+        "Complete Scene Directions": true,
+        "No Repeated Narration": true,
+        "Climactic Ending / Payoff": true,
+        "Cliché Opener Block": true,
+        "Safety & Brand Protection": true
+      }
+    },
+    {
+      "language": "mr",
+      "region": "Maharashtra",
+      "idea": "An original fictional 30-second story: two adult neighbours notice a leaking village water pipe, tell the local repair worker, and help shut the valve while the worker repairs the leak. Keep the same two neighbours throughout. Show an ordinary believable repair, no miracle, invented farming method, income claim, or request to like and subscribe.",
+      "error_stage": "script",
+      "error": "ClientError",
+      "error_status": 429,
+      "error_kind": "quota"
+    },
+    {
+      "language": "en",
+      "region": "Hyderabad",
+      "idea": "An original fictional 30-second story: two adult neighbours notice a leaking village water pipe, tell the local repair worker, and help shut the valve while the worker repairs the leak. Keep the same two neighbours throughout. Show an ordinary believable repair, no miracle, invented farming method, income claim, or request to like and subscribe.",
+      "script": {
+        "title": "Saving the Village Water",
+        "title_en": "Saving the Village Water",
+        "category": "Village",
+        "hook": "Fresh drinking water is flooding the dirt lane.",
+        "story": "Two neighbours spot a burst water pipe along the village road and summon the local maintenance worker. Together, they turn off the heavy main valve so the worker can secure the joint. Their quick cooperation preserves the community's daily water supply.",
+        "characters": [
+          {
+            "name": "Suresh",
+            "look": "A slender Indian man in his thirties wearing a red checked cotton shirt and dark rolled-up trousers."
+          },
+          {
+            "name": "Venkat",
+            "look": "A middle-aged Indian man with a grey-streaked moustache wearing a light blue polo shirt and sandals."
+          },
+          {
+            "name": "Ravi",
+            "look": "A sturdy municipal repair worker in a khaki shirt carrying an iron wrench and tool bag."
+          }
+        ],
+        "scenes": [
+          {
+            "narration": "Fresh drinking water is flooding the dirt lane.",
+            "visual": "A cracked iron ground pipe spraying clean water onto a village path near Hyderabad as Suresh and Venkat watch with concern.",
+            "beat": "hook"
+          },
+          {
+            "narration": "The neighbours quickly call Ravi the village plumber.",
+            "visual": "Venkat waving toward Ravi walking up the dusty road with his toolbox while Suresh points urgently at the pipe.",
+            "beat": "setup"
+          },
+          {
+            "narration": "Together, Suresh and Venkat turn the rusted valve.",
+            "visual": "Suresh and Venkat gripping a large circular metal wheel valve near the roadside ditch and heaving it clockwise.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "With the water stopped, Ravi patches the joint.",
+            "visual": "Ravi wrapping a rubber sleeve around the cracked pipe and tightening a metal clamp with his wrench as both neighbours assist.",
+            "beat": "twist"
+          },
+          {
+            "narration": "A timely fix saves precious water for everyone.",
+            "visual": "Suresh, Venkat, and Ravi standing over the dry, securely patched pipe sharing relieved smiles under the morning sun.",
+            "beat": "ending"
+          }
+        ],
+        "ending": "A timely fix saves precious water for everyone.",
+        "description": "Two responsible neighbours work together with a local worker to fix a leaking village pipe.\nA warm reminder that small community actions save our most precious resource.",
+        "tags": [
+          "village life",
+          "water conservation",
+          "community helpers",
+          "hyderabad village",
+          "neighbours",
+          "plumbing repair",
+          "short story",
+          "daily life india"
+        ],
+        "hashtags": [
+          "#shorts",
+          "#villagelife",
+          "#savewater",
+          "#community",
+          "#hyderabad",
+          "#india"
+        ]
+      },
+      "hard_checks": {
+        "Native Script": true,
+        "Hook Length (Text Estimate)": true,
+        "Narration Length (Text Estimate)": true,
+        "5-7 Scene Cadence": true,
+        "Complete Scene Directions": true,
+        "No Repeated Narration": true,
+        "Climactic Ending / Payoff": true,
+        "Cliché Opener Block": true,
+        "Safety & Brand Protection": true
+      },
+      "review": {
+        "agents": [
+          {
+            "score": 95,
+            "verdict": "The script faithfully captures the creator's vision of a realistic village water repair with step-by-step community cooperation.",
+            "strengths": [
+              "Accurately depicts every promised action on screen, from discovering the leak and turning off the main valve to applying a realistic rubber sleeve repair.",
+              "Maintains continuous involvement of the same two neighbours, Suresh and Venkat, across all scenes.",
+              "Avoids unrealistic miracles, income claims, CTA requests, or invented methods."
+            ],
+            "fixes": [
+              "Clearly depict the water spray stopping at the beginning of Scene 4 when the valve is shut to visually reinforce the transition before the repair begins."
+            ],
+            "aligned": true,
+            "misses": [],
+            "key": "concept",
+            "name": "Ram AI Concept Editor"
+          },
+          {
+            "score": 82,
+            "verdict": "A clear and civic-minded community narrative that highlights simple teamwork and local water conservation.",
+            "strengths": [
+              "The visuals in Scene 1 and Scene 3 clearly establish a relatable civic problem with authentic character styling for the Hyderabad region.",
+              "The story hook in Scene 1 immediately presents visual urgency with water flooding the lane."
+            ],
+            "fixes": [
+              "Strengthen the title from 'Saving the Village Water' to something more engaging like 'How Two Neighbours Stopped a Major Water Leak'.",
+              "Add physical urgency in Scene 3 by showing water splashing on Suresh and Venkat while they struggle with the rusted valve."
+            ],
+            "key": "trend",
+            "name": "Ram AI Audience Guide"
+          },
+          {
+            "score": 70,
+            "verdict": "The civic message is relatable, but the opening hook is too descriptive and lacks immediate dramatic urgency.",
+            "strengths": [
+              "Scene 1 creates strong, relatable visual stakes immediately by showing clean drinking water spraying onto a dry village path near Hyderabad.",
+              "Scene 3 introduces good physical momentum as Suresh and Venkat physically struggle with the rusted valve."
+            ],
+            "fixes": [
+              "Change the Scene 1 narration from the passive 'Fresh drinking water is flooding the dirt lane' to an urgent high-stakes hook, such as: 'The entire street will lose drinking water in ten minutes if this doesn't stop!'",
+              "Introduce a real obstacle in Scene 4 instead of a straightforward fix, such as the water pressure kicking back against the clamp, to justify the 'twist' beat and boost rewatch value."
+            ],
+            "key": "hook",
+            "name": "Ram AI Hook Specialist"
+          },
+          {
+            "score": 92,
+            "verdict": "The script is safe, realistic, and promotes positive community civic responsibility without any policy violations.",
+            "strengths": [
+              "Scene 3 and Scene 4 depict realistic and safe pipe maintenance steps using an isolating valve and standard pipe repair clamp.",
+              "Promotes community cooperation and water conservation suitable for family audiences."
+            ],
+            "fixes": [
+              "In Scene 3, clarify that turning off the main valve should only be done under the guidance of the local worker or water board to prevent accidental damage to regional line pressure."
+            ],
+            "safe": true,
+            "flags": [],
+            "key": "safety",
+            "name": "Ram AI Safety Guard"
+          }
+        ],
+        "overall": 85,
+        "safe": true,
+        "concept_aligned": true,
+        "rating_label": "Ram AI Craft Opinion",
+        "disclaimer": "Evaluated against Indian short-form story structure. Not an algorithmic view forecast.",
+        "ram_ai_checks": [
+          {
+            "check": "Native Script",
+            "passed": true,
+            "detail": "Latin script accepted."
+          },
+          {
+            "check": "Hook Length (Text Estimate)",
+            "passed": true,
+            "detail": "Hook text is concise (8 words). Spoken duration must be checked using audio."
+          },
+          {
+            "check": "Narration Length (Text Estimate)",
+            "passed": true,
+            "detail": "Narration text is within the 30s planning budget (40 words). Verify with generated audio."
+          },
+          {
+            "check": "5-7 Scene Cadence",
+            "passed": true,
+            "detail": "Optimal scene count (5)."
+          },
+          {
+            "check": "Complete Scene Directions",
+            "passed": true,
+            "detail": "Every scene has narration and a visual direction."
+          },
+          {
+            "check": "No Repeated Narration",
+            "passed": true,
+            "detail": "No scene narration is repeated verbatim."
+          },
+          {
+            "check": "Climactic Ending / Payoff",
+            "passed": true,
+            "detail": "Ending delivers payoff/CTA."
+          },
+          {
+            "check": "Cliché Opener Block",
+            "passed": true,
+            "detail": "No cliché openings."
+          },
+          {
+            "check": "Safety & Brand Protection",
+            "passed": true,
+            "detail": "Clean and safe for all audiences.",
+            "fatal": true
+          }
+        ],
+        "ram_ai_fixes": [],
+        "fixes": [
+          "Clearly depict the water spray stopping at the beginning of Scene 4 when the valve is shut to visually reinforce the transition before the repair begins.",
+          "Strengthen the title from 'Saving the Village Water' to something more engaging like 'How Two Neighbours Stopped a Major Water Leak'.",
+          "Add physical urgency in Scene 3 by showing water splashing on Suresh and Venkat while they struggle with the rusted valve.",
+          "Change the Scene 1 narration from the passive 'Fresh drinking water is flooding the dirt lane' to an urgent high-stakes hook, such as: 'The entire street will lose drinking water in ten minutes if this doesn't stop!'",
+          "Introduce a real obstacle in Scene 4 instead of a straightforward fix, such as the water pressure kicking back against the clamp, to justify the 'twist' beat and boost rewatch value.",
+          "In Scene 3, clarify that turning off the main valve should only be done under the guidance of the local worker or water board to prevent accidental damage to regional line pressure."
+        ],
+        "all_passed": true
+      },
+      "voice": {
+        "bytes": 22176,
+        "seconds": 3.69
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "source": "https://zenodo.org/api/records/841984",
+  "doi": "10.5281/zenodo.841984",
+  "creator": "Martin Thoma",
+  "title": "WiLI-2018 - Wikipedia Language Identification database",
+  "license": "ODbL-1.0",
+  "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "attribution": "WiLI-2018, Martin Thoma (2018), Wikipedia Language Identification database, DOI 10.5281/zenodo.841984.",
+  "md5": "3dc5bd41587811ad6b0d04ae2f235f84",
+  "sha256": "727e52ca4e13400e6def1b1b594ca12c8b7fd49ad9d45fd5c9e57a1f6d3b7a3f",
+  "bytes": 62403646,
+  "download_url": "https://zenodo.org/api/records/841984/files/wili-2018.zip/content"
+}

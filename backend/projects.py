@@ -383,9 +383,18 @@ async def _scene_job(pid, uid, sid, instruction=None, ref=None):
 
 
 def best_scene_reference(project, current, references):
-    """Prefer the newest earlier image sharing the most named characters."""
+    """
+    Select the optimal reference image for visual and object continuity:
+    1. If the current scene is a close-up/detail shot, prefer the immediate previous scene
+       where the object/action was shown.
+    2. Otherwise, prefer the newest earlier image sharing the most named characters.
+    """
+    if not references:
+        return None
+    if ai.is_detail_or_closeup(current.get("visual", "")):
+        return references[-1][1]
     names = ai.scene_character_names(project, current)
-    best, best_overlap = None, -1
+    best, best_overlap = references[-1][1], -1
     for previous, data in references:
         overlap = len(names & ai.scene_character_names(project, previous))
         if overlap >= best_overlap:

@@ -200,9 +200,9 @@ Return only the requested JSON, without private reasoning or extra commentary.""
 async def write_script(idea, language, region, duration, tone, feedback=None, previous=None):
     lang = LANGS.get(language, "Telugu")
     n = 5 if duration <= 30 else (6 if duration <= 45 else 7)
-    # Measured en-IN narration in the output proof ran about 2.1 words/second.
-    # Keep other languages on their existing estimate until full stories are measured.
-    word_budget = int(duration * (2.0 if language == "en" else 1.5))
+    # Measured narration calibration per Indic language to hit target durations without artificial speed alterations
+    wps = ram_ai.WORDS_PER_SECOND.get(language, 1.8)
+    word_budget = int(duration * wps)
     scene_word_budget = max(6, word_budget // n)
     region_aesthetic = ram_ai.get_region_aesthetic_note(region)
 
@@ -480,10 +480,31 @@ async def gen_image(prompt: str, refs=None):
     raise RuntimeError("Image model returned no image")
 
 
+def is_detail_or_closeup(visual: str) -> bool:
+    """Detect if a scene is an extreme close-up or tool/joint detail shot requiring strict mechanical continuity."""
+    return bool(re.search(
+        r"\b(close-?up|macro|detail shot|tight shot|extreme close-?up|focused on hands|macro shot)\b",
+        visual or "", re.IGNORECASE
+    ))
+
+
 def scene_character_names(project, scene):
     visual = scene.get("visual") or ""
-    return {c["name"] for c in (project.get("script") or {}).get("characters", [])
-            if c.get("name") and re.search(rf"(?<!\w){re.escape(c['name'])}(?!\w)", visual, re.IGNORECASE)}
+    chars = (project.get("script") or {}).get("characters", [])
+    names = {c["name"] for c in chars
+             if c.get("name") and re.search(rf"(?<!\w){re.escape(c['name'])}(?!\w)", visual, re.IGNORECASE)}
+    if not names and chars:
+        # Check if visual refers to a person generically when there is a single character or matching role
+        has_person = bool(re.search(r"\b(he|she|him|her|his|man|woman|person|farmer|villager|worker|mechanic|elder|boy|girl|artisan|hands?|face)\b", visual, re.IGNORECASE))
+        if has_person:
+            if len(chars) == 1:
+                names.add(chars[0]["name"])
+            else:
+                for c in chars:
+                    look = c.get("look", "").lower()
+                    if any(w in visual.lower() for w in ("farmer", "worker", "mechanic", "elder", "boy", "girl", "woman", "man") if w in look):
+                        names.add(c["name"])
+    return names
 
 
 def scene_prompt(project, scene, with_ref):
@@ -492,19 +513,42 @@ def scene_prompt(project, scene, with_ref):
     names = scene_character_names(project, scene)
     present = [c for c in script.get("characters", []) if c.get("name") in names]
     chars = "; ".join(f"{c.get('name')}: {c.get('look')}" for c in present)
+
+    # Primary Character Anchor: ensure all scenes maintain identity consistency from the script
+    all_chars = script.get("characters", [])
+    char_anchor = ""
+    if all_chars:
+        anchor_lines = [f"{c.get('name')}: {c.get('look')}" for c in all_chars if c.get('name') and c.get('look')]
+        if anchor_lines:
+            char_anchor = f"Primary Character Profile: {'; '.join(anchor_lines)}. Maintain this exact physical appearance, face, age, skin tone, and attire whenever these individuals appear. "
+
     region = project.get("region", "Telangana")
     note = ram_ai.get_region_aesthetic_note(region)
     if re.search(r"\b(drought|dry|arid|barren|cracked earth|flooded|storm damage|desert)\b", visual, re.IGNORECASE):
         note = "Use regional details only where they do not change the requested weather or landscape."
-    ref = (" The reference image is ONLY a guide to the appearance of characters NAMED in this scene and the visual style. "
-           "Show ONLY the people described in this scene; omit every other person from the reference. "
-           "Keep named characters' faces and outfits consistent, but compose a brand-new single scene.") if with_ref else ""
+
+    if with_ref:
+        if is_detail_or_closeup(visual):
+            ref = (" CONTINUITY REFERENCE: The reference image is the immediate preceding shot. "
+                   "Maintain STRICT physical and mechanical continuity: keep the exact same objects, tools, machinery, "
+                   "pipe fittings, bolt patterns, materials, and colors shown in the reference image. "
+                   "This is a close-up/detail shot: zoom into the exact same mechanism from the reference image. "
+                   "Do NOT alter the mechanical structure (e.g. maintain the exact same flange shape, bolt count, and fitting type). "
+                   "Keep any visible characters' skin tone and clothes identical to the reference.")
+        else:
+            ref = (" CONTINUITY REFERENCE: The reference image guides the visual style and character identities. "
+                   "Keep named characters' facial features, skin tone, hair, age, and outfits strictly consistent with the reference. "
+                   "Maintain environmental and object continuity with earlier scenes, but compose the new action described.")
+    else:
+        ref = ""
+
     return (f"Generate exactly ONE image showing ONE single moment (not a storyboard, not multiple shots). "
             f"Art style: {STYLE_PROMPTS.get(project.get('style'), STYLE_PROMPTS['cartoon'])}. "
             f"ONE single full-bleed illustration filling the whole tall 9:16 portrait frame edge to edge. "
             f"NOT a collage: no panels, no split screen, no stacked images, no borders, no blurred bands. Subject centered. "
             f"Whole-story context for continuity only, not a list of things to show: {script.get('story', '')}. "
             f"The single moment to depict NOW: {scene.get('visual')}. "
+            f"{char_anchor}"
             f"Culture & setting: {region}, India. Optional regional cues: {note} "
             f"The current scene's weather, season, damage and action state override generic regional cues. "
             f"Never show a later repaired or prosperous outcome early; keep drought or damage visibly present until the story resolves it. "

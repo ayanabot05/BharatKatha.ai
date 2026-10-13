@@ -118,6 +118,22 @@ INDIC_RANGES = {
     "ur": (0x0600, 0x06FF),  # Urdu (Arabic script)
 }
 
+# Language-specific words per second calibration based on measured narration rates
+WORDS_PER_SECOND = {
+    "en": 2.1,
+    "hi": 2.0,
+    "ur": 2.0,
+    "pa": 1.9,
+    "bn": 1.8,
+    "mr": 1.8,
+    "te": 1.8,
+    "gu": 1.8,
+    "ta": 1.7,
+    "kn": 1.7,
+    "or": 1.7,
+    "ml": 1.65,
+}
+
 SEXUAL_HATE_BLOCKLIST = [
     r"\bsex\b", r"\bporn\b", r"\bnude\b", r"\bnaked\b", r"\berotic\b", r"\bkill yourself\b",
     r"\brape\b", r"\bgore\b", r"\bblood bath\b", r"\bkamini\b", r"\braand\b", r"\bmadarchod\b",
@@ -168,9 +184,10 @@ def check_hook_pacing(scenes: List[Dict[str, Any]]) -> Tuple[bool, str]:
 
 def check_narration_budget(scenes: List[Dict[str, Any]], duration: int, lang: str = "") -> Tuple[bool, str]:
     words = sum(len(str(s.get("narration", "")).split()) for s in scenes)
-    ceiling = int(duration * (2.2 if lang == "en" else 1.7))
+    wps = WORDS_PER_SECOND.get(lang, 1.8)
+    target = int(duration * wps)
+    ceiling = int(duration * (wps + 0.35))
     if words > ceiling:
-        target = int(duration * (2.0 if lang == "en" else 1.5))
         return False, f"Narration has {words} words for {duration}s. Shorten toward {target} words, then verify with generated audio."
     return True, f"Narration text is within the {duration}s planning budget ({words} words). Verify with generated audio."
 

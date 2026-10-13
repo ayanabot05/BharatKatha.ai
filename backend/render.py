@@ -181,9 +181,28 @@ def _ass_time(seconds):
     return f"{centis // 360000:01}:{centis // 6000 % 60:02}:{centis // 100 % 60:02}.{centis % 100:02}"
 
 
+SCRIPT_FONT_CONFIG = {
+    "te": {"size": 42, "margin": 310},
+    "kn": {"size": 42, "margin": 310},
+    "ml": {"size": 42, "margin": 310},
+    "ta": {"size": 44, "margin": 310},
+    "hi": {"size": 46, "margin": 320},
+    "mr": {"size": 46, "margin": 320},
+    "bn": {"size": 46, "margin": 320},
+    "gu": {"size": 46, "margin": 320},
+    "or": {"size": 44, "margin": 310},
+    "ur": {"size": 48, "margin": 310},
+    "en": {"size": 48, "margin": 320},
+}
+
+
 def caption_ass(caps, lang, dst, placement="bottom"):
     family = font_family(lang)
-    alignment, margin, size = (8, 80, 70) if placement == "top" else (2, 320, 46)
+    cfg = SCRIPT_FONT_CONFIG.get(lang, {"size": 46, "margin": 320})
+    if placement == "top":
+        alignment, margin, size = 8, 80, round(cfg["size"] * 1.5)
+    else:
+        alignment, margin, size = 2, cfg["margin"], cfg["size"]
     header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {W}
@@ -209,12 +228,36 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     Path(dst).write_text(header + "\n".join(events) + "\n", encoding="utf-8")
 
 
+def camera_motion(idx: int, frames: int):
+    """
+    Cinematic camera movement per scene beat:
+    - 0 (Hook): Energetic push-in for immediate thumb-stopping curiosity.
+    - 1 (Setup): Smooth left-to-right pan establishing environment.
+    - 2 (Conflict): Smooth pull-out / reveal.
+    - 3 (Action): Smooth right-to-left pan focusing on movement.
+    - 4+ (Climax/Ending): Alternating push-in and gentle settle.
+    """
+    if idx == 0:
+        step = 0.18 / frames
+        return f"min(1.0+{step:.6f}*on,1.18)", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
+    mode = idx % 4
+    if mode == 1:
+        return "1.10", f"(iw-iw/zoom)*(on/{frames})", "ih/2-(ih/zoom/2)"
+    elif mode == 2:
+        step = 0.14 / frames
+        return f"max(1.14-{step:.6f}*on,1.0)", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
+    elif mode == 3:
+        return "1.10", f"(iw-iw/zoom)*(1-on/{frames})", "ih/2-(ih/zoom/2)"
+    else:
+        step = 0.12 / frames
+        return f"min(1.0+{step:.6f}*on,1.12)", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
+
+
 def scene_clip(img, dur, caps, lang, out, idx, work: Path):
     frames = max(round(dur * FPS), 1)
-    step = 0.12 / frames
-    z = f"min(1+{step:.6f}*on,1.12)" if idx % 2 == 0 else f"max(1.12-{step:.6f}*on,1.0)"
+    z, x, y = camera_motion(idx, frames)
     inputs = ["-i", str(img)]
-    graph = [f"[0:v]zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={frames}:s={W}x{H}:fps={FPS}[v0]"]
+    graph = [f"[0:v]zoompan=z='{z}':x='{x}':y='{y}':d={frames}:s={W}x{H}:fps={FPS}[v0]"]
     last = "v0"
     if caps:
         copy_caption_fonts(work, lang)
@@ -226,11 +269,18 @@ def scene_clip(img, dur, caps, lang, out, idx, work: Path):
          "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-r", str(FPS), str(out)], cwd=work)
 
 
-def mux(clips, audio, out, work: Path):
+def mux(clips, audio, out, work: Path, bgm: Path = None):
     lst = work / "clips.txt"
     lst.write_text("".join(f"file '{c}'\n" for c in clips))
-    run(["-f", "concat", "-safe", "0", "-i", str(lst), "-i", str(audio), "-c:v", "copy", "-c:a", "aac", "-b:a", "160k",
-         "-shortest", "-movflags", "+faststart", str(out)])
+    if bgm and Path(bgm).is_file():
+        # Mix narration (1.0) with background music auto-ducked (-16dB = 0.15 volume)
+        run(["-f", "concat", "-safe", "0", "-i", str(lst), "-i", str(audio), "-i", str(bgm),
+             "-filter_complex", "[1:a]volume=1.0[voice];[2:a]volume=0.15[bg];[voice][bg]amix=inputs=2:duration=first:dropout_transition=2[aout]",
+             "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k",
+             "-shortest", "-movflags", "+faststart", str(out)])
+    else:
+        run(["-f", "concat", "-safe", "0", "-i", str(lst), "-i", str(audio), "-c:v", "copy", "-c:a", "aac", "-b:a", "160k",
+             "-shortest", "-movflags", "+faststart", str(out)])
 
 
 def srt(caps):

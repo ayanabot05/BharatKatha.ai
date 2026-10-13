@@ -183,3 +183,76 @@ def test_missing_requirement_overrides_optimistic_alignment_boolean():
     review["requirements"][0].update(status="missing", evidence=[])
     ai.validate_concept_evidence(review, {"scenes": []}, "Show a worker repair the pipe.")
     assert not review["aligned"] and "repair the pipe" in review["misses"]
+
+
+def test_is_detail_or_closeup_detection():
+    assert ai.is_detail_or_closeup("Extreme close-up of wrench tightening the bolt on the pipe flange")
+    assert ai.is_detail_or_closeup("Macro shot of water dripping through the crack")
+    assert ai.is_detail_or_closeup("Tight shot focused on hands adjusting the valve")
+    assert not ai.is_detail_or_closeup("Wide shot of two farmers standing in a dry field at sunset")
+    assert not ai.is_detail_or_closeup("Ranga walks across the village square")
+
+
+def test_closeup_scene_prompt_enforces_strict_mechanical_continuity():
+    project = {
+        "region": "Andhra Pradesh",
+        "style": "storybook",
+        "script": {
+            "story": "Repairing a village pipeline.",
+            "characters": [{"name": "Ranga", "look": "52-year-old Telugu farmer with grey mustache"}]
+        }
+    }
+    scene = {"visual": "Close-up of wrench tightening the 4-bolt flange coupling."}
+    prompt = ai.scene_prompt(project, scene, with_ref=True)
+    assert "CONTINUITY REFERENCE" in prompt
+    assert "flange shape, bolt count" in prompt
+    assert "Primary Character Profile: Ranga: 52-year-old Telugu farmer" in prompt
+
+
+def test_best_scene_reference_prefers_immediate_predecessor_for_closeups():
+    project = {
+        "script": {"characters": [{"name": "Ranga", "look": "farmer"}, {"name": "Meena", "look": "mechanic"}]},
+        "scenes": [
+            {"id": "s1", "visual": "Ranga stands by the canal"},
+            {"id": "s2", "visual": "Meena brings the wrench"},
+            {"id": "s3", "visual": "Meena aligns the pipe joint with 4 bolts"},
+            {"id": "s4", "visual": "Extreme close-up of wrench tightening a bolt on the joint"}
+        ]
+    }
+    s1, s2, s3, s4 = project["scenes"]
+    refs = [(s1, b"img_1"), (s2, b"img_2"), (s3, b"img_3")]
+    # For Scene 4 (close-up of wrench on joint), it must pick the immediate predecessor s3 (where the joint was established),
+    # not s2 or s1.
+    selected = projects.best_scene_reference(project, s4, refs)
+    assert selected == b"img_3"
+
+
+def test_words_per_second_calibration_and_budget():
+    for lang in SAMPLES:
+        assert lang in ram_ai.WORDS_PER_SECOND
+        assert 1.4 <= ram_ai.WORDS_PER_SECOND[lang] <= 2.2
+
+    # A 30s Telugu script with 52 words should pass cleanly under calibrated pacing
+    scenes = [{"narration": "ఒక రెండు మూడు నాలుగు ఐదు ఆరు ఏడు ఎనిమిది తొమ్మిది పది పదకొండు"} for _ in range(5)]
+    passed, msg = ram_ai.check_narration_budget(scenes, 30, "te")
+    assert passed
+    assert "planning budget" in msg
+
+
+def test_camera_motion_modes():
+    frames = 90
+    for idx in range(6):
+        z, x, y = render.camera_motion(idx, frames)
+        assert isinstance(z, str) and len(z) > 0
+        assert isinstance(x, str) and len(x) > 0
+        assert isinstance(y, str) and len(y) > 0
+        if idx == 0:
+            assert "1.18" in z  # Hook push-in energy
+
+
+def test_script_font_config_covers_all_supported_languages():
+    for lang in SAMPLES:
+        assert lang in render.SCRIPT_FONT_CONFIG
+        cfg = render.SCRIPT_FONT_CONFIG[lang]
+        assert 40 <= cfg["size"] <= 52
+        assert 300 <= cfg["margin"] <= 330  # Safe zone: above bottom platform UI

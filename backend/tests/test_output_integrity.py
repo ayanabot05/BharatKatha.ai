@@ -1,5 +1,6 @@
 """Adversarial regressions: verify failures that happy-path language checks missed."""
 import asyncio
+import base64
 import io
 from unittest.mock import AsyncMock, patch
 
@@ -69,6 +70,62 @@ def test_frame_rounding_does_not_cut_off_the_end_of_narration():
     assert sum(actual) - sum(durations) < 1 / render.FPS
     for end in range(1, 13):
         assert 0 <= sum(actual[:end]) - sum(durations[:end]) < 1 / render.FPS
+
+
+def test_ai_narration_uses_one_synthesis_pass_at_the_chosen_speed():
+    async def check():
+        from types import SimpleNamespace
+
+        project = {"id": "voice-test", "language": "en", "step": 5, "duration": 30,
+                   "render": {"status": "idle"}, "scenes": [
+                       {"id": "a", "narration": "First sentence."},
+                       {"id": "b", "narration": "Second sentence."}]}
+        speech = {"audio": b"mock-mp3", "words": [], "timing_source": "estimated"}
+        def concat(_locals, combined):
+            combined.write_bytes(b"combined-mp3")
+
+        with (patch.object(projects, "owned", new=AsyncMock(return_value=project)),
+              patch.object(projects, "upd", new=AsyncMock()) as update,
+              patch.object(projects, "save_media", new=AsyncMock(return_value="saved.mp3")),
+              patch.object(projects.ai, "tts_timed", new=AsyncMock(return_value=speech)) as tts,
+              patch.object(projects.render, "duration", return_value=2.0),
+              patch.object(projects.render, "concat_audio", side_effect=concat),
+              patch.object(projects, "review_fingerprint", return_value="same")):
+            await projects.audio_ai("voice-test", SimpleNamespace(voice="fable", speed=1.0), {"id": "user"})
+
+        assert tts.await_count == 2
+        assert all(call.args[2] == 1.0 for call in tts.await_args_list)
+        audio = update.await_args.kwargs["audio"]
+        assert audio["speed"] == 1.0 and audio["duration_matched"] is False
+        assert audio["padded_seconds"] == 0.0
+
+    asyncio.run(check())
+
+
+def test_google_cloud_voice_uses_selected_language_speaker_and_speed():
+    class Response:
+        ok = True
+        status_code = 200
+
+        def json(self):
+            return {"audioContent": base64.b64encode(b"cloud-mp3").decode()}
+
+    with (patch.dict("os.environ", {"GOOGLE_CLOUD_PROJECT": "ayana-video-studio"}),
+          patch("google.auth.default", return_value=(object(), "ayana-video-studio")),
+          patch("google.auth.transport.requests.AuthorizedSession") as session):
+        session.return_value.post.return_value = Response()
+        result = ai._google_chirp_speech("తెలుగు కథ", "coral", 0.9, "te")
+
+    body = session.return_value.post.call_args.kwargs["json"]
+    assert body["voice"] == {"languageCode": "te-IN", "name": "te-IN-Chirp3-HD-Kore"}
+    assert body["audioConfig"]["speakingRate"] == 0.9
+    assert result == {"audio": b"cloud-mp3", "words": [], "timing_source": "estimated"}
+
+
+def test_cloud_narration_adds_breath_at_sentence_breaks_only():
+    assert ai._chirp_input("Dr. Rao found it. He returned it.") == {
+        "markup": "Dr. Rao found it. [pause short] He returned it."}
+    assert ai._chirp_input("ఒక చిన్నారి పట్టీని ఇచ్చింది.") == {"text": "ఒక చిన్నారి పట్టీని ఇచ్చింది."}
 
 
 def upload_project(captions=True):

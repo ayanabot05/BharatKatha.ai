@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Noto+Sans+Telugu:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400..900&family=Plus+Jakarta+Sans:wght@300..800&family=Noto+Sans+Telugu:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&family=Noto+Sans+Gujarati:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Oriya:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,16 +6,16 @@
 
 body {
     margin: 0;
-    font-family: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Devanagari", "Noto Sans Tamil", sans-serif;
+    font-family: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Bengali", "Noto Sans Gujarati", "Noto Sans Kannada", "Noto Sans Malayalam", "Noto Sans Oriya", "Noto Naskh Arabic", sans-serif;
     -webkit-font-smoothing: antialiased;
-    background: #261F2C;
-    color: #F8FAFC;
+    background: #f7f3e9;
+    color: #263b36;
 }
 
 h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif; }
 .font-mono { font-family: "JetBrains Mono", monospace; }
-.indic { font-family: "Noto Sans Telugu", "Noto Sans Devanagari", "Noto Sans Tamil", "Plus Jakarta Sans", sans-serif; }
-::selection { background: #F3B6C0; color: #261F2C; }
+.indic { font-family: "Noto Sans Telugu", "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Bengali", "Noto Sans Gujarati", "Noto Sans Kannada", "Noto Sans Malayalam", "Noto Sans Oriya", "Noto Naskh Arabic", "Plus Jakarta Sans", sans-serif; }
+::selection { background: #f3b6c0; color: #263b36; }
 
 @layer components {
     .btn-primary {
@@ -25,14 +25,14 @@ h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto San
                disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed;
     }
     .btn-secondary {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 font-semibold text-slate-200
-               bg-[#403546] border border-[#65546B] transition-colors duration-200 hover:border-rose-300/60 hover:text-white
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 font-semibold text-[#35574c]
+               bg-white border border-[#c4d8c9] transition-colors duration-200 hover:border-[#78aa90] hover:text-[#21483a]
                disabled:opacity-40 disabled:cursor-not-allowed;
     }
-    .card { @apply bg-[#3A3040] border border-[#65546B] rounded-2xl; }
-    .glass { @apply bg-white/[0.04] backdrop-blur-xl border border-white/10; }
-    .label { @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-200 font-mono; }
-    .text-gradient { @apply text-rose-300; }
+    .card { @apply bg-white border border-[#d6e2d7] rounded-2xl; }
+    .glass { @apply bg-white/80 backdrop-blur-xl border border-[#d6e2d7]; }
+    .label { @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-[#99613c] font-mono; }
+    .text-gradient { @apply text-[#a33d52]; }
 }
 
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
@@ -40,7 +40,7 @@ h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto San
 .rise-1 { animation-delay: .07s; } .rise-2 { animation-delay: .14s; } .rise-3 { animation-delay: .21s; } .rise-4 { animation-delay: .28s; }
 
 @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
-.shimmer { background: linear-gradient(90deg, #10121B 0px, #1f2233 80px, #10121B 160px); background-size: 800px 100%; animation: shimmer 1.4s linear infinite; }
+.shimmer { background: linear-gradient(90deg, #e7efe7 0px, #f7f3e9 80px, #e7efe7 160px); background-size: 800px 100%; animation: shimmer 1.4s linear infinite; }
 
 @keyframes kenburns { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.18) translate(-2%, -3%); } }
 .kenburns { animation: kenburns 4s ease-out both; }
@@ -66,30 +66,30 @@ h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto San
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .grid-bg {
-    background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(38,59,54,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(38,59,54,.06) 1px, transparent 1px);
     background-size: 48px 48px;
 }
 
 @layer base {
     :root {
-        --background: 285 17% 15%;
-        --foreground: 210 40% 98%;
-        --card: 284 14% 22%;
-        --card-foreground: 210 40% 98%;
-        --popover: 284 14% 22%;
-        --popover-foreground: 210 40% 98%;
+        --background: 43 37% 94%;
+        --foreground: 163 22% 19%;
+        --card: 0 0% 100%;
+        --card-foreground: 163 22% 19%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 163 22% 19%;
         --primary: 348 45% 44%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 282 14% 26%;
-        --secondary-foreground: 210 40% 98%;
-        --muted: 282 14% 26%;
-        --muted-foreground: 280 12% 74%;
-        --accent: 348 30% 33%;
-        --accent-foreground: 210 40% 98%;
+        --secondary: 137 21% 93%;
+        --secondary-foreground: 163 22% 19%;
+        --muted: 137 21% 93%;
+        --muted-foreground: 155 11% 41%;
+        --accent: 137 21% 93%;
+        --accent-foreground: 163 22% 19%;
         --destructive: 345 100% 59%;
         --destructive-foreground: 0 0% 98%;
-        --border: 283 13% 34%;
-        --input: 283 13% 34%;
+        --border: 136 17% 84%;
+        --input: 136 17% 84%;
         --ring: 348 45% 55%;
         --radius: 0.75rem;
     }
@@ -98,6 +98,6 @@ h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto San
 @layer base {
     * { @apply border-border; }
     body { @apply bg-background text-foreground; }
-    input, textarea { color-scheme: dark; }
+    input, textarea, select { color-scheme: light; }
 }
 

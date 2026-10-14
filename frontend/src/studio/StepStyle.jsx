@@ -25,7 +25,7 @@ export default function StepStyle({ project, update }) {
   };
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-[#302837]/80 backdrop-blur-xl shadow-2xl shadow-black/40 p-5 sm:p-8">
+    <section className="rounded-3xl border border-[#d6e2d7] bg-white backdrop-blur-xl shadow-2xl shadow-[#c7d8ca]/30 p-5 sm:p-8">
       <StepHeader n={3} title="Choose a video style">
         <span className="text-sm">The look is applied to every scene and kept consistent across characters.</span>
       </StepHeader>
@@ -35,12 +35,12 @@ export default function StepStyle({ project, update }) {
           return (
             <button key={s.id} data-testid={`style-card-${s.id}`} onClick={() => setStyle(s.id)}
               className={`group text-center rise rise-${(i % 4) + 1}`}>
-              <div className={`relative rounded-2xl overflow-hidden transition-[box-shadow,transform] ${on ? "ring-4 ring-violet-500 ring-offset-2 ring-offset-[#261F2C]" : "group-hover:shadow-lg"}`}>
+              <div className={`relative rounded-2xl overflow-hidden transition-[box-shadow,transform] ${on ? "ring-4 ring-[#66957b] ring-offset-2 ring-offset-[#f7f3e9]" : "group-hover:shadow-lg"}`}>
                 <img src={`/styles/${s.id}.jpg`} alt={s.label} className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                {on && <span className="absolute top-3 right-3 h-7 w-7 rounded-full bg-violet-600 text-white grid place-items-center"><Check size={16} /></span>}
+                {on && <span className="absolute top-3 right-3 h-7 w-7 rounded-full bg-[#316b55] text-white grid place-items-center"><Check size={16} /></span>}
               </div>
-              <div className="mt-3 text-sm font-semibold text-white">{s.label}</div>
-              <div className="text-xs text-slate-300">{s.hint}</div>
+              <div className="mt-3 text-sm font-semibold text-[#263b36]">{s.label}</div>
+              <div className="text-xs text-[#587168]">{s.hint}</div>
             </button>
           );
         })}

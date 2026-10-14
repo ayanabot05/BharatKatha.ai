@@ -29,38 +29,35 @@ export default function AuthPage({ mode }) {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-[#261F2C]">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-[#f7f3e9] text-[#263b36]">
       <div className="relative flex flex-col p-6 sm:p-10 overflow-hidden">
-        <div className="orb w-[400px] h-[400px] bg-rose-600 -bottom-40 -left-40" />
-        <Link to="/" className="relative"><Logo /></Link>
+        <Link to="/" className="relative"><Logo light /></Link>
         <form onSubmit={submit} className="relative m-auto w-full max-w-sm space-y-5 rise" data-testid="auth-form">
           <div>
             <div className="label">{isLogin ? "Welcome back" : "Free plan · no card"}</div>
             <h1 className="mt-2 text-4xl font-black tracking-tight">{isLogin ? "Sign in to your studio" : "Create your studio"}</h1>
           </div>
           {!isLogin && (
-            <div className="space-y-1.5"><Label className="text-slate-300">Name</Label><Input data-testid="auth-name-input" value={form.name} onChange={set("name")} required className="h-11 bg-[#3A3040]" /></div>
+            <div className="space-y-1.5"><Label className="text-[#587168]">Name</Label><Input data-testid="auth-name-input" value={form.name} onChange={set("name")} required className="h-11 bg-white" /></div>
           )}
-          <div className="space-y-1.5"><Label className="text-slate-300">Email</Label><Input data-testid="auth-email-input" type="email" value={form.email} onChange={set("email")} required className="h-11 bg-[#3A3040]" /></div>
-          <div className="space-y-1.5"><Label className="text-slate-300">Password</Label><Input data-testid="auth-password-input" type="password" minLength={6} value={form.password} onChange={set("password")} required className="h-11 bg-[#3A3040]" /></div>
-          {err && <div data-testid="auth-error" className="text-sm text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{err}</div>}
+          <div className="space-y-1.5"><Label className="text-[#587168]">Email</Label><Input data-testid="auth-email-input" type="email" value={form.email} onChange={set("email")} required className="h-11 bg-white" /></div>
+          <div className="space-y-1.5"><Label className="text-[#587168]">Password</Label><Input data-testid="auth-password-input" type="password" minLength={6} value={form.password} onChange={set("password")} required className="h-11 bg-white" /></div>
+          {err && <div data-testid="auth-error" className="text-sm text-rose-800 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{err}</div>}
           <button data-testid="auth-submit-btn" disabled={busy} className="btn-primary w-full">
             {busy ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />} {isLogin ? "Sign in" : "Create account"}
           </button>
-          <p className="text-sm text-center text-slate-300">
+          <p className="text-sm text-center text-[#587168]">
             {isLogin ? "New here? " : "Already have an account? "}
-            <Link data-testid="auth-switch-link" className="font-semibold text-cyan-400" to={isLogin ? "/register" : "/login"}>{isLogin ? "Create an account" : "Sign in"}</Link>
+            <Link data-testid="auth-switch-link" className="font-semibold text-teal-800" to={isLogin ? "/register" : "/login"}>{isLogin ? "Create an account" : "Sign in"}</Link>
           </p>
         </form>
       </div>
-      <div className="hidden lg:flex relative items-center justify-center bg-[#0C0E16] border-l border-white/5 grid-bg overflow-hidden">
-        <div className="orb w-[420px] h-[420px] bg-cyan-500 top-10 right-10" />
-        <div className="orb w-[360px] h-[360px] bg-amber-500 bottom-10 left-10" style={{ animationDelay: "-6s" }} />
+      <div className="hidden lg:flex relative items-center justify-center bg-[#e7efe7] border-l border-[#d6e2d7] grid-bg overflow-hidden">
         <div className="relative flex flex-col items-center gap-8">
           <PhoneShort />
           <div className="text-center">
             <p className="indic text-2xl font-bold">కథ మీది. వీడియో మాది.</p>
-            <p className="text-slate-400 text-sm mt-1">Your story. We make the video.</p>
+            <p className="text-[#587168] text-sm mt-1">Your story. We make the video.</p>
           </div>
         </div>
       </div>

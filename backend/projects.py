@@ -321,11 +321,18 @@ async def improve(pid: str, user=Depends(current_user)):
                                        p.get("tone", "Emotional"), feedback=fixes, previous=p["script"],
                                        user_id=user["id"], content_contract=p.get("content_contract"))
         contract = script.pop("_content_contract", None)
-        v = await ai.validate_script(script, p["language"], p["region"], p.get("duration", 45),
-                                     p.get("idea", ""), contract)
     except Exception as e:
         raise HTTPException(502, f"Improve failed: {e}")
-    v["content_fingerprint"] = review_fingerprint({**p, "script": script})
+    try:
+        v = await ai.validate_script(script, p["language"], p["region"], p.get("duration", 45),
+                                     p.get("idea", ""), contract)
+        v["content_fingerprint"] = review_fingerprint({**p, "script": script})
+    except Exception as e:
+        # The revised draft already passed content delivery. Preserve it when
+        # a model reviewer emits an invalid citation or becomes unavailable;
+        # approval remains disabled until a fresh review succeeds.
+        log.warning("Improved script saved without review: %s", e)
+        v = None
     await upd(pid, script=script, content_contract=contract, scenes=scenes_from_script(script, p.get("scenes")), validation=v,
               approved=False, audio=None, render={"status": "idle", "progress": 0})
     return await owned(pid, user)
@@ -703,26 +710,10 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
     try:
         with tempfile.TemporaryDirectory(prefix="voice_", dir=CACHE) as temp:
             work = Path(temp)
+            # Keep the user's chosen speaking rate and the actual narration length.
+            # A second synthesis pass to hit an arbitrary target duration doubled
+            # provider work and often made the delivery sound hurried or stretched.
             clips, durations, combined_data, measured_total = await synthesize(body.speed, work)
-            applied_speed = body.speed
-            padded_seconds = 0.0
-            target = p.get("duration") or 0
-            if body.speed == 1.0 and target > 0 and abs(measured_total - target) > 1.0:
-                adjusted = round(max(0.75, min(1.25, measured_total / target)), 3)
-                if abs(adjusted - body.speed) >= 0.02:
-                    clips, durations, combined_data, measured_total = await synthesize(adjusted, work)
-                    applied_speed = adjusted
-                # A short pause on the final frame can cover the residual gap
-                # when the safe voice-speed range cannot reach the target.
-                remaining = target - measured_total
-                if 0.05 < remaining <= 2.0:
-                    source = work / "combined.mp3"
-                    padded = work / "padded.mp3"
-                    await asyncio.to_thread(render.pad_audio, source, padded, target)
-                    padded_total = round(await asyncio.to_thread(render.duration, padded), 2)
-                    padded_seconds = max(0.0, padded_total - measured_total)
-                    durations[-1] = round(durations[-1] + padded_seconds, 2)
-                    combined_data, measured_total = padded.read_bytes(), padded_total
     except Exception as e:
         raise HTTPException(502, f"Voice generation failed: {e}")
     current = await owned(pid, user)
@@ -738,11 +729,10 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
     # Preserve any image approvals or generation results that arrived while TTS ran.
     timing = {s["id"]: {k: s[k] for k in ("audio_path", "audio_duration", "audio_captions", "caption_timing")} for s in scenes}
     scenes = [{**s, **timing[s["id"]]} for s in current["scenes"]]
-    await upd(pid, scenes=scenes, audio={"mode": "ai", "voice": body.voice, "speed": applied_speed,
+    await upd(pid, scenes=scenes, audio={"mode": "ai", "voice": body.voice, "speed": body.speed,
                                          "requested_speed": body.speed,
-                                         "duration_matched": (applied_speed != body.speed or padded_seconds > 0)
-                                         and abs(measured_total - target) <= 1.0,
-                                         "padded_seconds": round(padded_seconds, 2),
+                                         "duration_matched": False,
+                                         "padded_seconds": 0.0,
                                          "path": path, "duration": measured_total},
               render={"status": "idle", "progress": 0}, srt=None, step=max(p.get("step", 1), 6))
     return await owned(pid, user)

@@ -105,9 +105,11 @@ async def media(path: str, user=Depends(media_user)):
 # ---------- meta / ideas / voice ----------
 @api.get("/meta")
 async def meta():
+    voice_engine = ("Google Cloud Chirp 3 HD" if os.environ.get("TTS_PROVIDER", "edge").lower() == "google_chirp"
+                    else "Two Edge neural voices per language by default; optional OpenAI TTS when explicitly configured")
     return {"voices": ai.VOICES, "languages": ai.LANGS, "styles": list(ai.STYLE_PROMPTS.keys()),
             "engines": {"script": "Gemini text API", "images": "Vertex AI image worker" if ai.IMAGE_PROVIDER == "worker" else "Gemini image API",
-                        "voice": "Two Edge neural voices per language by default; optional OpenAI TTS when explicitly configured", "captions": "Script timing or Whisper"},
+                        "voice": voice_engine, "captions": "Script timing or Whisper"},
             "ram_ai": {"version": "2.0", "kind": "rule-guided prompt layer",
                        "note": "Not a trained model. Feedback loop learns from your own users."}}
 

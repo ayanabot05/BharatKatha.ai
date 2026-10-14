@@ -1,0 +1,151 @@
+{
+  "cases": [
+    {
+      "case": 2,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "Mira finds Grandma's anklet near the village well and returns it to Grandma before sunset. Do not add a reward.",
+      "script": {
+        "title": "అమ్మమ్మ వెండి కాలి పట్టీ",
+        "scenes": [
+          {
+            "narration": "ఊరి బావి దగ్గర ఆడుకుంటుండగా, మీరాకు ఎర్రమట్టిలో ఏదో మెరుస్తూ కనిపించింది.",
+            "visual": "Mira, a 10-year-old girl in a blue and white Pochampally frock, stands near a granite village well, pointing at the ground.",
+            "beat": "hook"
+          },
+          {
+            "narration": "అది తన అమ్మమ్మ వెండి కాలి పట్టీ అని మీరా గమనించింది. వెంటనే దాన్ని జాగ్రత్తగా చేతిలోకి తీసుకుంది.",
+            "visual": "Close-up of Mira's hand picking up an intricate, shiny silver anklet from the red soil near the stone well.",
+            "beat": "setup"
+          },
+          {
+            "narration": "సూర్యుడు అస్తమించేలోపు అమ్మమ్మకు ఇది ఇవ్వాలని, మీరా వేగంగా ఇంటి వైపు బయలుదేరింది.",
+            "visual": "Mira running along a narrow village path lined with neem trees, clutching the silver anklet, with the sun low and golden in the sky.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "సమయం దాటకముందే ఇంటికి చేరి, ఆ వెండి కాలి పట్టీని అమ్మమ్మ చేతిలో పెట్టింది మీరా.",
+            "visual": "Mira handing the shiny silver anklet to Grandma, who sits on a village porch in the warm light of the setting sun.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 37.93,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The script does not provide verifiable scene evidence for: Mira must find the anklet."
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 59.73
+    },
+    {
+      "case": 5,
+      "language": "hi",
+      "region": "Rajasthan",
+      "idea": "Two sisters find a lost school bag at the bus stop and return it unopened to its owner before the bus leaves. Do not invent a cash reward.",
+      "script": {
+        "title": "बस्ते का सच",
+        "scenes": [
+          {
+            "narration": "बस स्टॉप पर ये लावारिस बस्ता किसका हो सकता है?",
+            "visual": "Mira and Pinki looking at a dusty brown school bag lying on a concrete bench at a rural Rajasthan bus stop.",
+            "beat": "hook"
+          },
+          {
+            "narration": "मीरा और पिंकी ने इसे नहीं खोला, बस इसके मालिक को ढूंढ़ने लगीं।",
+            "visual": "Mira and Pinki standing near the bench, looking around at the bus stop without touching the brown bag.",
+            "beat": "setup"
+          },
+          {
+            "narration": "तभी दूर से एक छात्र घबराया हुआ भागता दिखा।",
+            "visual": "A young boy in a school uniform looking panicked and scanning the bus stop area.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "बस अभी चलने ही वाली थी, उन्होंने तुरंत वो बस्ता उसे दे दिया।",
+            "visual": "Mira handing the intact brown school bag to the boy while a bus is visibly about to depart in the background.",
+            "beat": "twist"
+          },
+          {
+            "narration": "सही समय पर मदद कर देना ही सच्ची खुशी है।",
+            "visual": "The boy smiling at the sisters and boarding the bus as it starts moving away from the bus stop.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 36.76,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The script does not provide verifiable scene evidence for: The story features two sisters"
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 65.68
+    },
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: सीन 3: नरेशन में 'घटोत्कच फुर्ती से रथ के सामने आ गए' कहा गया है, जबकि दृश्य में यह क्रिया नरेशन से पहले ही घटित होनी चाहिए थी, लेकिन नरेशन और विज़ुअल का ओवरलैप (sync) पूरी तरह सटीक नहीं है।; सीन 4: नरेशन 'अस्त्र वहीं शांत हो गया' कहता है, जबकि दृश्य में '",
+      "seconds": 70.06
+    },
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "script": {
+        "title": "பாட்டியின் பாடம்",
+        "scenes": [
+          {
+            "narration": "பழைய பட்டம் தானே என்று தூக்கி எறிந்துவிடாதீர்கள். இந்த உடைந்த நீல நிற பட்டத்தை பாட்டி எப்படி சரி செய்கிறார் பாருங்கள்.",
+            "visual": "A young boy looking sadly at his torn blue paper kite while his grandmother walks over to him in their village courtyard.",
+            "beat": "hook"
+          },
+          {
+            "narration": "பட்டம் கிழிந்ததும் வருத்தப்படாதே. அதை சரிசெய்யும் முறையை பாட்டி தன் பேரனுக்கு கற்றுக்கொடுக்கிறார்.",
+            "visual": "The grandmother sitting on a woven mat, holding the torn blue kite and showing the boy how to align the paper edges.",
+            "beat": "setup"
+          },
+          {
+            "narration": "ஒரு சிறிய காகிதத் துண்டை எடுத்து, பசையைத் தடவி, பட்டத்தின் கிழிந்த இடத்தில் பாட்டி கவனமாக ஒட்டுகிறார்.",
+            "visual": "Close-up of the grandmother's hands carefully attaching a small paper patch over the tear on the blue kite.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "பாட்டி சொல்லிக்கொடுத்தபடி சரிசெய்த அதே நீல நிற பட்டம், இப்போது வானில் அழகாகப் பறக்கிறது.",
+            "visual": "The grandson running in a field, holding the string as the repaired blue kite flies high in the clear blue sky.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 24.65,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 50.37
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 1,
+    "total": 4,
+    "pass_rate": 0.25
+  }
+}

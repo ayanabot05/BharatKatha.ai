@@ -5,8 +5,9 @@ import { toast } from "sonner";
 import StepAudio from "./StepAudio";
 import StepScript from "./StepScript";
 import StepScenes from "./StepScenes";
+import StudioStepper from "@/components/StudioStepper";
 
-jest.mock("@/lib/api", () => ({ api: { post: jest.fn(), patch: jest.fn() },
+jest.mock("@/lib/api", () => ({ api: { get: jest.fn(), post: jest.fn(), patch: jest.fn() },
   errMsg: (e) => e.message, mediaUrl: (s) => s }));
 jest.mock("sonner", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
 jest.mock("@/components/ui/slider", () => ({ Slider: () => <div /> }));
@@ -23,6 +24,10 @@ const project = { id: "quality-test", language: "en", step: 4, approved: true,
 beforeEach(() => {
   global.IS_REACT_ACT_ENVIRONMENT = true;
   jest.clearAllMocks();
+  api.get.mockResolvedValue({ data: { voices: [
+    { id: "coral", name: "Female voice", desc: "Google Cloud Chirp 3 HD" },
+    { id: "fable", name: "Male voice", desc: "Google Cloud Chirp 3 HD" },
+  ] } });
   players.length = 0;
   URL.createObjectURL = jest.fn(() => `blob:preview-${players.length}`);
   URL.revokeObjectURL = jest.fn();
@@ -42,6 +47,20 @@ const mount = async (component) => act(async () => root.render(component));
 const edit = async (id, value) => act(async () => {
   Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(node(id), value);
   node(id).dispatchEvent(new Event("input", { bubbles: true }));
+});
+
+test("mobile step menu replaces horizontal navigation and blocks locked steps", async () => {
+  const setView = jest.fn();
+  await mount(<StudioStepper view={2} maxStep={4} setView={setView} />);
+  const menu = node("studio-step-select");
+  expect(menu.className).toContain("sm:hidden");
+  expect(node("studio-step-list").className).not.toContain("overflow-x-auto");
+  expect(menu.querySelector('option[value="5"]').disabled).toBe(true);
+  await act(async () => {
+    menu.value = "3";
+    menu.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  expect(setView).toHaveBeenCalledWith(3);
 });
 
 test("opening and ending edits change the narration actually sent to the backend", async () => {

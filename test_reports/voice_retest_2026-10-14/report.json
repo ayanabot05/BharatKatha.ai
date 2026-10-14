@@ -1,0 +1,19 @@
+{
+  "text": "మన ఊరి పాత మర్రిచెట్టు కింద ఒక వెండి పట్టీ దొరికింది. ఆ చిన్నారి సూర్యాస్తమయానికి ముందే దాన్ని అమ్మమ్మకు ఇచ్చింది.",
+  "samples": [
+    {
+      "voice": "te-IN-Chirp3-HD-Kore",
+      "http": 200,
+      "elapsed_seconds": 2.97,
+      "bytes": 34176,
+      "file": "te-IN-Chirp3-HD-Kore.mp3"
+    },
+    {
+      "voice": "te-IN-Chirp3-HD-Charon",
+      "http": 200,
+      "elapsed_seconds": 1.57,
+      "bytes": 33312,
+      "file": "te-IN-Chirp3-HD-Charon.mp3"
+    }
+  ]
+}

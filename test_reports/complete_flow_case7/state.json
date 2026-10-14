@@ -1,0 +1,58 @@
+{
+  "project_id": "aaffd4b308be42bba844a1a087b06279",
+  "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+  "stage": "rendered",
+  "images": [
+    {
+      "scene": 1,
+      "path": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\complete_flow_case7\\scene_1.png",
+      "visual": "A grandmother and her young grandson sitting in a sunny village courtyard, holding a torn red paper kite."
+    },
+    {
+      "scene": 2,
+      "path": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\complete_flow_case7\\scene_2.png",
+      "visual": "The grandmother pointing at the torn area of the red paper kite, guiding the boy's hands."
+    },
+    {
+      "scene": 3,
+      "path": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\complete_flow_case7\\scene_3.png",
+      "visual": "Close-up of the boy's hands carefully attaching a paper patch to the torn part of the red paper kite with glue."
+    },
+    {
+      "scene": 4,
+      "path": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\complete_flow_case7\\scene_4.png",
+      "visual": "The boy and grandmother standing in an open field, the repaired red paper kite starting to rise into the air."
+    },
+    {
+      "scene": 5,
+      "path": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\complete_flow_case7\\scene_5.png",
+      "visual": "The red paper kite flying high and steady in the blue sky, viewed from below."
+    }
+  ],
+  "validation": {
+    "overall": 86,
+    "all_passed": true,
+    "content_aligned": true,
+    "content_gaps": []
+  },
+  "audio_duration": 24.76,
+  "caption_timing": [
+    "estimated",
+    "estimated",
+    "estimated",
+    "estimated",
+    "estimated"
+  ],
+  "video": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\complete_flow_case7\\final.mp4",
+  "render": {
+    "srt": "1\n00:00:00,000 --> 00:00:01,952\nபாட்டியும் அவளது பேரனும் கையில்\n\n2\n00:00:01,952 --> 00:00:04,784\nகிழிந்த சிவப்பு பட்டத்தோடு அமர்ந்துள்ளார்கள்.\n\n3\n00:00:04,784 --> 00:00:06,455\nஇந்தக் கிழிந்த பட்டத்தை எப்படி\n\n4\n00:00:06,455 --> 00:00:07,796\nசரி செய்வது என்று பாட்டி\n\n5\n00:00:07,796 --> 00:00:09,808\nதன் பேரனுக்குக் கற்றுக்கொடுக்கிறாள்.\n\n6\n00:00:09,808 --> 00:00:11,920\nபாட்டியின் வழிகாட்டுதலில் பேரன் ஒரு\n\n7\n00:00:11,920 --> 00:00:13,741\nகாகிதத் துண்டை எடுத்து கிழிந்த\n\n8\n00:00:13,741 --> 00:00:15,673\nஇடத்தில் பசை கொண்டு ஒட்டுகிறான்.\n\n9\n00:00:15,673 --> 00:00:17,884\nஒட்டிய காகிதம் காய்ந்ததும், இருவரும்\n\n10\n00:00:17,884 --> 00:00:19,716\nசேர்ந்து பட்டத்தை வானில் பறக்க\n\n11\n00:00:19,716 --> 00:00:20,577\nவிடுகிறார்கள்.\n\n12\n00:00:20,577 --> 00:00:22,198\nஅதே சிவப்பு பட்டம் இப்போது\n\n13\n00:00:22,198 --> 00:00:24,760\nவானத்தில் அழகாகப் பறந்து கொண்டிருக்கிறது.\n",
+    "status": "done",
+    "message": "Your video is ready",
+    "duration": 24.72,
+    "progress": 100,
+    "video_path": "vidbharat/videos/46057842e877488e9a6c7200aa1f29a5/d1f8317e8f654099a68d65283d131264.mp4",
+    "rendered_at": "2026-10-14T14:49:25.583462+00:00",
+    "scene_timing": "narration",
+    "caption_timing": "estimated"
+  }
+}

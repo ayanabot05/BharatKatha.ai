@@ -1,0 +1,558 @@
+{
+  "idea": "In an Andhra Pradesh village, a child finds a lost silver anklet beside the old banyan tree. She asks the shopkeeper whose anklet it is, then returns it to her grandmother before sunset. A sparrow watches from a branch. End with the grandmother thanking her; do not add a reward or miracle.",
+  "elapsed_seconds": 33.94,
+  "status": "accepted",
+  "calls": [
+    {
+      "system": "Extract the creator's story requirements faithfully. Do not add requirements or solve the story.",
+      "response": {
+        "promise": "The story will show a young girl returning a lost silver anklet to her grandmother before sunset after receiving information from a local shopkeeper.",
+        "requirements": [
+          {
+            "source": "In an Andhra Pradesh village",
+            "requirement": "The setting is an Andhra Pradesh village.",
+            "action_words": []
+          },
+          {
+            "source": "a child finds a lost silver anklet",
+            "requirement": "The child finds a lost silver anklet.",
+            "action_words": [
+              "finds"
+            ]
+          },
+          {
+            "source": "beside the old banyan tree",
+            "requirement": "The anklet is located beside the old banyan tree.",
+            "action_words": []
+          },
+          {
+            "source": "She asks the shopkeeper whose anklet it is",
+            "requirement": "The child asks the shopkeeper about the owner of the anklet.",
+            "action_words": [
+              "asks"
+            ]
+          },
+          {
+            "source": "A sparrow watches from a branch",
+            "requirement": "A sparrow watches the events from a branch.",
+            "action_words": [
+              "watches"
+            ]
+          },
+          {
+            "source": "returns it to her grandmother",
+            "requirement": "The child returns the anklet to her grandmother.",
+            "action_words": [
+              "returns"
+            ]
+          },
+          {
+            "source": "before sunset",
+            "requirement": "The return of the anklet must occur before sunset.",
+            "action_words": []
+          },
+          {
+            "source": "End with the grandmother thanking her",
+            "requirement": "The grandmother thanks the child.",
+            "action_words": [
+              "thanking"
+            ]
+          },
+          {
+            "source": "do not add a reward or miracle",
+            "requirement": "There must be no reward or miracle included in the story.",
+            "action_words": []
+          }
+        ]
+      }
+    },
+    {
+      "system": "You are Ram AI, a personal creation assistant for Indian regional creators.\nFollow the creator's requested topic, langua",
+      "response": {
+        "title": "వెండి పట్టీ",
+        "title_en": "The Silver Anklet",
+        "category": "Family",
+        "hook": "ఆ పాత మర్రిచెట్టు కింద మెరుస్తోంది ఏంటో చూశారా?",
+        "story": "గ్రామంలో ఒక చిన్నారికి దొరికిన వెండి పట్టీ యజమానిని వెతకడం, సూర్యాస్తమయానికి ముందే దానిని తన బామ్మకు అప్పగించడం ఈ కథ. ఎటువంటి ప్రతిఫలం ఆశించని ఆ చిన్ని మనసుకి, బామ్మ ఇచ్చిన కృతజ్ఞతే గొప్ప బహుమానం.",
+        "characters": [
+          {
+            "name": "అమ్ము",
+            "look": "A young village girl with two braided pigtails wearing a simple cotton pattu pavadai."
+          },
+          {
+            "name": "బామ్మ",
+            "look": "An elderly woman with graying hair tied in a bun, wearing a traditional simple cotton saree."
+          }
+        ],
+        "scenes": [
+          {
+            "narration": "మన ఊరి చివర ఉన్న పాత మర్రిచెట్టు కింద మెరుస్తూ ఏదో కనిపించింది.",
+            "visual": "A young girl named Ammu stands near the roots of a massive, ancient banyan tree in a rural Andhra village, looking down at the ground.",
+            "beat": "hook"
+          },
+          {
+            "narration": "అదొక వెండి పట్టీ. పైన కొమ్మ మీద ఉన్న పిచ్చుక ఒకటి, తను ఏంచేస్తుందో అన్నట్టు చూస్తోంది.",
+            "visual": "Close-up of Ammu picking up a small, shining silver anklet from the dirt, while a small sparrow sits on a low branch nearby watching her.",
+            "beat": "setup"
+          },
+          {
+            "narration": "ఇది ఎవరిదో అని అమ్ము ఊరి షాపు దగ్గరికి పరిగెత్తింది. షాపు యజమానిని అడిగితే, ఇది బామ్మ గారిదే అని చెప్పాడు.",
+            "visual": "Ammu talking to a middle-aged male shopkeeper in a small village kiosk; he points his finger towards the direction of her home.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "సూర్యుడు అస్తమించకముందే ఇంటికి చేరుకోవాలి. అమ్ము పరుగున వెళ్లి పట్టీని బామ్మ చేతిలో పెట్టింది.",
+            "visual": "The sun is low, casting a warm golden glow over the village path; Ammu is walking quickly towards her house.",
+            "beat": "twist"
+          },
+          {
+            "narration": "పట్టీ చూసుకోలేదని కంగారు పడుతున్న బామ్మ, అమ్మును చూసి మురిసిపోయి మనసారా థాంక్స్ చెప్పింది.",
+            "visual": "Ammu places the silver anklet into her grandmother's hands; the grandmother smiles warmly and pats Ammu's head gently.",
+            "beat": "ending"
+          }
+        ],
+        "ending": "చిన్న సాయమైనా సరే, మనసుతో చేస్తే ఎంతో విలువైనది కదా!",
+        "description": "గ్రామ నేపథ్యంలో ఒక చిన్నారికి దొరికిన వెండి పట్టీని తన బామ్మకు చేర్చిన అందమైన కథ. నిష్కల్మషమైన ప్రేమకు నిదర్శనం ఈ చిన్న సంఘటన.",
+        "tags": [
+          "telugu stories",
+          "village life",
+          "moral stories",
+          "andhra pradesh",
+          "heartwarming",
+          "kids stories",
+          "humanity",
+          "telugu vlogs"
+        ],
+        "hashtags": [
+          "#telugustories",
+          "#villageculture",
+          "#moralstories",
+          "#heartwarming",
+          "#telugu",
+          "#shorts"
+        ]
+      }
+    },
+    {
+      "system": "You are a skeptical story editor. Reject missing, merely implied, or contradicted content.",
+      "response": {
+        "keeps_promise": true,
+        "checks": [
+          {
+            "number": 1,
+            "delivered": true,
+            "scene": 1,
+            "field": "narration",
+            "quote": "మన ఊరి చివర ఉన్న పాత మర్రిచెట్టు కింద మెరుస్తూ ఏదో కనిపించింది.",
+            "gap": ""
+          },
+          {
+            "number": 2,
+            "delivered": true,
+            "scene": 2,
+            "field": "narration",
+            "quote": "అదొక వెండి పట్టీ.",
+            "gap": ""
+          },
+          {
+            "number": 3,
+            "delivered": true,
+            "scene": 1,
+            "field": "narration",
+            "quote": "మన ఊరి చివర ఉన్న పాత మర్రిచెట్టు కింద మెరుస్తూ ఏదో కనిపించింది.",
+            "gap": ""
+          },
+          {
+            "number": 4,
+            "delivered": true,
+            "scene": 3,
+            "field": "narration",
+            "quote": "ఇది ఎవరిదో అని అమ్ము ఊరి షాపు దగ్గరికి పరిగెత్తింది. షాపు యజమానిని అడిగితే, ఇది బామ్మ గారిదే అని చెప్పాడు.",
+            "gap": ""
+          },
+          {
+            "number": 5,
+            "delivered": true,
+            "scene": 2,
+            "field": "narration",
+            "quote": "పైన కొమ్మ మీద ఉన్న పిచ్చుక ఒకటి, తను ఏంచేస్తుందో అన్నట్టు చూస్తోంది.",
+            "gap": ""
+          },
+          {
+            "number": 6,
+            "delivered": true,
+            "scene": 4,
+            "field": "narration",
+            "quote": "అమ్ము పరుగున వెళ్లి పట్టీని బామ్మ చేతిలో పెట్టింది.",
+            "gap": ""
+          },
+          {
+            "number": 7,
+            "delivered": true,
+            "scene": 4,
+            "field": "narration",
+            "quote": "సూర్యుడు అస్తమించకముందే ఇంటికి చేరుకోవాలి.",
+            "gap": ""
+          },
+          {
+            "number": 8,
+            "delivered": true,
+            "scene": 5,
+            "field": "narration",
+            "quote": "బామ్మను చూసి మురిసిపోయి మనసారా థాంక్స్ చెప్పింది.",
+            "gap": ""
+          },
+          {
+            "number": 9,
+            "delivered": true,
+            "scene": 5,
+            "field": "visual",
+            "quote": "Ammu places the silver anklet into her grandmother's hands; the grandmother smiles warmly and pats Ammu's head gently.",
+            "gap": ""
+          }
+        ],
+        "overall_gap": ""
+      }
+    },
+    {
+      "system": "You are Ram AI, a personal creation assistant for Indian regional creators.\nFollow the creator's requested topic, langua",
+      "response": {
+        "title": "అమ్మమ్మ వెండి పట్టీ",
+        "title_en": "Grandma's Silver Anklet",
+        "category": "Family",
+        "hook": "ఆ పాత మర్రిచెట్టు కింద మెరుస్తూ ఏదో కనిపిస్తోంది, అదేంటో చూశారా?",
+        "story": "గ్రామంలో ఒక చిన్నారి పాత మర్రిచెట్టు దగ్గర వెండి పట్టీని కనుగొంటుంది. షాపు యజమాని సాయంతో అది ఎవరిదో తెలుసుకుని, సూర్యాస్తమయం లోపే దానిని తన బామ్మకు అప్పగిస్తుంది.",
+        "characters": [
+          {
+            "name": "అమ్ము",
+            "look": "A young village girl with two braided pigtails wearing a simple cotton pattu pavadai."
+          },
+          {
+            "name": "బామ్మ",
+            "look": "An elderly woman with graying hair tied in a bun, wearing a traditional simple cotton saree."
+          },
+          {
+            "name": "షాపు యజమాని",
+            "look": "A middle-aged man in a lungi and shirt standing inside a small village grocery shop."
+          }
+        ],
+        "scenes": [
+          {
+            "narration": "ఊరి చివర ఉన్న పాత మర్రిచెట్టు కింద, మెరుస్తూ ఏదో కనిపించింది.",
+            "visual": "Ammu, a young girl, stands beside a large, ancient banyan tree in an Andhra village, looking down at a small silver anklet lying on the dirt ground.",
+            "beat": "hook"
+          },
+          {
+            "narration": "అదొక వెండి పట్టీ. పైన కొమ్మ మీద ఉన్న పిచ్చుక ఒకటి, అమ్ము ఏం చేస్తుందో అని చూస్తోంది.",
+            "visual": "A close-up of Ammu picking up the silver anklet; a sparrow is perched on a low banyan branch above, watching the girl.",
+            "beat": "setup"
+          },
+          {
+            "narration": "ఇది ఎవరిదో తెలియక, అమ్ము పరుగున వెళ్లి షాపు యజమానిని అడిగింది. ఆయన పట్టీని చూసి అది బామ్మ గారిదని గుర్తుపట్టారు.",
+            "visual": "Ammu standing in front of a village shop, showing the silver anklet to the shopkeeper, who nods and points toward the direction of her home.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "సూర్యుడు అస్తమించకముందే ఇంటికి చేరుకోవాలి. అమ్ము వేగంగా బామ్మ దగ్గరకు బయలుదేరింది.",
+            "visual": "The sun is beginning to set, casting a golden light on the dusty village path as Ammu walks briskly towards her house.",
+            "beat": "twist"
+          },
+          {
+            "narration": "పట్టీ బామ్మ చేతిలో పెట్టగానే, ఆమె అమ్ము వైపు చూసి ఎంతో ఆనందంగా కృతజ్ఞతలు చెప్పింది.",
+            "visual": "Ammu hands the silver anklet to her grandmother, who is sitting on the porch; the grandmother holds the anklet and smiles warmly at Ammu, thanking her.",
+            "beat": "ending"
+          }
+        ],
+        "ending": "చిన్న సాయం అయినా, మనసుతో చేస్తే ఎంతో విలువైనది.",
+        "description": "ఆంధ్రప్రదేశ్ గ్రామంలో ఒక చిన్నారికి దొరికిన వెండి పట్టీని తన బామ్మకు చేర్చిన అందమైన కథ. నిష్కల్మషమైన ప్రేమకు నిదర్శనం ఈ సంఘటన.",
+        "tags": [
+          "telugu stories",
+          "village life",
+          "moral stories",
+          "andhra pradesh",
+          "heartwarming",
+          "kids stories",
+          "family bonding",
+          "telugu shorts"
+        ],
+        "hashtags": [
+          "#telugustories",
+          "#villageculture",
+          "#moralstories",
+          "#heartwarming",
+          "#telugu",
+          "#shorts"
+        ],
+        "_content_contract": {
+          "promise": "The story will show a young girl returning a lost silver anklet to her grandmother before sunset after receiving information from a local shopkeeper.",
+          "requirements": [
+            {
+              "source": "In an Andhra Pradesh village",
+              "requirement": "The setting is an Andhra Pradesh village.",
+              "action_words": []
+            },
+            {
+              "source": "a child finds a lost silver anklet",
+              "requirement": "The child finds a lost silver anklet.",
+              "action_words": [
+                "finds"
+              ]
+            },
+            {
+              "source": "beside the old banyan tree",
+              "requirement": "The anklet is located beside the old banyan tree.",
+              "action_words": []
+            },
+            {
+              "source": "She asks the shopkeeper whose anklet it is",
+              "requirement": "The child asks the shopkeeper about the owner of the anklet.",
+              "action_words": [
+                "asks"
+              ]
+            },
+            {
+              "source": "A sparrow watches from a branch",
+              "requirement": "A sparrow watches the events from a branch.",
+              "action_words": [
+                "watches"
+              ]
+            },
+            {
+              "source": "returns it to her grandmother",
+              "requirement": "The child returns the anklet to her grandmother.",
+              "action_words": [
+                "returns"
+              ]
+            },
+            {
+              "source": "before sunset",
+              "requirement": "The return of the anklet must occur before sunset.",
+              "action_words": []
+            },
+            {
+              "source": "End with the grandmother thanking her",
+              "requirement": "The grandmother thanks the child.",
+              "action_words": [
+                "thanking"
+              ]
+            },
+            {
+              "source": "do not add a reward or miracle",
+              "requirement": "There must be no reward or miracle included in the story.",
+              "action_words": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": "You are a skeptical story editor. Reject missing, merely implied, or contradicted content.",
+      "response": {
+        "keeps_promise": true,
+        "checks": [
+          {
+            "number": 1,
+            "delivered": true,
+            "scene": 1,
+            "field": "narration",
+            "quote": "ఊరి చివర ఉన్న పాత మర్రిచెట్టు కింద, మెరుస్తూ ఏదో కనిపించింది.",
+            "gap": ""
+          },
+          {
+            "number": 2,
+            "delivered": true,
+            "scene": 1,
+            "field": "visual",
+            "quote": "Ammu, a young girl, stands beside a large, ancient banyan tree in an Andhra village, looking down at a small silver anklet lying on the dirt ground.",
+            "gap": ""
+          },
+          {
+            "number": 3,
+            "delivered": true,
+            "scene": 1,
+            "field": "visual",
+            "quote": "Ammu, a young girl, stands beside a large, ancient banyan tree in an Andhra village, looking down at a small silver anklet lying on the dirt ground.",
+            "gap": ""
+          },
+          {
+            "number": 4,
+            "delivered": true,
+            "scene": 3,
+            "field": "narration",
+            "quote": "ఇది ఎవరిదో తెలియక, అమ్ము పరుగున వెళ్లి షాపు యజమానిని అడిగింది.",
+            "gap": ""
+          },
+          {
+            "number": 5,
+            "delivered": true,
+            "scene": 2,
+            "field": "visual",
+            "quote": "a sparrow is perched on a low banyan branch above, watching the girl.",
+            "gap": ""
+          },
+          {
+            "number": 6,
+            "delivered": true,
+            "scene": 5,
+            "field": "narration",
+            "quote": "పట్టీ బామ్మ చేతిలో పెట్టగానే",
+            "gap": ""
+          },
+          {
+            "number": 7,
+            "delivered": true,
+            "scene": 4,
+            "field": "visual",
+            "quote": "The sun is beginning to set",
+            "gap": ""
+          },
+          {
+            "number": 8,
+            "delivered": true,
+            "scene": 5,
+            "field": "narration",
+            "quote": "ఆమె అమ్ము వైపు చూసి ఎంతో ఆనందంగా కృతజ్ఞతలు చెప్పింది.",
+            "gap": ""
+          },
+          {
+            "number": 9,
+            "delivered": true,
+            "scene": 5,
+            "field": "visual",
+            "quote": "the grandmother holds the anklet and smiles warmly at Ammu, thanking her.",
+            "gap": ""
+          }
+        ],
+        "overall_gap": ""
+      }
+    }
+  ],
+  "accepted_script": {
+    "title": "అమ్మమ్మ వెండి పట్టీ",
+    "title_en": "Grandma's Silver Anklet",
+    "category": "Family",
+    "hook": "ఆ పాత మర్రిచెట్టు కింద మెరుస్తూ ఏదో కనిపిస్తోంది, అదేంటో చూశారా?",
+    "story": "గ్రామంలో ఒక చిన్నారి పాత మర్రిచెట్టు దగ్గర వెండి పట్టీని కనుగొంటుంది. షాపు యజమాని సాయంతో అది ఎవరిదో తెలుసుకుని, సూర్యాస్తమయం లోపే దానిని తన బామ్మకు అప్పగిస్తుంది.",
+    "characters": [
+      {
+        "name": "అమ్ము",
+        "look": "A young village girl with two braided pigtails wearing a simple cotton pattu pavadai."
+      },
+      {
+        "name": "బామ్మ",
+        "look": "An elderly woman with graying hair tied in a bun, wearing a traditional simple cotton saree."
+      },
+      {
+        "name": "షాపు యజమాని",
+        "look": "A middle-aged man in a lungi and shirt standing inside a small village grocery shop."
+      }
+    ],
+    "scenes": [
+      {
+        "narration": "ఊరి చివర ఉన్న పాత మర్రిచెట్టు కింద, మెరుస్తూ ఏదో కనిపించింది.",
+        "visual": "Ammu, a young girl, stands beside a large, ancient banyan tree in an Andhra village, looking down at a small silver anklet lying on the dirt ground.",
+        "beat": "hook"
+      },
+      {
+        "narration": "అదొక వెండి పట్టీ. పైన కొమ్మ మీద ఉన్న పిచ్చుక ఒకటి, అమ్ము ఏం చేస్తుందో అని చూస్తోంది.",
+        "visual": "A close-up of Ammu picking up the silver anklet; a sparrow is perched on a low banyan branch above, watching the girl.",
+        "beat": "setup"
+      },
+      {
+        "narration": "ఇది ఎవరిదో తెలియక, అమ్ము పరుగున వెళ్లి షాపు యజమానిని అడిగింది. ఆయన పట్టీని చూసి అది బామ్మ గారిదని గుర్తుపట్టారు.",
+        "visual": "Ammu standing in front of a village shop, showing the silver anklet to the shopkeeper, who nods and points toward the direction of her home.",
+        "beat": "conflict"
+      },
+      {
+        "narration": "సూర్యుడు అస్తమించకముందే ఇంటికి చేరుకోవాలి. అమ్ము వేగంగా బామ్మ దగ్గరకు బయలుదేరింది.",
+        "visual": "The sun is beginning to set, casting a golden light on the dusty village path as Ammu walks briskly towards her house.",
+        "beat": "twist"
+      },
+      {
+        "narration": "పట్టీ బామ్మ చేతిలో పెట్టగానే, ఆమె అమ్ము వైపు చూసి ఎంతో ఆనందంగా కృతజ్ఞతలు చెప్పింది.",
+        "visual": "Ammu hands the silver anklet to her grandmother, who is sitting on the porch; the grandmother holds the anklet and smiles warmly at Ammu, thanking her.",
+        "beat": "ending"
+      }
+    ],
+    "ending": "చిన్న సాయం అయినా, మనసుతో చేస్తే ఎంతో విలువైనది.",
+    "description": "ఆంధ్రప్రదేశ్ గ్రామంలో ఒక చిన్నారికి దొరికిన వెండి పట్టీని తన బామ్మకు చేర్చిన అందమైన కథ. నిష్కల్మషమైన ప్రేమకు నిదర్శనం ఈ సంఘటన.",
+    "tags": [
+      "telugu stories",
+      "village life",
+      "moral stories",
+      "andhra pradesh",
+      "heartwarming",
+      "kids stories",
+      "family bonding",
+      "telugu shorts"
+    ],
+    "hashtags": [
+      "#telugustories",
+      "#villageculture",
+      "#moralstories",
+      "#heartwarming",
+      "#telugu",
+      "#shorts"
+    ],
+    "_content_contract": {
+      "promise": "The story will show a young girl returning a lost silver anklet to her grandmother before sunset after receiving information from a local shopkeeper.",
+      "requirements": [
+        {
+          "source": "In an Andhra Pradesh village",
+          "requirement": "The setting is an Andhra Pradesh village.",
+          "action_words": []
+        },
+        {
+          "source": "a child finds a lost silver anklet",
+          "requirement": "The child finds a lost silver anklet.",
+          "action_words": [
+            "finds"
+          ]
+        },
+        {
+          "source": "beside the old banyan tree",
+          "requirement": "The anklet is located beside the old banyan tree.",
+          "action_words": []
+        },
+        {
+          "source": "She asks the shopkeeper whose anklet it is",
+          "requirement": "The child asks the shopkeeper about the owner of the anklet.",
+          "action_words": [
+            "asks"
+          ]
+        },
+        {
+          "source": "A sparrow watches from a branch",
+          "requirement": "A sparrow watches the events from a branch.",
+          "action_words": [
+            "watches"
+          ]
+        },
+        {
+          "source": "returns it to her grandmother",
+          "requirement": "The child returns the anklet to her grandmother.",
+          "action_words": [
+            "returns"
+          ]
+        },
+        {
+          "source": "before sunset",
+          "requirement": "The return of the anklet must occur before sunset.",
+          "action_words": []
+        },
+        {
+          "source": "End with the grandmother thanking her",
+          "requirement": "The grandmother thanks the child.",
+          "action_words": [
+            "thanking"
+          ]
+        },
+        {
+          "source": "do not add a reward or miracle",
+          "requirement": "There must be no reward or miracle included in the story.",
+          "action_words": []
+        }
+      ]
+    }
+  }
+}

@@ -27,6 +27,9 @@ status recovery; this limits the beta to supervised testing.
 The VM runs API/rendering work; current AI generation calls remote providers.
 No GPU or model weights are required for this existing pipeline. Future open-model
 inference and tuning use separately provisioned cloud GPU workers.
+For the approved interim narration voices, set `TTS_PROVIDER=google_chirp` and
+`GOOGLE_CLOUD_PROJECT=ayana-video-studio`; the VM identity needs Cloud Text-to-Speech
+access. The local ignored `backend/.env` already selects this provider.
 
 ## Before deployment
 

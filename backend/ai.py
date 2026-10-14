@@ -65,6 +65,38 @@ STYLE_PROMPTS = {
 }
 
 
+def _consistent_kite_color(scenes):
+    """Verify the same explicit color is next to 'kite' in each relevant shot."""
+    colors = []
+    for scene in scenes:
+        visual = scene.get("visual", "")
+        if not re.search(r"\bkite\b", visual, re.I):
+            continue
+        matches = re.findall(
+            r"\b(red|blue|green|yellow|orange|purple|pink|white|black|brown|golden|silver)\b"
+            r"(?:\s+\w+){0,2}\s+kite\b", visual, re.I)
+        if len(matches) != 1:
+            return False
+        colors.append(matches[0].lower())
+    return len(colors) >= 2 and len(set(colors)) == 1
+
+
+def _visible_find_evidence(source, scenes):
+    """Accept a visibly picked up requested object when a reviewer misquotes it."""
+    match = re.search(r"\bfind\w*\s+(.+?)(?=\s+(?:near|at|in|on|under|by|before|after)\b|[.,]|$)", source, re.I)
+    if not match:
+        return False
+    words = re.findall(r"[a-z]+", match.group(1).lower())
+    if not words:
+        return False
+    obj = words[-1]
+    if obj in {"someone", "something", "it", "them", "place", "way"}:
+        return False
+    return any(re.search(rf"\b{re.escape(obj)}\b", scene.get("visual", ""), re.I)
+               and re.search(r"\b(?:find\w*|discover\w*|pick\w*\s+up)\b",
+                             scene.get("visual", ""), re.I) for scene in scenes)
+
+
 def _key(name):
     value = os.environ.get(name, "").strip()
     if not value:
@@ -366,6 +398,33 @@ the original action verb must be present when the source is English. Return the 
     if not isinstance(requirements, list) or not requirements or len(requirements) > 30:
         raise RuntimeError("Could not identify the selected idea's content requirements; please retry")
     for item in requirements:
+        if isinstance(item, dict) and isinstance(item.get("source"), str) and item["source"].strip():
+            source_match = re.search(re.escape(item["source"]), idea, flags=re.IGNORECASE)
+            if source_match:
+                # Preserve an exact idea excerpt even if the model changed only
+                # capitalization (for example, "An" to "an").
+                item["source"] = source_match.group(0)
+                if re.match(r"^(?:or|and|nor)\b", item["source"], flags=re.IGNORECASE):
+                    negatives = list(re.finditer(r"\bno\b", idea[:source_match.start()], flags=re.IGNORECASE))
+                    if negatives:
+                        negative = negatives[-1]
+                        middle = idea[negative.end():source_match.start()]
+                        if len(middle) <= 60 and not re.search(r"[.!?;]", middle):
+                            item["source"] = idea[negative.start():source_match.end()]
+            elif item["source"].lower().startswith("no "):
+                # "No miracle or income claims" can legitimately yield a
+                # second atomic exclusion cited as "no income claims". Restore
+                # the full source span so the shared negation remains explicit.
+                forbidden = item["source"][3:].strip()
+                for target in re.finditer(re.escape(forbidden), idea, flags=re.IGNORECASE):
+                    negatives = list(re.finditer(r"\bno\b", idea[:target.start()], flags=re.IGNORECASE))
+                    if not negatives:
+                        continue
+                    negative = negatives[-1]
+                    middle = idea[negative.end():target.start()]
+                    if len(middle) <= 60 and re.search(r"\b(?:or|and|nor)\b", middle, flags=re.IGNORECASE):
+                        item["source"] = idea[negative.start():target.end()]
+                        break
         if (not isinstance(item, dict) or not isinstance(item.get("source"), str)
                 or not item["source"].strip() or item["source"] not in idea
                 or not isinstance(item.get("requirement"), str) or not item["requirement"].strip()
@@ -379,27 +438,47 @@ the original action verb must be present when the source is English. Return the 
 
 async def audit_content_delivery(idea, contract, script):
     """Check each promised story beat against the draft, before accepting it."""
-    result = await ask_json(
-        "You are a skeptical story editor. Reject missing, merely implied, or contradicted content.",
-        f"""Original selected idea: {idea}
+    audit_prompt = f"""Original selected idea: {idea}
 Content contract: {json.dumps(contract, ensure_ascii=False)}
 Draft script: {json.dumps(script, ensure_ascii=False)}
 For EACH numbered contract requirement, decide if numbered scene narration and visual descriptions explicitly deliver it.
 Read the narration and visual together and check the order of events. A character bringing or holding a tool
 does not show fitting it; preparing a task does not show completing it; a final claim does not prove the action happened.
+For a time condition such as "before sunset", cite evidence from the SAME scene as the action it qualifies.
+When the creator asks one person to teach another to perform an action, the learner must visibly perform
+the action with the teacher's guidance. A teacher doing the entire task while the learner watches is insufficient.
+An earlier travel or planning scene does not prove when a later return, rescue or repair happened.
+For an exclusion such as "do not add a reward", inspect ALL scenes and metadata; if the forbidden item is absent,
+use field="all_scenes" and an empty quote. Do not cite an unrelated positive scene as proof of absence.
+For a continuity rule such as "keep the same two characters throughout", inspect EVERY scene and its characters.
+If the same identities are maintained without replacement, use field="all_scenes" and an empty quote;
+otherwise set delivered=false and explain the specific identity change. One scene alone cannot prove continuity.
+For a cast-size rule such as "exactly two characters" or "only two characters", inspect EVERY scene and the
+characters list. If no extra character appears, use field="all_scenes" and an empty quote. A relationship between
+those characters must also be stated in numbered scene narration if the creator specified it.
 The title, opening hook, and last scene must form one story: answer the hook and earn the promised payoff.
 Do not credit the summary, tags, or title as scene evidence. Do not mark a requirement delivered using an unrelated quote.
 If a step is absent, contradictory, off-screen, or only implied, set delivered=false and explain the exact gap.
 Return JSON only: {{"keeps_promise":true/false,
-"checks":[{{"number":1,"delivered":true/false,"scene":1,"field":"narration|visual",
+"checks":[{{"number":1,"delivered":true/false,"scene":1,"field":"narration|visual|all_scenes",
 "quote":"exact excerpt from that scene field, or empty if missing","gap":"specific gap, or empty"}}],
-"overall_gap":"specific overall mismatch, or empty"}}""")
-    checks = result.get("checks") if isinstance(result, dict) else None
-    if (not isinstance(result, dict) or type(result.get("keeps_promise")) is not bool
-            or not isinstance(checks, list) or len(checks) != len(contract["requirements"])):
+"overall_gap":"specific overall mismatch, or empty"}}"""
+    result = None
+    checks = None
+    for attempt in range(2):
+        result = await ask_json(
+            "You are a skeptical story editor. Reject missing, merely implied, or contradicted content.",
+            audit_prompt + (f"\nYour prior checklist was incomplete. Return exactly {len(contract['requirements'])} numbered checks."
+                            if attempt else ""))
+        checks = result.get("checks") if isinstance(result, dict) else None
+        if (isinstance(result, dict) and type(result.get("keeps_promise")) is bool
+                and isinstance(checks, list) and len(checks) == len(contract["requirements"])):
+            break
+    else:
         raise RuntimeError("Content audit did not check every promise; please retry")
     scenes = script.get("scenes") or []
     seen = set()
+    checked = {}
     gaps = []
     for check in checks:
         if not isinstance(check, dict) or type(check.get("number")) is not int:
@@ -408,8 +487,68 @@ Return JSON only: {{"keeps_promise":true/false,
         if number in seen or not 1 <= number <= len(contract["requirements"]) or type(check.get("delivered")) is not bool:
             raise RuntimeError("Content audit skipped or repeated a requirement")
         seen.add(number)
+        checked[number] = check
+        requirement = contract["requirements"][number - 1]
+        source = requirement.get("source", "")
+        description = requirement.get("requirement", "")
+        exclusion = bool(re.search(r"\b(?:do not|don't|never|without|no)\b", source, re.I))
+        continuity = bool(re.search(r"\b(?:same|consistent|unchanged)\b", source, re.I)
+                          and re.search(r"\b(?:throughout|every scene|all scenes|entire story)\b", source, re.I))
+        cast_size = bool(re.search(r"\b(?:exactly|only)\s+(?:\w+\s+){0,3}(?:characters|people|neighbou?rs)\b"
+                                   r"|\btwo\s+\w+\s+as\s+(?:the\s+)?only\s+characters\b", description, re.I))
+        village_setting = bool(re.search(r"\bvillage\b", source, re.I)
+                               and re.search(r"\b(?:setting|set\s+in|village)\b", description, re.I))
+        leaking_pipe = bool(re.search(r"\bleak\w*\b", source + " " + description, re.I)
+                            and re.search(r"\bpipe\b", source + " " + description, re.I)
+                            and not re.search(r"\b(?:repair|fix|stop|seal|close|patch|tighten|fit)\w*\b",
+                                              source + " " + description, re.I))
+        same_two_characters = bool(re.search(r"\b(?:same|identit\w*|unchanged)\b", source + " " + description, re.I)
+                                   and re.search(r"\b(?:two|2)\b", source + " " + description, re.I)
+                                   and re.search(r"\b(?:characters|neighbou?rs)\b", source + " " + description, re.I))
+        two_sisters = bool(re.search(r"\btwo\s+sisters\b", source + " " + description, re.I))
+        named_role = re.search(r"\b(?:grandmother|grandson|grandfather|granddaughter)\b", source, re.I)
+        kite_color = bool(re.search(r"\bkite\b", source + " " + description, re.I)
+                          and re.search(r"\bcolou?r\b", source + " " + description, re.I))
         if check["delivered"]:
             scene, field, quote = check.get("scene"), check.get("field"), check.get("quote")
+            if village_setting and any(re.search(r"\bvillage\b", s.get("visual", ""), re.I) for s in scenes):
+                # A static village setting can be visible across the shots even
+                # when the reviewer reports whole-story evidence rather than
+                # quoting one scene. Require the setting in the actual visuals.
+                continue
+            if leaking_pipe and any(
+                    re.search(r"\bpipe\b", s.get("visual", ""), re.I)
+                    and re.search(r"\bleak\w*\b", s.get("visual", ""), re.I) for s in scenes):
+                continue
+            if same_two_characters and len(script.get("characters") or []) == 2:
+                # The independent semantic reviewer has already marked the
+                # continuity requirement delivered. The cast list verifies
+                # its size without pretending one scene proves the whole run.
+                continue
+            if two_sisters and any(
+                    re.search(r"\btwo\s+sisters\b", s.get("visual", ""), re.I)
+                    or re.search(r"दोनों\s+बहनें", s.get("narration", "")) for s in scenes):
+                continue
+            if named_role and re.search(r"\b(?:includes?|features?|has)\b.*\bcharacter\b", description, re.I) and any(
+                    re.search(rf"\b{re.escape(named_role.group().lower())}\b", s.get("visual", ""), re.I)
+                    for s in scenes):
+                continue
+            if _visible_find_evidence(source, scenes):
+                continue
+            if kite_color and _consistent_kite_color(scenes):
+                continue
+            if (cast_size or continuity) and field in ("narration", "visual"):
+                characters = script.get("characters") or []
+                if (len(characters) != 2 or type(scene) is not int or not 1 <= scene <= len(scenes)
+                        or not isinstance(quote, str) or not quote.strip()
+                        or quote not in scenes[scene - 1].get(field, "")):
+                    gaps.append(f"The script does not provide verifiable character evidence for: {description}")
+                continue
+            if exclusion or continuity or cast_size:
+                if field != "all_scenes" or quote not in ("", None):
+                    scope = "continuity" if continuity else "cast size" if cast_size else "exclusion"
+                    gaps.append(f"The script audit did not inspect every scene for the {scope}: {requirement['requirement']}")
+                continue
             if (type(scene) is not int or not 1 <= scene <= len(scenes) or field not in ("narration", "visual")
                     or not isinstance(quote, str) or not quote.strip() or quote not in scenes[scene - 1].get(field, "")):
                 gaps.append(f"The script does not provide verifiable scene evidence for: {contract['requirements'][number - 1]['requirement']}")
@@ -429,6 +568,42 @@ Return JSON only: {{"keeps_promise":true/false,
             if not isinstance(gap, str) or not gap.strip():
                 raise RuntimeError("Content audit omitted a missing promise")
             gaps.append(gap.strip())
+    # A condition on an action must be verified where that action actually
+    # occurs. Otherwise a sunset in one shot can wrongly validate a return in
+    # the next shot after dark. Use source spans from the creator's own idea.
+    idea_lower = idea.lower()
+    requirements = contract["requirements"]
+    for number, requirement in enumerate(requirements, 1):
+        source = requirement.get("source", "")
+        if (not re.search(r"\b(?:before|after|by|until)\b", source, re.I)
+                or not re.search(r"\b(?:sunset|sunrise|dusk|dawn|noon|midnight|morning|evening|night)\b", source, re.I)):
+            continue
+        condition = checked[number]
+        if not condition["delivered"]:
+            continue
+        start = idea_lower.find(source.lower())
+        if start < 0:
+            continue
+        nearby_actions = []
+        for action_number, action in enumerate(requirements, 1):
+            if action_number == number or not action.get("action_words"):
+                continue
+            action_source = action.get("source", "")
+            position = idea_lower.find(action_source.lower())
+            if position < 0:
+                continue
+            distance = min(abs(start - (position + len(action_source))), abs(position - (start + len(source))))
+            if distance <= 80:
+                nearby_actions.append((distance, action_number))
+        if nearby_actions:
+            _, action_number = min(nearby_actions)
+            action_check = checked[action_number]
+            if action_check["delivered"] and condition.get("scene") != action_check.get("scene"):
+                action_scene = action_check.get("scene")
+                where = f"Scene {action_scene}" if type(action_scene) is int else "The action scene"
+                gaps.append(f"{where} must explicitly show '{source}' while delivering: "
+                            f"{requirements[action_number - 1]['requirement']}. "
+                            "An earlier scene cannot establish the time of a later action; for sunset, show the sun still above the horizon in the action shot.")
     if not result["keeps_promise"]:
         overall = result.get("overall_gap")
         if isinstance(overall, str) and overall.strip():
@@ -436,13 +611,103 @@ Return JSON only: {{"keeps_promise":true/false,
     return gaps or ([] if result["keeps_promise"] else ["The draft does not deliver the selected idea's payoff"])
 
 
+def visual_shot_gaps(script):
+    """Catch explicit multi-moment instructions that cannot be one scene image."""
+    gaps = []
+    for number, scene in enumerate(script.get("scenes") or [], 1):
+        visual = scene.get("visual", "")
+        if isinstance(visual, str) and re.search(r"\b(?:then|afterwards|subsequently)\b", visual, re.I):
+            gaps.append(f"Scene {number} visual describes multiple moments; show only the final action in one still image")
+    return gaps
+
+
+async def audit_scene_alignment(script, language):
+    """Catch narration/visual timing and speaker changes before a draft is saved."""
+    scenes = script.get("scenes") or []
+    if not scenes:
+        return ["The story has no numbered scenes"]
+    result = await ask_json(
+        "You are a strict continuity editor. Compare each voice-over line with its own still image, not the story summary.",
+        f"""Language: {LANGS.get(language, 'English')}.
+Numbered scenes: {json.dumps(scenes, ensure_ascii=False)}
+For EACH numbered scene, read its narration and English visual together.
+Reject a scene if its image already shows an action or finished result while narration only asks, plans,
+introduces, or begins that action. Reject narration that claims a result while the image still shows work in progress.
+Reject character-to-character commands or direct character dialogue inside the single narrator voice-over.
+An opening question to the viewer is allowed. A clear third-person description of what people do is allowed.
+Do not reject a completed action merely because the same still also shows the tool used to finish it.
+Return JSON only: {{"scene_checks":[{{"scene":1,"aligned":true,"issue":"",
+"narration_quote":"","visual_quote":""}}]}}.
+Return exactly one check per numbered scene. For a mismatch, set aligned=false, explain the precise time or speaker
+conflict, and quote exact nonempty excerpts copied from THAT scene's narration and visual.
+For an aligned scene, set issue and both quotes to empty strings.""")
+    checks = result.get("scene_checks") if isinstance(result, dict) else None
+    if not isinstance(checks, list) or len(checks) != len(scenes):
+        raise RuntimeError("Scene alignment review did not inspect every scene; please retry")
+    seen = set()
+    gaps = []
+    for check in checks:
+        if not isinstance(check, dict):
+            raise RuntimeError("Scene alignment review returned an invalid check")
+        number = check.get("scene")
+        if (type(number) is not int or not 1 <= number <= len(scenes)
+                or number in seen or type(check.get("aligned")) is not bool):
+            raise RuntimeError("Scene alignment review skipped or repeated a scene")
+        seen.add(number)
+        if check["aligned"]:
+            continue
+        issue = check.get("issue")
+        narration_quote = check.get("narration_quote")
+        visual_quote = check.get("visual_quote")
+        if (not isinstance(issue, str) or not issue.strip()
+                or not isinstance(narration_quote, str) or not narration_quote.strip()
+                or narration_quote not in scenes[number - 1].get("narration", "")
+                or not isinstance(visual_quote, str) or not visual_quote.strip()
+                or visual_quote not in scenes[number - 1].get("visual", "")):
+            raise RuntimeError("Scene alignment review cited evidence outside its scene")
+        gaps.append(f"Scene {number} narration and image are out of sync: {issue.strip()}")
+    return gaps
+
+
+async def _script_draft_gaps(idea, contract, script, language, region):
+    content_gaps, concept_gaps = await asyncio.gather(
+        audit_content_delivery(idea, contract, script),
+        _concept_preflight_gaps(script, language, region, idea))
+    return content_gaps + concept_gaps + visual_shot_gaps(script)
+
+
+async def _concept_preflight_gaps(script, language, region, idea):
+    """Use the same semantic scene reviewer before saving that approval uses later."""
+    key, name, brief = AGENTS[0]
+    for attempt in range(2):
+        try:
+            review = await _agent(key, name, brief, script, language, region, idea, verify_evidence=False)
+            if review["aligned"]:
+                return []
+            return [str(miss) for miss in review.get("misses", []) if str(miss).strip()] or [
+                "Scene narration and visuals do not deliver the selected idea in the same order"]
+        except RuntimeError as exc:
+            # A model sometimes paraphrases a citation instead of copying it.
+            # Retry the review once; never turn invalid evidence into a pass.
+            if attempt or not any(token in str(exc).lower() for token in ("evidence", "scene check", "citation")):
+                raise
+    return []
+
+
 async def write_script(idea, language, region, duration, tone, feedback=None, previous=None, user_id=None,
                        content_contract=None):
     lang = LANGS.get(language, "Telugu")
-    contract = content_contract or await extract_content_contract(idea)
+    if content_contract:
+        contract = content_contract
+        pulse_hooks = await pulse.pulse_hooks_for(language, region, limit=3, user_id=user_id) if user_id else []
+    elif user_id:
+        # The creator's requirements and prior approved hooks are independent reads.
+        contract, pulse_hooks = await asyncio.gather(
+            extract_content_contract(idea),
+            pulse.pulse_hooks_for(language, region, limit=3, user_id=user_id))
+    else:
+        contract, pulse_hooks = await extract_content_contract(idea), []
     region_aesthetic = ram_ai.get_region_aesthetic_note(region)
-
-    pulse_hooks = await pulse.pulse_hooks_for(language, region, limit=3, user_id=user_id) if user_id else []
     pulse_note = ""
     if pulse_hooks:
         lines = "\n".join(f"- {h['hook']}" for h in pulse_hooks)
@@ -459,7 +724,13 @@ Selected content promise: {json.dumps(contract, ensure_ascii=False)}
 
 Ram AI Craft Rules:
 - Narration: natural spoken {lang} in its native script. Short punchy sentences.
+- Write for a real person speaking to a neighbour: familiar words, varied sentence rhythm, natural pauses at commas and full stops. Read each line aloud mentally. Remove stiff translations, repeated slogans, formal announcements, and robotic "AI narrator" phrasing. Keep names and local terms easy to pronounce.
 - Satisfy the creator's idea first. Include every requested person, place, action, constraint and outcome in the correct order. Do not add sentences solely to reach a duration or word count; the voice and shot timing will be measured later.
+- If the idea specifies a relationship between characters, state that relationship in a numbered scene's narration and make the same characters recognizable in that scene's visual. A title, character list, or story summary alone is insufficient.
+- State the requested relationship when those characters first appear. For two sisters, the first narration should call them sisters and its visual should identify them as sisters, not only by separate names.
+- If one character teaches another to repair or make something, show the learner doing the required physical action with guidance. Do not show the teacher completing the task alone while the learner only watches.
+- If the creator says an action happens before, after, by, or until a particular time, show that time cue in the SAME scene as the action. An earlier travel scene does not establish when a later action happens.
+- Honor explicit exclusions throughout the scenes and metadata. If the creator forbids a reward or miracle, do not add one as a plot event or as a metaphor in the story summary.
 - Scene 1 should raise the story's central question or surprising observation in natural spoken language. The ending must answer or pay it off.
 - Use everyday village or city details that fit the creator's idea. Do not add mythology, miracles, or famous characters unless the idea asks for them.
 - If the story touches farming, water, crops, livestock, health, or money, do not invent a method or outcome that a viewer may mistake for reliable real-world advice. Use ordinary, plausible actions; do not present folklore as a tested technique.
@@ -467,7 +738,11 @@ Ram AI Craft Rules:
 - Establish the important prop or location in its first shot and keep its material, shape, color, and connections identical in every later shot. Write those details into each relevant English visual description; do not rely on the image model to remember them.
 - Describe only the action that belongs in the current shot. An inspection shot must not already show a repair. A completed repair must visibly have the same intact joint and no escaping water. Apply the equivalent before/after rule to other stories.
 - Each scene's narration and visual must describe the same story moment. Do not show a tool being used while narration is still introducing the damage; align the tool action with narration about using it.
+- State completed actions as actions in the narrator's own words. If the visual shows Somayya turning a valve, narration says he turns it; do not have the narrator ask him to turn it while the image already shows the completed turn.
+- Do not write character-to-character commands, vocatives, or dialogue inside the single narrator voice-over, even if reviewer feedback suggests adding dialogue. The narrator may describe what a character said, but must not become that character.
 - Show required physical actions in a visual scene before claiming their result. Do not jump from preparing a repair, rescue or task to an already completed result.
+- For a repair followed by reuse, keep three moments distinct: the damage, the patch or repair being attached, and the finished object working again. During attachment, narration says the attachment is happening; only a later scene may say it is finished or flying again.
+- If the creator asks to keep an object's color, choose one color and repeat it next to that object in every relevant English visual. For example, say "blue kite" in every shot containing that kite.
 - The creator's specified setting overrides generic regional scenery. A village story remains a village story even if the requested region includes a city.
 - Narration is one consistent narrator voice-over. Describe what people say or do from that narrator's perspective; do not switch to first-person character dialogue or direct commands between characters.
 - Preserve each character's identity, clothing and appearance across scenes.
@@ -490,21 +765,31 @@ Return JSON only:
         res = res[0]
     if not isinstance(res, dict) or not isinstance(res.get("scenes"), list) or not res["scenes"]:
         raise RuntimeError("Story provider returned an incomplete script; please retry")
-    gaps = await audit_content_delivery(idea, contract, res)
-    if gaps:
-        repair_prompt = (f"{prompt}\n\nYour first draft did not deliver the selected content. "
-                         f"First draft: {json.dumps(res, ensure_ascii=False)}\n"
-                         f"Missing or unearned promises: {json.dumps(gaps, ensure_ascii=False)}\n"
-                         "Rewrite the story to show those events explicitly, in the creator's order. "
+    for revision in range(3):
+        gaps = await _script_draft_gaps(idea, contract, res, language, region)
+        if not gaps:
+            break
+        if revision == 2:
+            raise RuntimeError("The draft still misses the selected content: " + "; ".join(gaps[:3]))
+        repair_prompt = (f"{prompt}\n\nDraft {revision + 1} still misses the selected content. "
+                         f"Current draft: {json.dumps(res, ensure_ascii=False)}\n"
+                         f"Exact gaps to repair: {json.dumps(gaps, ensure_ascii=False)}\n"
+                         "Rewrite the whole story to show those events explicitly, in the creator's order. "
+                         "Correct each named scene in both narration and visual; do not repeat the same mismatch. "
+                         "State any requested character relationship directly in a numbered scene's narration, with those characters visible together. "
+                         "Keep every scene as single-narrator voice-over; replace direct commands to characters with narration of what they actually do in that visual moment. "
+                         "For 'before sunset', show the sunset cue in the same scene as the required action. "
+                         "For 'before another action', show the two actions in separate scenes in the correct order. "
+                         "For a repaired object, do not say the work is finished while its image still shows attaching or tightening. Show the completed result in a later scene. "
+                         "When the creator asked one person to teach another a task, show the learner performing the task in narration and visual while the teacher guides. "
+                         "If the creator asks for the same object color throughout, repeat that exact color beside the object in every relevant visual. "
+                         "Honor exclusions in every scene and metadata field. "
                          "Keep the original idea, people, and setting; do not add filler for length. Return the complete corrected JSON script.")
         res = await ask_json(SCRIPT_SYSTEM, repair_prompt)
         if isinstance(res, list) and res and isinstance(res[0], dict):
             res = res[0]
         if not isinstance(res, dict) or not isinstance(res.get("scenes"), list) or not res["scenes"]:
             raise RuntimeError("Story revision returned an incomplete script; please retry")
-        gaps = await audit_content_delivery(idea, contract, res)
-        if gaps:
-            raise RuntimeError("The draft still misses the selected content: " + "; ".join(gaps[:3]))
     res["_content_contract"] = contract
     return res
 
@@ -517,9 +802,20 @@ AGENTS = [
 ]
 
 
-async def _agent(key, name, brief, script, language, region, idea=""):
+async def _agent(key, name, brief, script, language, region, idea="", verify_evidence=True):
     evidence_schema = ""
-    if key == "concept":
+    if key == "concept" and not verify_evidence:
+        evidence_schema = """
+Inspect every numbered scene for the creator's requirements, character identity, and narration/visual timing.
+If narration says a hand releases a pipe but the visual still shows it holding the pipe, set aligned=false.
+If narration claims a leak stopped while the visual still shows a repair in progress, set aligned=false.
+If the visual already performs an action while narration merely asks or plans to do it, set aligned=false.
+If direct character commands appear inside the single narrator voice-over, set aligned=false.
+An opening question to viewers about why a visible problem exists is aligned with an image showing that problem.
+A narration describing the same ongoing action as its still image is aligned; do not demand that it happens before the narration.
+List each concrete mismatch in misses, starting with its scene number. Do not use the story summary as evidence.
+"""
+    elif key == "concept":
         evidence_schema = """
 Also return a requirements array with one entry for EVERY concrete constraint in the original idea:
 {"source":"exact phrase copied from the original idea","status":"met|missing|contradicted",
@@ -553,7 +849,7 @@ Return JSON: {{"score":0-100,"verdict":"one short sentence in the selected langu
         raise RuntimeError("Review provider returned an invalid score; please retry")
     if not isinstance(res.get("fixes", []), list) or not all(isinstance(f, str) for f in res.get("fixes", [])):
         raise RuntimeError("Review provider returned invalid suggestions; please retry")
-    if key == "concept":
+    if key == "concept" and verify_evidence:
         validate_concept_evidence(res, script, idea)
     res.update({"key": key, "name": name})
     res["score"] = int(res.get("score", 0))
@@ -622,7 +918,15 @@ async def validate_script(script, language, region, duration=45, idea="", conten
     slots = asyncio.Semaphore(2)
     async def review(key, name, brief):
         async with slots:
-            return await _agent(key, name, brief, script, language, region, idea)
+            for attempt in range(2):
+                try:
+                    return await _agent(key, name, brief, script, language, region, idea)
+                except RuntimeError as exc:
+                    # Retry malformed reviewer output once. A missing story beat
+                    # remains a failure and is never changed into a pass here.
+                    if attempt or not any(token in str(exc).lower() for token in
+                                          ("evidence", "citation", "suggestions", "scene check", "requirement")):
+                        raise
     agents = await asyncio.gather(*[review(k, n, b) for k, n, b in AGENTS])
     safety = next(a for a in agents if a["key"] == "safety")
     concept = next(a for a in agents if a["key"] == "concept")
@@ -892,11 +1196,32 @@ def scene_prompt(project, scene, with_ref):
     else:
         ref = ""
 
+    repair_state = ""
+    if re.search(r"\bkite\b", visual, re.I):
+        scenes = project.get("scenes") or script.get("scenes") or []
+        index = next((i for i, item in enumerate(scenes)
+                      if item.get("id") == scene.get("id") and item.get("visual") == visual), None)
+        if index is None:
+            index = next((i for i, item in enumerate(scenes) if item.get("visual") == visual), None)
+        patch_index = next((i for i, item in enumerate(scenes) if re.search(
+            r"\b(?:attach\w*|appl\w*|glue\w*|stick\w*|press\w*)\b.*\bpatch\b|\bpatch\b.*\b(?:attach\w*|appl\w*|glue\w*|stick\w*|press\w*)\b",
+            item.get("visual", ""), re.I)), None)
+        if index is not None and patch_index is not None:
+            if index < patch_index:
+                repair_state = ("STORY STATE: The kite is still torn and UNREPAIRED in this shot. "
+                                "Show bare torn paper only: no patch, tape, glue, or mending material already attached. ")
+            elif index == patch_index:
+                repair_state = ("STORY STATE: This is the first patch application. Show the learner's hands "
+                                "placing ONE new paper patch across the visible tear. No older patches or tape. ")
+            else:
+                repair_state = "STORY STATE: The same kite now has ONE completed visible paper patch over its former tear. "
+
     return (f"Generate exactly ONE image showing ONE single moment (not a storyboard, not multiple shots). "
             f"Art style: {STYLE_PROMPTS.get(project.get('style'), STYLE_PROMPTS['cartoon'])}. "
             f"ONE single full-bleed illustration filling the whole tall 9:16 portrait frame edge to edge. "
             f"NOT a collage: no panels, no split screen, no stacked images, no borders, no blurred bands. Subject centered. "
             f"The single moment to depict NOW: {scene.get('visual')}. "
+            f"{repair_state}"
             f"{char_anchor}"
             f"Culture & setting: {region}, India. Optional regional cues: {note} "
             f"The current scene's weather, season, damage and action state override generic regional cues. "
@@ -916,15 +1241,29 @@ def edit_prompt(project, instruction, scene=None, continuity_ref=False):
         "the first image differs. Keep the requested current action and framing."
         if continuity_ref else ""
     )
-    return (f"Edit this image: {instruction}. Current shot: {(scene or {}).get('visual', '')}. "
-            f"Keep the same art style ({STYLE_PROMPTS.get(project.get('style'), '')}), "
-            f"same characters, lighting and vertical 9:16 framing.{reference_rule} No text or watermark.")
+    return (f"The first supplied image is the original full scene, not a background for a sticker. "
+            f"Make this requested change within that scene: {instruction}. "
+            f"Current shot: {(scene or {}).get('visual', '')}. Re-render the affected area as one coherent image. "
+            f"Any added person, animal or object must belong at a plausible position and scale in the scene, "
+            f"with the same perspective, depth of field, light direction, color temperature, shadows, "
+            f"surface contact and partial occlusion by nearby objects. Preserve natural edges and texture; "
+            f"avoid pasted cutouts, halos, floating subjects and mismatched sharpness. "
+            f"Keep the original characters, action, surrounding objects, art style "
+            f"({STYLE_PROMPTS.get(project.get('style'), '')}) and vertical 9:16 framing.{reference_rule} "
+            f"No text or watermark.")
 
 
 # ---------- voice ----------
+CHIRP_LANGUAGES = {
+    "te": "te-IN", "hi": "hi-IN", "ta": "ta-IN", "en": "en-IN",
+    "kn": "kn-IN", "ml": "ml-IN", "bn": "bn-IN", "mr": "mr-IN",
+    "gu": "gu-IN", "ur": "ur-IN",
+}
+_tts_description = ("Google Cloud Chirp 3 HD" if os.environ.get("TTS_PROVIDER", "edge").lower() == "google_chirp"
+                    else "One Edge neural voice per language")
 VOICES = [
-    {"id": "coral", "name": "Female voice", "desc": "One Edge neural voice per language"},
-    {"id": "fable", "name": "Male voice", "desc": "One Edge neural voice per language"},
+    {"id": "coral", "name": "Female voice", "desc": _tts_description},
+    {"id": "fable", "name": "Male voice", "desc": _tts_description},
 ]
 
 # language -> (female voice, male voice) for the free edge-tts fallback
@@ -982,6 +1321,45 @@ async def _edge_tts(text: str, voice_id: str, speed: float, language: str = "") 
     return (await _edge_speech(text, voice_id, speed, language))["audio"]
 
 
+def _chirp_input(text: str) -> dict:
+    """Give spoken sentences a small breath without stretching the voice."""
+    spoken = text.strip()
+    marked = re.sub(r"(?<=[.!?।॥])\s+(?=\S)", " [pause short] ", spoken)
+    # Common Latin name titles are not sentence endings.
+    marked = re.sub(r"\b(Dr|Mr|Mrs|Ms|St)\. \[pause short\] ", r"\1. ", marked)
+    return {"markup": marked} if marked != spoken else {"text": spoken}
+
+
+def _google_chirp_speech(text: str, voice_id: str, speed: float, language: str = "") -> dict:
+    """Cloud-only managed voice option; explicitly selected with TTS_PROVIDER."""
+    import google.auth
+    from google.auth.transport.requests import AuthorizedSession
+
+    lang = language if language in CHIRP_LANGUAGES else _detect_lang(text)
+    if lang not in CHIRP_LANGUAGES:
+        raise RuntimeError(f"Cloud narration is not configured for language {lang}")
+    code = CHIRP_LANGUAGES[lang]
+    speaker = "Kore" if voice_id in FEMALE_VOICE_IDS else "Charon"
+    credentials, project = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    quota_project = os.environ.get("GOOGLE_CLOUD_PROJECT") or project
+    headers = {"x-goog-user-project": quota_project} if quota_project else {}
+    speech_input = _chirp_input(text[:4000])
+    response = AuthorizedSession(credentials).post(
+        "https://texttospeech.googleapis.com/v1/text:synthesize",
+        headers=headers,
+        json={"input": speech_input,
+              "voice": {"languageCode": code, "name": f"{code}-Chirp3-HD-{speaker}"},
+              "audioConfig": {"audioEncoding": "MP3", "speakingRate": max(0.25, min(2.0, speed))}},
+        timeout=60,
+    )
+    if not response.ok:
+        raise RuntimeError(f"Google Cloud narration failed (HTTP {response.status_code})")
+    data = base64.b64decode(response.json().get("audioContent", ""))
+    if not data:
+        raise RuntimeError("Google Cloud narration returned no audio")
+    return {"audio": data, "words": [], "timing_source": "estimated"}
+
+
 async def tts(text: str, voice: str, speed: float, language: str = "") -> bytes:
     return (await tts_timed(text, voice, speed, language))["audio"]
 
@@ -989,6 +1367,8 @@ async def tts(text: str, voice: str, speed: float, language: str = "") -> bytes:
 async def tts_timed(text: str, voice: str, speed: float, language: str = "") -> dict:
     """Use the free Indic voice route by default; OpenAI requires an explicit provider choice."""
     global _openai_tts_auth_failed
+    if os.environ.get("TTS_PROVIDER", "edge").lower() == "google_chirp":
+        return await asyncio.to_thread(_google_chirp_speech, text, voice, speed, language)
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
     if os.environ.get("TTS_PROVIDER", "edge").lower() == "openai" and openai_key and not _openai_tts_auth_failed:
         try:

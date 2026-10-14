@@ -19,8 +19,8 @@ const EXAMPLE = {
 function Num({ label, value, onChange, testid }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">{label}</span>
-      <Input data-testid={testid} type="number" value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-1 bg-[#3A3040]" />
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#587168]">{label}</span>
+      <Input data-testid={testid} type="number" value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-1 bg-[#f5f9f4]" />
     </label>
   );
 }
@@ -29,21 +29,21 @@ function Report({ doc }) {
   const r = doc.report;
   const chart = POINTS.map((t, i) => ({ t: `${t}s`, ...Object.fromEntries(doc.input.videos.map((v, j) => [`v${j}`, v.retention?.[i] ?? null])) }));
   const List = ({ icon: Icon, title, items, testid }) => (
-    <div className="rounded-2xl border border-[#65546B] p-5" data-testid={testid}>
+    <div className="rounded-2xl border border-[#d6e2d7] p-5" data-testid={testid}>
       <div className="flex items-center gap-2 font-semibold"><Icon size={16} className="text-violet-400" />{title}</div>
-      <ul className="mt-3 space-y-2 text-sm text-slate-300 list-disc pl-5">{(items || []).map((x, i) => <li key={i}>{x}</li>)}</ul>
+      <ul className="mt-3 space-y-2 text-sm text-[#587168] list-disc pl-5">{(items || []).map((x, i) => <li key={i}>{x}</li>)}</ul>
     </div>
   );
   return (
     <div className="mt-10 space-y-5 rise" data-testid="coach-report">
-      <div className="rounded-2xl bg-gradient-to-br from-violet-600/25 via-[#3A3040] to-cyan-500/10 border border-violet-500/30 text-white p-6 flex flex-wrap items-center gap-6">
-        <div className="bg-[#3A3040] rounded-full p-1"><ScoreRing score={r.health_score || 0} size={84} /></div>
+      <div className="rounded-2xl bg-gradient-to-br from-[#e2eee4] via-white to-[#f7eee2] border border-[#d6e2d7] text-[#263b36] p-6 flex flex-wrap items-center gap-6">
+        <div className="bg-[#f5f9f4] rounded-full p-1"><ScoreRing score={r.health_score || 0} size={84} /></div>
         <div className="flex-1 min-w-[220px]">
-          <div className="text-xs uppercase tracking-wider text-slate-400">Channel health</div>
+          <div className="text-xs uppercase tracking-wider text-[#61736d]">Channel health</div>
           <p className="mt-1 text-lg" data-testid="coach-summary">{r.summary}</p>
         </div>
       </div>
-      <div className="rounded-2xl border border-[#65546B] p-5">
+      <div className="rounded-2xl border border-[#d6e2d7] p-5">
         <div className="font-semibold">Audience retention</div>
         <div className="h-56 mt-3">
           <ResponsiveContainer>
@@ -57,19 +57,19 @@ function Report({ doc }) {
         <List icon={Gauge} title="Measured (from your numbers)" items={r.measured} testid="coach-measured" />
         <List icon={Lightbulb} title="Hypotheses (possible causes)" items={r.hypotheses} testid="coach-hypotheses" />
       </div>
-      <div className="rounded-2xl border border-[#65546B] p-5" data-testid="coach-experiments">
+      <div className="rounded-2xl border border-[#d6e2d7] p-5" data-testid="coach-experiments">
         <div className="flex items-center gap-2 font-semibold"><FlaskConical size={16} className="text-amber-500" />Experiments to run</div>
         <div className="mt-3 grid md:grid-cols-2 gap-3">
           {(r.experiments || []).map((x, i) => (
-            <div key={i} className="rounded-xl bg-[#0C0E16] p-4 text-sm"><div className="font-semibold">{x.title}</div><p className="text-slate-400 mt-1">{x.how}</p><p className="text-xs text-violet-300 mt-2">Measure: {x.metric}</p></div>
+            <div key={i} className="rounded-xl bg-[#f5f9f4] p-4 text-sm"><div className="font-semibold">{x.title}</div><p className="text-[#61736d] mt-1">{x.how}</p><p className="text-xs text-violet-800 mt-2">Measure: {x.metric}</p></div>
           ))}
         </div>
       </div>
-      <div className="rounded-2xl border border-[#65546B] p-5" data-testid="coach-weekly-plan">
+      <div className="rounded-2xl border border-[#d6e2d7] p-5" data-testid="coach-weekly-plan">
         <div className="flex items-center gap-2 font-semibold"><CalendarDays size={16} className="text-emerald-600" />This week's plan</div>
-        <div className="mt-3 divide-y divide-white/5">
+        <div className="mt-3 divide-y divide-[#d6e2d7]">
           {(r.weekly_plan || []).map((d, i) => (
-            <div key={i} className="py-2.5 grid grid-cols-[48px_1fr] gap-3 text-sm"><span className="font-mono text-slate-400">{d.day}</span><div><div className="indic font-medium">{d.idea}</div><div className="indic text-xs text-slate-300">Hook: {d.hook}</div></div></div>
+            <div key={i} className="py-2.5 grid grid-cols-[48px_1fr] gap-3 text-sm"><span className="font-mono text-[#61736d]">{d.day}</span><div><div className="indic font-medium">{d.idea}</div><div className="indic text-xs text-[#587168]">Hook: {d.hook}</div></div></div>
           ))}
         </div>
       </div>
@@ -95,24 +95,24 @@ export default function Coach() {
   return (
     <div>
       <div className="rise">
-        <span className="inline-flex rounded-full px-3 py-1 bg-violet-500/10 text-violet-300 border border-violet-500/30 text-xs font-semibold">Ram AI 1.0</span>
+        <span className="inline-flex rounded-full px-3 py-1 bg-violet-500/10 text-violet-800 border border-violet-500/30 text-xs font-semibold">Ram AI 1.0</span>
         <h1 className="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight flex items-center gap-3"><TrendingUp className="text-violet-400" />Ram AI Growth Coach</h1>
-        <p className="mt-2 text-slate-400 max-w-2xl">Enter retention numbers from YouTube Studio Analytics. Ram AI separates measured metrics from causal hypotheses, and plans your next week.</p>
+        <p className="mt-2 text-[#61736d] max-w-2xl">Enter retention numbers from YouTube Studio Analytics. Ram AI separates measured metrics from causal hypotheses, and plans your next week.</p>
       </div>
-      <div className="mt-8 rounded-3xl border border-white/10 bg-[#302837]/80 backdrop-blur-xl shadow-2xl shadow-black/40 p-5 sm:p-8 space-y-6">
+      <div className="mt-8 rounded-3xl border border-[#d6e2d7] bg-white backdrop-blur-xl shadow-2xl shadow-[#c7d8ca]/30 p-5 sm:p-8 space-y-6">
         <div className="flex flex-wrap gap-3 items-end">
-          <label className="flex-1 min-w-[200px]"><span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">Channel</span>
+          <label className="flex-1 min-w-[200px]"><span className="text-[11px] font-semibold uppercase tracking-wider text-[#587168]">Channel</span>
             <Input data-testid="coach-channel-input" value={form.channel_name} onChange={(e) => setForm({ ...form, channel_name: e.target.value })} className="mt-1" /></label>
-          <label className="flex-1 min-w-[160px]"><span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">Niche</span>
+          <label className="flex-1 min-w-[160px]"><span className="text-[11px] font-semibold uppercase tracking-wider text-[#587168]">Niche</span>
             <Input data-testid="coach-niche-input" value={form.niche} onChange={(e) => setForm({ ...form, niche: e.target.value })} className="mt-1" /></label>
           <div className="w-32"><Num label="Subscribers" testid="coach-subs-input" value={form.subscribers} onChange={(v) => setForm({ ...form, subscribers: v })} /></div>
-          <button data-testid="coach-load-example-btn" onClick={() => setForm(EXAMPLE)} className="rounded-full border border-[#383D54] px-4 py-2 text-sm font-semibold">Load example</button>
+          <button data-testid="coach-load-example-btn" onClick={() => setForm(EXAMPLE)} className="rounded-full border border-[#c4d8c9] px-4 py-2 text-sm font-semibold">Load example</button>
         </div>
         {form.videos.map((v, i) => (
-          <div key={i} className="rounded-2xl bg-[#0C0E16] border border-[#65546B] p-4" data-testid={`coach-video-${i}`}>
+          <div key={i} className="rounded-2xl bg-[#f5f9f4] border border-[#d6e2d7] p-4" data-testid={`coach-video-${i}`}>
             <div className="flex gap-2">
-              <Input data-testid={`coach-video-title-${i}`} placeholder="Video title" value={v.title} onChange={(e) => setV(i, "title", e.target.value)} className="bg-[#3A3040]" />
-              {form.videos.length > 1 && <button onClick={() => setForm({ ...form, videos: form.videos.filter((_, j) => j !== i) })} className="text-slate-400 hover:text-rose-400 px-2"><Trash2 size={16} /></button>}
+              <Input data-testid={`coach-video-title-${i}`} placeholder="Video title" value={v.title} onChange={(e) => setV(i, "title", e.target.value)} className="bg-[#f5f9f4]" />
+              {form.videos.length > 1 && <button onClick={() => setForm({ ...form, videos: form.videos.filter((_, j) => j !== i) })} className="text-[#61736d] hover:text-rose-400 px-2"><Trash2 size={16} /></button>}
             </div>
             <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
               <Num label="Views" testid={`coach-views-${i}`} value={v.views} onChange={(x) => setV(i, "views", x)} />
@@ -120,17 +120,17 @@ export default function Coach() {
               <Num label="Viewed vs swiped %" testid={`coach-swiped-${i}`} value={v.viewed_vs_swiped_pct} onChange={(x) => setV(i, "viewed_vs_swiped_pct", x)} />
               <Num label="Likes" testid={`coach-likes-${i}`} value={v.likes} onChange={(x) => setV(i, "likes", x)} />
             </div>
-            <div className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-300">Retention % at</div>
+            <div className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-[#587168]">Retention % at</div>
             <div className="mt-1 grid grid-cols-7 gap-1.5">
               {POINTS.map((t, p) => (
-                <label key={t} className="text-center"><span className="text-[10px] text-slate-400 font-mono">{t}s</span>
-                  <input type="number" value={v.retention[p]} onChange={(e) => setR(i, p, Number(e.target.value))} className="w-full rounded-md border border-[#65546B] px-1 py-1 text-xs text-center" data-testid={`coach-ret-${i}-${p}`} /></label>
+                <label key={t} className="text-center"><span className="text-[10px] text-[#61736d] font-mono">{t}s</span>
+                  <input type="number" value={v.retention[p]} onChange={(e) => setR(i, p, Number(e.target.value))} className="w-full rounded-md border border-[#d6e2d7] px-1 py-1 text-xs text-center" data-testid={`coach-ret-${i}-${p}`} /></label>
               ))}
             </div>
           </div>
         ))}
         <div className="flex flex-wrap gap-3">
-          <button data-testid="coach-add-video-btn" onClick={() => setForm({ ...form, videos: [...form.videos, blank()] })} className="rounded-full border border-[#383D54] px-4 py-2 text-sm font-semibold flex items-center gap-1.5"><Plus size={14} />Add video</button>
+          <button data-testid="coach-add-video-btn" onClick={() => setForm({ ...form, videos: [...form.videos, blank()] })} className="rounded-full border border-[#c4d8c9] px-4 py-2 text-sm font-semibold flex items-center gap-1.5"><Plus size={14} />Add video</button>
           <button data-testid="coach-analyze-btn" onClick={analyze} disabled={busy} className="btn-primary px-6 py-2.5 flex items-center gap-2 disabled:opacity-50">
             {busy && <Loader2 size={16} className="animate-spin" />} Analyze my channel
           </button>

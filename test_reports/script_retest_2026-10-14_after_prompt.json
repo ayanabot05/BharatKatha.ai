@@ -1,0 +1,128 @@
+{
+  "idea": "In an Andhra Pradesh village, a child finds a lost silver anklet beside the old banyan tree. She asks the shopkeeper whose anklet it is, then returns it to her grandmother before sunset. A sparrow watches from a branch. End with the grandmother thanking her; do not add a reward or miracle.",
+  "status": "accepted",
+  "script": {
+    "title": "అమ్మమ్మ వెండి పట్టీ",
+    "title_en": "Grandmother's Silver Anklet",
+    "category": "Family",
+    "hook": "మన ఊరి మర్రిచెట్టు కింద ఏదో మెరుస్తోంది, ఏంటో చూద్దామా?",
+    "story": "ఒక చిన్నారికి పాత మర్రిచెట్టు కింద వెండి పట్టీ దొరికింది. షాపులో అడిగి అది ఎవరిదో తెలుసుకుని, సూర్యాస్తమయం ముందే అమ్మమ్మకు అందించింది.",
+    "characters": [
+      {
+        "name": "చిన్నారి",
+        "look": "A young girl with two braids wearing a simple cotton pattu pavadai."
+      },
+      {
+        "name": "అమ్మమ్మ",
+        "look": "An elderly woman with gray hair in a bun, wearing a traditional cotton saree."
+      },
+      {
+        "name": "షాపు యజమాని",
+        "look": "A middle-aged man in a white dhoti and shirt standing behind a small village shop counter."
+      }
+    ],
+    "scenes": [
+      {
+        "narration": "మన ఆంధ్రప్రదేశ్ పల్లెటూరి మర్రిచెట్టు కింద ఏదో మెరుస్తోంది. చిన్నారి దగ్గరకు వెళ్లి చూస్తే, అదొక వెండి పట్టీ.",
+        "visual": "A young girl picking up a delicate silver anklet from the dusty ground beside the thick, hanging roots of a massive old banyan tree in an Andhra village setting.",
+        "beat": "hook"
+      },
+      {
+        "narration": "ఈ పట్టీ ఎవరిదో తెలియక, ఆ పాప దగ్గరలో ఉన్న షాపుకు వెళ్లి అడిగింది. అప్పుడే ఒక పిచ్చుక చెట్టు కొమ్మ మీద నుండి అంతా గమనిస్తోంది.",
+        "visual": "The girl holding the silver anklet up while talking to a shopkeeper, as a sparrow watches from a low branch of the banyan tree.",
+        "beat": "conflict"
+      },
+      {
+        "narration": "సూర్యుడు అస్తమించకముందే పరుగున వెళ్లి, ఆ పట్టీని తన అమ్మమ్మ చేతిలో పెట్టింది.",
+        "visual": "The girl running along a dirt village road with the sun hanging low on the horizon, then handing the silver anklet to her grandmother sitting on a veranda.",
+        "beat": "setup"
+      },
+      {
+        "narration": "తన పట్టీ దొరికినందుకు అమ్మమ్మ మనస్ఫూర్తిగా థాంక్స్ చెప్పింది. ఏ ఆశ లేకుండా చేసిన చిన్న సాయం ఇది.",
+        "visual": "The grandmother smiling and placing her hand on the girl's head as a thank you, while the sparrow chirps from the branch in the background.",
+        "beat": "ending"
+      }
+    ],
+    "ending": "చిన్న సాయం కూడా ఎంత సంతోషాన్ని ఇస్తుందో కదా!",
+    "description": "ఆంధ్రప్రదేశ్ పల్లెటూరిలో ఒక చిన్నారికి దొరికిన వెండి పట్టీని తన అమ్మమ్మకు చేర్చిన అందమైన కథ. నిస్వార్థంగా చేసిన ఈ చిన్న పని మనసును తాకుతుంది.",
+    "tags": [
+      "Telugu Stories",
+      "Village Life",
+      "Andhra Pradesh",
+      "Grandmother",
+      "Good Deeds",
+      "Moral Stories",
+      "Telugu Short",
+      "Family Values"
+    ],
+    "hashtags": [
+      "#TeluguStories",
+      "#AndhraPradesh",
+      "#VillageLife",
+      "#FamilyValues",
+      "#GoodDeeds",
+      "#Shorts"
+    ],
+    "_content_contract": {
+      "promise": "The viewer will see a child discover a lost object and return it to her grandmother in an Andhra Pradesh village.",
+      "requirements": [
+        {
+          "source": "In an Andhra Pradesh village",
+          "requirement": "The setting is an Andhra Pradesh village.",
+          "action_words": []
+        },
+        {
+          "source": "a child finds a lost silver anklet",
+          "requirement": "A child finds a silver anklet.",
+          "action_words": [
+            "finds"
+          ]
+        },
+        {
+          "source": "beside the old banyan tree",
+          "requirement": "The anklet is located beside the old banyan tree.",
+          "action_words": []
+        },
+        {
+          "source": "She asks the shopkeeper whose anklet it is",
+          "requirement": "The child asks the shopkeeper about the owner of the anklet.",
+          "action_words": [
+            "asks"
+          ]
+        },
+        {
+          "source": "returns it to her grandmother",
+          "requirement": "The child returns the anklet to her grandmother.",
+          "action_words": [
+            "returns"
+          ]
+        },
+        {
+          "source": "before sunset",
+          "requirement": "The return happens before sunset.",
+          "action_words": []
+        },
+        {
+          "source": "A sparrow watches from a branch",
+          "requirement": "A sparrow watches from a branch.",
+          "action_words": [
+            "watches"
+          ]
+        },
+        {
+          "source": "grandmother thanking her",
+          "requirement": "The grandmother thanks the child.",
+          "action_words": [
+            "thanking"
+          ]
+        },
+        {
+          "source": "do not add a reward or miracle",
+          "requirement": "The story must not include a reward or miracle.",
+          "action_words": []
+        }
+      ]
+    }
+  },
+  "elapsed_seconds": 38.83
+}

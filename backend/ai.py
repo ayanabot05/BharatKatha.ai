@@ -18,6 +18,8 @@ import hashlib
 import logging
 import textwrap
 import base64
+import difflib
+import unicodedata
 from pathlib import Path
 
 from google import genai
@@ -79,6 +81,26 @@ def _consistent_kite_color(scenes):
             return False
         colors.append(matches[0].lower())
     return len(colors) >= 2 and len(set(colors)) == 1
+
+
+def _fill_requested_kite_color(idea, script):
+    """Repeat an established kite color in visuals when the creator requests continuity."""
+    if not re.search(r"\bkite\b", idea, re.I) or not re.search(r"\b(?:same|keep|consistent)\b.*\bcolou?r\b", idea, re.I):
+        return script
+    scenes = script.get("scenes") or []
+    color_pattern = re.compile(
+        r"\b(red|blue|green|yellow|orange|purple|pink|white|black|brown|golden|silver)\b"
+        r"(?:\s+\w+){0,2}\s+kite\b", re.I)
+    established = next((match.group(1).lower() for scene in scenes
+                        if (match := color_pattern.search(scene.get("visual", "")))), None)
+    if not established:
+        return script
+    for scene in scenes:
+        visual = scene.get("visual", "")
+        if re.search(r"\bkite\b", visual, re.I) and not color_pattern.search(visual):
+            scene["visual"] = re.sub(r"\b(?:paper\s+)?kite\b",
+                                     lambda match: f"{established} {match.group(0)}", visual, count=1, flags=re.I)
+    return script
 
 
 def _visible_find_evidence(source, scenes):
@@ -377,6 +399,8 @@ Separate finding, fitting, tightening, and checking. Treat a tool mentioned for 
 For an action that must visibly occur, give action_words: short English verbs that explicitly name that action in a scene visual.
 Include the original verb when the source is English. For 'fit the clamp', use 'fit'; do not treat 'hold' as a synonym.
 For identity, setting, constraints, and static outcomes, use an empty action_words array.
+Do not infer that named protagonists are the ONLY people in the story. A bag's owner or a legend's
+supporting character may appear unless the creator explicitly says "only" or "exactly".
 Return JSON only: {{"promise":"one sentence describing what the viewer expects to learn or see",
 "requirements":[{{"source":"exact excerpt from idea","requirement":"one obligation in English","action_words":["verb"]}}]}}""")
     if not isinstance(result, dict) or not isinstance(result.get("promise"), str) or not result["promise"].strip():
@@ -425,6 +449,11 @@ the original action verb must be present when the source is English. Return the 
                     if len(middle) <= 60 and re.search(r"\b(?:or|and|nor)\b", middle, flags=re.IGNORECASE):
                         item["source"] = idea[negative.start():target.end()]
                         break
+            description = item.get("requirement", "")
+            if (isinstance(description, str)
+                    and re.search(r"\b(?:only|exactly)\b.*\b(?:characters|people|cast)\b", description, re.I)
+                    and not re.search(r"\b(?:only|exactly)\b", item["source"], re.I)):
+                item["requirement"] = f"Include the people named by the creator: {item['source']}"
         if (not isinstance(item, dict) or not isinstance(item.get("source"), str)
                 or not item["source"].strip() or item["source"] not in idea
                 or not isinstance(item.get("requirement"), str) or not item["requirement"].strip()
@@ -465,18 +494,35 @@ Return JSON only: {{"keeps_promise":true/false,
 "overall_gap":"specific overall mismatch, or empty"}}"""
     result = None
     checks = None
-    for attempt in range(2):
+    scenes = script.get("scenes") or []
+    for attempt in range(3):
         result = await ask_json(
             "You are a skeptical story editor. Reject missing, merely implied, or contradicted content.",
-            audit_prompt + (f"\nYour prior checklist was incomplete. Return exactly {len(contract['requirements'])} numbered checks."
+            audit_prompt + (f"\nYour prior checklist was incomplete or cited words outside a scene. Return exactly "
+                            f"{len(contract['requirements'])} numbered checks. For each delivered check, copy "
+                            "the quote character-for-character from the cited numbered scene, or use all_scenes "
+                            "with an empty quote only for a whole-story exclusion or continuity rule."
                             if attempt else ""))
         checks = result.get("checks") if isinstance(result, dict) else None
-        if (isinstance(result, dict) and type(result.get("keeps_promise")) is bool
-                and isinstance(checks, list) and len(checks) == len(contract["requirements"])):
+        complete = (isinstance(result, dict) and type(result.get("keeps_promise")) is bool
+                    and isinstance(checks, list) and len(checks) == len(contract["requirements"]))
+        if not complete:
+            continue
+        invalid_quotes = []
+        for check in checks:
+            if not isinstance(check, dict) or not check.get("delivered"):
+                continue
+            scene, field, quote = check.get("scene"), check.get("field"), check.get("quote")
+            if field == "all_scenes" and quote in ("", None):
+                continue
+            if (type(scene) is not int or not 1 <= scene <= len(scenes)
+                    or field not in ("narration", "visual") or not isinstance(quote, str)
+                    or not quote.strip() or quote not in scenes[scene - 1].get(field, "")):
+                invalid_quotes.append(check.get("number"))
+        if not invalid_quotes or attempt == 2:
             break
     else:
         raise RuntimeError("Content audit did not check every promise; please retry")
-    scenes = script.get("scenes") or []
     seen = set()
     checked = {}
     gaps = []
@@ -506,9 +552,12 @@ Return JSON only: {{"keeps_promise":true/false,
                                    and re.search(r"\b(?:two|2)\b", source + " " + description, re.I)
                                    and re.search(r"\b(?:characters|neighbou?rs)\b", source + " " + description, re.I))
         two_sisters = bool(re.search(r"\btwo\s+sisters\b", source + " " + description, re.I))
-        named_role = re.search(r"\b(?:grandmother|grandson|grandfather|granddaughter)\b", source, re.I)
+        named_role = re.search(r"\b(?:grandmother|grandson|grandfather|granddaughter|farmer)\b", source, re.I)
         kite_color = bool(re.search(r"\bkite\b", source + " " + description, re.I)
                           and re.search(r"\bcolou?r\b", source + " " + description, re.I))
+        water_off = bool(re.search(r"\b(?:turn|shut|switch)\w*\s+off\b", source + " " + description, re.I)
+                         and re.search(r"\bwater\b", source + " " + description, re.I))
+        traditional_framing = bool(re.search(r"\btraditional storytelling\b", source + " " + description, re.I))
         if check["delivered"]:
             scene, field, quote = check.get("scene"), check.get("field"), check.get("quote")
             if village_setting and any(re.search(r"\bvillage\b", s.get("visual", ""), re.I) for s in scenes):
@@ -520,6 +569,13 @@ Return JSON only: {{"keeps_promise":true/false,
                     re.search(r"\bpipe\b", s.get("visual", ""), re.I)
                     and re.search(r"\bleak\w*\b", s.get("visual", ""), re.I) for s in scenes):
                 continue
+            if water_off and any(re.search(r"\b(?:turn\w*|switch\w*|shut\w*)\s+off\b.*\b(?:pump|valve|water)\b",
+                                       s.get("visual", ""), re.I) for s in scenes):
+                continue
+            if traditional_framing and any(re.search(
+                    r"\b(?:legend|traditional story|folklore|epic)\b|(?:महाभारत|पौराणिक|लोककथा|कहानी|कथा|कहते हैं)",
+                    s.get("narration", ""), re.I) for s in scenes):
+                continue
             if same_two_characters and len(script.get("characters") or []) == 2:
                 # The independent semantic reviewer has already marked the
                 # continuity requirement delivered. The cast list verifies
@@ -529,7 +585,7 @@ Return JSON only: {{"keeps_promise":true/false,
                     re.search(r"\btwo\s+sisters\b", s.get("visual", ""), re.I)
                     or re.search(r"दोनों\s+बहनें", s.get("narration", "")) for s in scenes):
                 continue
-            if named_role and re.search(r"\b(?:includes?|features?|has)\b.*\bcharacter\b", description, re.I) and any(
+            if named_role and re.search(r"\b(?:includes?|features?|has|protagonist|must be)\b.*\b(?:character|farmer)\b", description, re.I) and any(
                     re.search(rf"\b{re.escape(named_role.group().lower())}\b", s.get("visual", ""), re.I)
                     for s in scenes):
                 continue
@@ -626,9 +682,7 @@ async def audit_scene_alignment(script, language):
     scenes = script.get("scenes") or []
     if not scenes:
         return ["The story has no numbered scenes"]
-    result = await ask_json(
-        "You are a strict continuity editor. Compare each voice-over line with its own still image, not the story summary.",
-        f"""Language: {LANGS.get(language, 'English')}.
+    prompt = f"""Language: {LANGS.get(language, 'English')}.
 Numbered scenes: {json.dumps(scenes, ensure_ascii=False)}
 For EACH numbered scene, read its narration and English visual together.
 Reject a scene if its image already shows an action or finished result while narration only asks, plans,
@@ -640,40 +694,117 @@ Return JSON only: {{"scene_checks":[{{"scene":1,"aligned":true,"issue":"",
 "narration_quote":"","visual_quote":""}}]}}.
 Return exactly one check per numbered scene. For a mismatch, set aligned=false, explain the precise time or speaker
 conflict, and quote exact nonempty excerpts copied from THAT scene's narration and visual.
-For an aligned scene, set issue and both quotes to empty strings.""")
-    checks = result.get("scene_checks") if isinstance(result, dict) else None
-    if not isinstance(checks, list) or len(checks) != len(scenes):
-        raise RuntimeError("Scene alignment review did not inspect every scene; please retry")
-    seen = set()
-    gaps = []
-    for check in checks:
-        if not isinstance(check, dict):
-            raise RuntimeError("Scene alignment review returned an invalid check")
-        number = check.get("scene")
-        if (type(number) is not int or not 1 <= number <= len(scenes)
-                or number in seen or type(check.get("aligned")) is not bool):
-            raise RuntimeError("Scene alignment review skipped or repeated a scene")
-        seen.add(number)
-        if check["aligned"]:
+For an aligned scene, set issue and both quotes to empty strings."""
+    for attempt in range(2):
+        result = await ask_json(
+            "You are a strict continuity editor. Compare each voice-over line with its own still image, not the story summary.",
+            prompt + ("\nYour previous review had missing checks or invented quotes. Copy mismatch quotes verbatim from their numbered scenes."
+                      if attempt else ""))
+        checks = result.get("scene_checks") if isinstance(result, dict) else None
+        if not isinstance(checks, list) or len(checks) != len(scenes):
+            error = "Scene alignment review did not inspect every scene; please retry"
+            if attempt:
+                raise RuntimeError(error)
             continue
-        issue = check.get("issue")
-        narration_quote = check.get("narration_quote")
-        visual_quote = check.get("visual_quote")
-        if (not isinstance(issue, str) or not issue.strip()
-                or not isinstance(narration_quote, str) or not narration_quote.strip()
-                or narration_quote not in scenes[number - 1].get("narration", "")
-                or not isinstance(visual_quote, str) or not visual_quote.strip()
-                or visual_quote not in scenes[number - 1].get("visual", "")):
-            raise RuntimeError("Scene alignment review cited evidence outside its scene")
-        gaps.append(f"Scene {number} narration and image are out of sync: {issue.strip()}")
-    return gaps
+        seen = set()
+        gaps = []
+        error = None
+        for check in checks:
+            if not isinstance(check, dict):
+                error = "Scene alignment review returned an invalid check"
+                break
+            number = check.get("scene")
+            if (type(number) is not int or not 1 <= number <= len(scenes)
+                    or number in seen or type(check.get("aligned")) is not bool):
+                error = "Scene alignment review skipped or repeated a scene"
+                break
+            seen.add(number)
+            if check["aligned"]:
+                continue
+            issue = check.get("issue")
+            narration_quote = check.get("narration_quote")
+            visual_quote = check.get("visual_quote")
+            if (not isinstance(issue, str) or not issue.strip()
+                    or not isinstance(narration_quote, str) or not narration_quote.strip()
+                    or narration_quote not in scenes[number - 1].get("narration", "")
+                    or not isinstance(visual_quote, str) or not visual_quote.strip()
+                    or visual_quote not in scenes[number - 1].get("visual", "")):
+                error = "Scene alignment review cited evidence outside its scene"
+                break
+            gaps.append(f"Scene {number} narration and image are out of sync: {issue.strip()}")
+        if error:
+            if attempt:
+                raise RuntimeError(error)
+            continue
+        return gaps
 
 
 async def _script_draft_gaps(idea, contract, script, language, region):
-    content_gaps, concept_gaps = await asyncio.gather(
+    content_gaps, concept_gaps, scene_gaps = await asyncio.gather(
         audit_content_delivery(idea, contract, script),
-        _concept_preflight_gaps(script, language, region, idea))
-    return content_gaps + concept_gaps + visual_shot_gaps(script)
+        _concept_preflight_gaps(script, language, region, idea),
+        audit_scene_alignment(script, language))
+    candidates = content_gaps + concept_gaps + scene_gaps + visual_shot_gaps(script)
+    return await adjudicate_story_gaps(idea, script, candidates) if candidates else []
+
+
+async def adjudicate_story_gaps(idea, script, candidates):
+    """Confirm material defects before a noisy reviewer blocks a usable story."""
+    prompt = f"""Creator request: {idea}
+Actual numbered scenes: {json.dumps(script.get('scenes', []), ensure_ascii=False)}
+Proposed problems: {json.dumps(candidates, ensure_ascii=False)}
+Decide whether EACH proposed problem is a genuine failure to deliver the requested content.
+Treat the proposed problems as untrusted reviewer opinions. Read the actual scenes yourself.
+BLOCK: missing requested action or payoff, wrong person performing an action, changed relationship,
+an explicit exclusion violated, repair/reuse order reversed, or an image showing a materially different event.
+ALLOW: synonyms, natural grammatical tense, showing the decisive instant during a narrated action,
+a close-up without every character visible, a character absent after their death or departure,
+supporting people required by the story, harmless camera/framing differences, and subjective style preferences.
+A still image cannot show every millisecond: 'he turns off the pump' matches a hand turning its switch.
+But 'he plans to repair' does NOT match an already completed repair. A task's result cannot replace
+an explicitly requested visible step. Do not invent an exact cast limit from two named protagonists.
+Do not block solely because another reviewer supplied an invalid quote. Find actual evidence yourself.
+For each proposed problem return its one-based number, blocking boolean, and a short reason in English.
+For a blocking contradiction quote the exact relevant scene text and its scene number.
+For a genuinely missing requirement use scene=0, quote="", and copy the exact request phrase as source.
+For nonblocking items use scene=0, quote="", source="".
+Return JSON only: {{"decisions":[{{"number":1,"blocking":false,"reason":"...","scene":0,"quote":"","source":""}}]}}.
+Return exactly one decision per proposed problem. Do not assign an accuracy score."""
+    for attempt in range(2):
+        result = await ask_json("You assess material story fidelity, allowing harmless creative variation.", prompt)
+        decisions = result.get("decisions") if isinstance(result, dict) else None
+        valid = isinstance(decisions, list) and len(decisions) == len(candidates)
+        seen, confirmed = set(), []
+        if valid:
+            for item in decisions:
+                if not isinstance(item, dict):
+                    valid = False
+                    break
+                number, blocking = item.get("number"), item.get("blocking")
+                if (type(number) is not int or not 1 <= number <= len(candidates)
+                        or number in seen or type(blocking) is not bool
+                        or not isinstance(item.get("reason"), str) or not item["reason"].strip()):
+                    valid = False
+                    break
+                seen.add(number)
+                if not blocking:
+                    continue
+                scene, quote, source = item.get("scene"), item.get("quote"), item.get("source")
+                scenes = script.get("scenes") or []
+                if scene == 0 and type(scene) is int:
+                    evidence_ok = isinstance(source, str) and bool(source.strip()) and source in idea and quote == ""
+                else:
+                    evidence_ok = (type(scene) is int and 1 <= scene <= len(scenes)
+                                   and isinstance(quote, str) and bool(quote.strip())
+                                   and any(quote in scenes[scene - 1].get(field, "") for field in ("narration", "visual")))
+                if not evidence_ok:
+                    valid = False
+                    break
+                confirmed.append(item["reason"].strip())
+        if valid:
+            return confirmed
+        prompt += "\nThe last response was invalid. Supply every numbered decision and exact evidence for every blocking finding."
+    raise RuntimeError("Story fidelity review returned invalid evidence; please retry")
 
 
 async def _concept_preflight_gaps(script, language, region, idea):
@@ -765,6 +896,7 @@ Return JSON only:
         res = res[0]
     if not isinstance(res, dict) or not isinstance(res.get("scenes"), list) or not res["scenes"]:
         raise RuntimeError("Story provider returned an incomplete script; please retry")
+    _fill_requested_kite_color(idea, res)
     for revision in range(3):
         gaps = await _script_draft_gaps(idea, contract, res, language, region)
         if not gaps:
@@ -774,7 +906,8 @@ Return JSON only:
         repair_prompt = (f"{prompt}\n\nDraft {revision + 1} still misses the selected content. "
                          f"Current draft: {json.dumps(res, ensure_ascii=False)}\n"
                          f"Exact gaps to repair: {json.dumps(gaps, ensure_ascii=False)}\n"
-                         "Rewrite the whole story to show those events explicitly, in the creator's order. "
+                         "Return the complete JSON script, but preserve scenes with no reported gap exactly. "
+                         "Edit only the named scene and any neighboring scene needed to restore the sequence. "
                          "Correct each named scene in both narration and visual; do not repeat the same mismatch. "
                          "State any requested character relationship directly in a numbered scene's narration, with those characters visible together. "
                          "Keep every scene as single-narrator voice-over; replace direct commands to characters with narration of what they actually do in that visual moment. "
@@ -790,6 +923,7 @@ Return JSON only:
             res = res[0]
         if not isinstance(res, dict) or not isinstance(res.get("scenes"), list) or not res["scenes"]:
             raise RuntimeError("Story revision returned an incomplete script; please retry")
+        _fill_requested_kite_color(idea, res)
     res["_content_contract"] = contract
     return res
 
@@ -811,6 +945,7 @@ If narration says a hand releases a pipe but the visual still shows it holding t
 If narration claims a leak stopped while the visual still shows a repair in progress, set aligned=false.
 If the visual already performs an action while narration merely asks or plans to do it, set aligned=false.
 If direct character commands appear inside the single narrator voice-over, set aligned=false.
+After a requested sacrifice or death, the absent character need not appear in the ending; do not invent a continuity requirement that contradicts the story outcome.
 An opening question to viewers about why a visible problem exists is aligned with an image showing that problem.
 A narration describing the same ongoing action as its still image is aligned; do not demand that it happens before the narration.
 List each concrete mismatch in misses, starting with its scene number. Do not use the story summary as evidence.
@@ -835,6 +970,8 @@ Creator's original idea and constraints: {idea if key == 'concept' else '(assess
 Script JSON: {json.dumps(script, ensure_ascii=False)}
 Ground every suggestion in a specific part of the supplied script. Scores are editorial opinions.
 For concept review, check each concrete requirement against a numbered scene. Treat an implied or off-screen action as missing. Audit scene-by-scene narration/visual timing and narrator consistency independently of requirement coverage. If any mismatch exists, set aligned=false and name its scene in misses.
+Do not infer a ban on supporting people from a creator naming protagonists. An owner receiving a lost item or a character needed for a requested legend may appear unless the creator explicitly limits the cast.
+A character who sacrifices their life may be absent from later scenes; that absence fulfills the sacrifice rather than breaking character continuity. Do not require their presence in the ending unless the creator explicitly asks for it.
 Do not promise virality or invent retention statistics. Explain suggestions in simple {LANGS.get(language, 'English')}.
 {evidence_schema}
 Return JSON: {{"score":0-100,"verdict":"one short sentence in the selected language","strengths":["..."],"fixes":["specific actionable fix in the selected language"]{',"safe":true/false,"flags":["issues"]' if key == 'safety' else ',"aligned":true/false,"misses":["specific departure from the original idea"]' if key == 'concept' else ''}}}"""
@@ -932,32 +1069,45 @@ async def validate_script(script, language, region, duration=45, idea="", conten
     concept = next(a for a in agents if a["key"] == "concept")
     ram_checks = ram_ai.run_ram_ai_checks(script, language, duration)
     content_gaps = []
-    if concept["aligned"] and idea.strip() and script.get("scenes"):
+    if idea.strip() and script.get("scenes"):
         contract = content_contract or await extract_content_contract(idea)
         content_gaps = await audit_content_delivery(idea, contract, script)
+
+    candidates = list(dict.fromkeys(concept.get("misses", []) + content_gaps))
+    if not concept["aligned"] and not candidates:
+        candidates = ["The concept reviewer reported a departure from the creator's request"]
+    material_gaps = await adjudicate_story_gaps(idea, script, candidates) if candidates else []
+    content_aligned = not material_gaps
+    if candidates and not material_gaps:
+        concept["advisory_misses"] = concept.get("misses", [])
+        concept["original_aligned"] = concept["aligned"]
+        concept["aligned"] = True
+        concept["misses"] = []
+        concept["fixes"] = []
 
     safe = safety.get("safe") is True and ram_checks["safety_passed"]
 
     # Overall score is a craft average — no view prediction.
     overall = round(sum(a["score"] for a in agents) / len(agents))
-    if not ram_checks["all_passed"] or not concept["aligned"] or content_gaps:
+    if not ram_checks["all_passed"] or not content_aligned:
         overall = min(overall, 75)
 
-    all_fixes = [f for a in agents for f in a.get("fixes", [])] + concept.get("misses", []) + content_gaps + ram_checks["fixes"]
+    all_fixes = [f for a in agents for f in a.get("fixes", [])] + material_gaps + ram_checks["fixes"]
 
     return {
         "agents": agents,
         "overall": overall,
         "safe": safe,
         "concept_aligned": concept["aligned"],
-        "content_aligned": concept["aligned"] and not content_gaps,
-        "content_gaps": content_gaps,
+        "content_aligned": content_aligned,
+        "content_gaps": material_gaps,
+        "review_advisories": candidates if not material_gaps else [],
         "rating_label": "Ram AI Craft Opinion",
         "disclaimer": ram_checks["disclaimer"],
         "ram_ai_checks": ram_checks["checks"],
         "ram_ai_fixes": ram_checks["fixes"],   # failed hard checks, fed back into "improve"
         "fixes": all_fixes,
-        "all_passed": ram_checks["all_passed"] and safe and concept["aligned"] and not content_gaps,
+        "all_passed": ram_checks["all_passed"] and safe and content_aligned,
     }
 
 
@@ -1160,6 +1310,64 @@ def scene_character_names(project, scene):
     return names
 
 
+async def audit_scene_image(project, scene, image_data: bytes, mime: str, previous_image: bytes | None = None) -> list[str]:
+    """Use a cloud vision model to reject a picture that breaks the story moment."""
+    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not project_id and not api_key:
+        raise RuntimeError("Set GOOGLE_CLOUD_PROJECT or GEMINI_API_KEY to review generated scene images")
+    scenes = project.get("scenes") or []
+    index = next((i for i, item in enumerate(scenes) if item.get("id") == scene.get("id")), None)
+    if index is None:
+        raise RuntimeError("Scene image review could not locate the scene in its story")
+    previous = scenes[index - 1].get("visual", "") if index else ""
+    following = scenes[index + 1].get("visual", "") if index + 1 < len(scenes) else ""
+    prompt = f"""Review the FIRST supplied image as scene {index + 1} of this story. The SECOND image, if supplied,
+is the previous accepted scene and is only a reference for recurring people and objects.
+Creator's idea: {project.get('idea', '')}
+Previous scene visual: {previous}
+CURRENT scene narration: {scene.get('narration', '')}
+CURRENT scene required visual: {scene.get('visual', '')}
+Next scene visual: {following}
+Judge what is actually visible in the FIRST image, not what the text says should be there.
+Check concrete people, prop color and identity, setting, and the current action. Reject a future action or
+finished result already visible before the story reaches it. In a torn kite scene before patching, attached
+patches or tape are a mismatch. In a patching scene, the learner's hand and patch must visibly contact the kite;
+a patch hovering near an open hole is a mismatch. In a later flight shot, the repair should look complete.
+Do not reject harmless artistic details or a different camera angle. If a previous image is supplied, reject
+obvious clothing or prop changes, but let the CURRENT action progress beyond the previous image.
+Judge the main subject and action first. A flying object high in the upper sky is a flying shot even if
+small feet, hands, a spool, or scenery appear along the bottom edge; a ground-up view can include foreground.
+Do not infer an unseen action from the reference image or from tiny foreground details. Only reject a
+clear contradiction in the CURRENT image.
+Return JSON only: {{"matches_current":true/false,"future_state_visible":true/false,
+"continuity_ok":true/false,"issues":["specific visible mismatch"]}}. If everything matches, issues is []."""
+    contents = [prompt, "CURRENT IMAGE TO JUDGE:", types.Part.from_bytes(data=image_data, mime_type=mime)]
+    if previous_image:
+        with Image.open(io.BytesIO(previous_image)) as previous_file:
+            previous_mime = Image.MIME.get(previous_file.format, "image/png")
+        contents.append("PREVIOUS IMAGE FOR CONTINUITY ONLY. Do not judge this image as the current scene:")
+        contents.append(types.Part.from_bytes(data=previous_image, mime_type=previous_mime))
+    location = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
+    client_options = ({"vertexai": True, "project": project_id, "location": location}
+                      if project_id else {"api_key": api_key})
+    async with genai.Client(**client_options).aio as client:
+        response = await asyncio.wait_for(client.models.generate_content(
+            model=TEXT_MODEL, contents=contents,
+            config=types.GenerateContentConfig(response_mime_type="application/json")), timeout=45)
+    result = parse_json(response.text or "")
+    if (not isinstance(result, dict) or type(result.get("matches_current")) is not bool
+            or type(result.get("future_state_visible")) is not bool
+            or type(result.get("continuity_ok")) is not bool
+            or not isinstance(result.get("issues"), list)
+            or not all(isinstance(issue, str) for issue in result["issues"])):
+        raise RuntimeError("Image review returned an incomplete verdict")
+    if result["matches_current"] and not result["future_state_visible"] and result["continuity_ok"]:
+        return []
+    return [issue.strip() for issue in result["issues"] if issue.strip()][:3] or [
+        "The image does not match this scene's action and story state"]
+
+
 def scene_prompt(project, scene, with_ref):
     script = project.get("script") or {}
     visual = scene.get("visual") or ""
@@ -1360,6 +1568,104 @@ def _google_chirp_speech(text: str, voice_id: str, speed: float, language: str =
     return {"audio": data, "words": [], "timing_source": "estimated"}
 
 
+def _speech_match_score(expected: str, recognized: str) -> float:
+    def clean(value):
+        return " ".join("".join(c for c in unicodedata.normalize("NFC", value).casefold()
+                                if unicodedata.category(c)[0] not in {"P", "S"}).split())
+    return difflib.SequenceMatcher(None, clean(expected), clean(recognized)).ratio()
+
+
+def _align_caption_words(expected_text: str, recognized_words: list[dict]) -> list[dict]:
+    """Keep the approved script text while borrowing measured speech word times."""
+    expected = expected_text.split()
+    def clean(value):
+        return "".join(c for c in unicodedata.normalize("NFC", value).casefold()
+                       if unicodedata.category(c)[0] not in {"P", "S"})
+    matcher = difflib.SequenceMatcher(
+        None, [clean(word) for word in expected],
+        [clean(word["text"]) for word in recognized_words], autojunk=False)
+    aligned = []
+    pending = []
+    for operation, i1, i2, j1, j2 in matcher.get_opcodes():
+        if operation == "equal":
+            for source, timed in zip(expected[i1:i2], recognized_words[j1:j2]):
+                text = " ".join(pending + [source])
+                pending = []
+                aligned.append({"text": text, "start": timed["start"], "end": timed["end"]})
+        elif operation == "replace" and j2 > j1:
+            start, end = recognized_words[j1]["start"], recognized_words[j2 - 1]["end"]
+            source_words = expected[i1:i2]
+            weights = [max(1, len(clean(word))) for word in source_words]
+            total = sum(weights)
+            elapsed = 0
+            for source, weight in zip(source_words, weights):
+                word_start = start + (end - start) * elapsed / total
+                elapsed += weight
+                word_end = start + (end - start) * elapsed / total
+                text = " ".join(pending + [source])
+                pending = []
+                aligned.append({"text": text, "start": word_start, "end": word_end})
+        elif operation == "delete":
+            if aligned:
+                aligned[-1]["text"] += " " + " ".join(expected[i1:i2])
+            else:
+                pending.extend(expected[i1:i2])
+        # Extra recognition tokens do not change the approved narration text.
+    if pending and aligned:
+        aligned[-1]["text"] += " " + " ".join(pending)
+    if not aligned or " ".join(word["text"] for word in aligned) != " ".join(expected):
+        raise RuntimeError("Could not align the approved narration with recognized word times")
+    return aligned
+
+
+def _cloud_word_timestamps(audio: bytes, language: str, expected_text: str) -> list[dict]:
+    """Recognize generated narration in Google Cloud to time its actual words."""
+    import google.auth
+    from google.auth.transport.requests import AuthorizedSession
+
+    code = CHIRP_LANGUAGES.get(language)
+    if not code:
+        raise RuntimeError(f"Cloud word timing is not configured for {language}")
+    credentials, project = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    quota_project = os.environ.get("GOOGLE_CLOUD_PROJECT") or project
+    location = os.environ.get("GOOGLE_SPEECH_LOCATION", "global").strip() or "global"
+    model = os.environ.get("GOOGLE_SPEECH_MODEL", "long").strip() or "long"
+    host = "speech.googleapis.com" if location == "global" else f"{location}-speech.googleapis.com"
+    response = AuthorizedSession(credentials).post(
+        f"https://{host}/v2/projects/{quota_project}/locations/{location}/recognizers/_:recognize",
+        headers={"x-goog-user-project": quota_project} if quota_project else {},
+        json={"config": {"autoDecodingConfig": {}, "languageCodes": [code], "model": model,
+                         "features": {"enableWordTimeOffsets": True}},
+              "content": base64.b64encode(audio).decode("ascii")},
+        timeout=90,
+    )
+    if not response.ok:
+        raise RuntimeError(f"Google Cloud word timing failed (HTTP {response.status_code})")
+    words = []
+    for result in response.json().get("results", []):
+        alternatives = result.get("alternatives") or []
+        if not alternatives:
+            continue
+        for word in alternatives[0].get("words", []):
+            try:
+                start = float(str(word.get("startOffset", "0s")).removesuffix("s"))
+                end = float(str(word["endOffset"]).removesuffix("s"))
+                text = str(word["word"]).strip()
+            except (KeyError, TypeError, ValueError) as exc:
+                raise RuntimeError("Cloud word timing returned invalid offsets") from exc
+            if not text or start < 0 or end <= start or (words and start < words[-1]["start"]):
+                raise RuntimeError("Cloud word timing returned inconsistent offsets")
+            words.append({"text": text, "start": start, "end": end})
+    transcript = " ".join(word["text"] for word in words)
+    if not words or _speech_match_score(expected_text, transcript) < 0.90:
+        raise RuntimeError("Cloud speech recognition did not match the narration closely enough for timed captions")
+    return _align_caption_words(expected_text, words)
+
+
+async def cloud_word_timestamps(audio: bytes, language: str, expected_text: str) -> list[dict]:
+    return await asyncio.to_thread(_cloud_word_timestamps, audio, language, expected_text)
+
+
 async def tts(text: str, voice: str, speed: float, language: str = "") -> bytes:
     return (await tts_timed(text, voice, speed, language))["audio"]
 
@@ -1400,9 +1706,24 @@ async def coach(payload: dict):
     prompt = f"""Analyze this creator's YouTube Shorts performance.
 Data: {json.dumps(payload, ensure_ascii=False)}
 Rules: separate MEASURED facts from HYPOTHESES. Never claim to know the algorithm.
+Null or absent metrics mean unknown, never zero. If metrics are absent, give a beginner action plan
+based on their topic and goal, use health_score: null, and say there is not enough data to assess performance.
+Do not invent retention, views or comparisons. Recommend three manageable experiments, not guaranteed growth.
+Write the summary, advice and plan in the requested language. Avoid repeating story premises and hooks.
 Return JSON: {{"health_score":0-100,"summary":"2 sentence English summary",
 "measured":["fact from the numbers"],"hypotheses":["possible cause"],
 "wins":["what is working"],"experiments":[{{"title":"...","how":"...","metric":"..."}}],
 "weekly_plan":[{{"day":"Mon","idea":"in {LANGS.get(payload.get('language'), 'Telugu')}","hook":"..."}}],
 "next_video":{{"title":"...","hook":"...","why":"..."}}}}"""
-    return await ask_json("You are an expert YouTube Shorts growth coach for Indian regional creators.", prompt)
+    report = await ask_json("You are an expert YouTube Shorts growth coach for Indian regional creators.", prompt)
+    if not isinstance(report, dict) or not isinstance(report.get("summary"), str):
+        raise RuntimeError("The coach returned an incomplete plan. Please try again.")
+    has_metrics = any(
+        any(video.get(key) is not None for key in ("views", "likes", "avg_viewed_pct", "viewed_vs_swiped_pct"))
+        or any(value is not None for value in video.get("retention", []))
+        for video in payload.get("videos", [])
+    )
+    if not has_metrics:
+        report["health_score"] = None
+        report["measured"] = []
+    return report

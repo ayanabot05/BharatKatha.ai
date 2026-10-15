@@ -24,6 +24,18 @@ def test_creator_hooks_are_scoped_for_ideas_and_scripts():
     asyncio.run(run())
 
 
+def test_two_named_sisters_does_not_forbid_the_bag_owner_from_appearing():
+    async def run():
+        idea = "Two sisters return a lost bag to its owner."
+        extracted = {"promise": "Return the bag", "requirements": [
+            {"source": "Two sisters", "requirement": "Exactly two characters appear", "action_words": []},
+            {"source": "return a lost bag", "requirement": "Return the bag", "action_words": ["return"]}]}
+        with patch.object(ai, "ask_json", AsyncMock(return_value=extracted)):
+            contract = await ai.extract_content_contract(idea)
+        assert contract["requirements"][0]["requirement"] == "Include the people named by the creator: Two sisters"
+    asyncio.run(run())
+
+
 def test_script_generation_keeps_short_topic_faithful_draft():
     async def run():
         draft = {"title": "The repaired pipe", "scenes": [{"narration": "A leak appears", "visual": "A leaking pipe"}]}
@@ -51,6 +63,7 @@ def test_missing_promised_action_is_rewritten_before_script_is_returned():
         generate = AsyncMock(side_effect=[first, repaired])
         audit = AsyncMock(side_effect=[["Bringing the clamp is not fitting it"], []])
         with (patch.object(ai, "ask_json", generate),
+              patch.object(ai, "adjudicate_story_gaps", AsyncMock(side_effect=lambda idea, script, gaps: gaps)),
               patch.object(ai, "extract_content_contract", AsyncMock(return_value=contract)),
               patch.object(ai, "_concept_preflight_gaps", AsyncMock(return_value=[])),
               patch.object(ai, "audit_scene_alignment", AsyncMock(return_value=[])),
@@ -59,6 +72,7 @@ def test_missing_promised_action_is_rewritten_before_script_is_returned():
         assert result is repaired
         assert generate.await_count == 2 and audit.await_count == 2
         assert "Bringing the clamp is not fitting it" in generate.await_args.args[1]
+        assert "preserve scenes with no reported gap exactly" in generate.await_args.args[1]
     asyncio.run(run())
 
 
@@ -67,6 +81,7 @@ def test_unrepaired_promise_never_returns_a_script():
         draft = {"scenes": [{"narration": "They bring a clamp", "visual": "They hold it"}]}
         contract = {"promise": "Fit a clamp", "requirements": [{"source": "Fit a clamp", "requirement": "Fit it"}]}
         with (patch.object(ai, "ask_json", AsyncMock(return_value=draft)),
+              patch.object(ai, "adjudicate_story_gaps", AsyncMock(side_effect=lambda idea, script, gaps: gaps)),
               patch.object(ai, "extract_content_contract", AsyncMock(return_value=contract)),
               patch.object(ai, "_concept_preflight_gaps", AsyncMock(return_value=[])),
               patch.object(ai, "audit_scene_alignment", AsyncMock(return_value=[])),
@@ -104,6 +119,59 @@ def test_content_audit_allows_real_actions_described_with_synonyms():
         with patch.object(ai, "ask_json", AsyncMock(return_value=review)):
             assert await ai.audit_content_delivery("returns the envelope", contract, draft) == []
     asyncio.run(run())
+
+
+def test_farmer_role_is_verified_in_visual_when_model_cites_wrong_language_field():
+    async def run():
+        contract = {"promise": "A farmer repairs a hose", "requirements": [
+            {"source": "A farmer", "requirement": "The protagonist must be a farmer", "action_words": []}]}
+        script = {"scenes": [{"narration": "రైతు గొట్టం చూస్తాడు", "visual": "A farmer inspects the hose"}]}
+        review = {"keeps_promise": True, "checks": [
+            {"number": 1, "delivered": True, "scene": 1, "field": "narration",
+             "quote": "farmer", "gap": ""}], "overall_gap": ""}
+        with patch.object(ai, "ask_json", AsyncMock(return_value=review)):
+            assert await ai.audit_content_delivery("A farmer repairs a hose", contract, script) == []
+    asyncio.run(run())
+
+
+def test_turning_off_pump_is_visible_evidence_of_stopping_water():
+    async def run():
+        contract = {"promise": "Turn off water before repair", "requirements": [
+            {"source": "turns off the water", "requirement": "The farmer must turn off the water",
+             "action_words": ["turn"]}]}
+        script = {"scenes": [{"narration": "రైతు పంపు ఆపాడు",
+                              "visual": "The farmer turns off the electrical pump switch"}]}
+        review = {"keeps_promise": True, "checks": [
+            {"number": 1, "delivered": True, "scene": 1, "field": "narration",
+             "quote": "turns off the water", "gap": ""}], "overall_gap": ""}
+        with patch.object(ai, "ask_json", AsyncMock(return_value=review)):
+            assert await ai.audit_content_delivery("A farmer turns off the water", contract, script) == []
+    asyncio.run(run())
+
+
+def test_hindi_legend_framing_is_verified_from_narration():
+    async def run():
+        contract = {"promise": "A Mahabharata legend", "requirements": [
+            {"source": "clearly as traditional storytelling",
+             "requirement": "Use the traditional storytelling style", "action_words": []}]}
+        script = {"scenes": [{"narration": "महाभारत की कथा में घटोत्कच अर्जुन की रक्षा करता है।",
+                              "visual": "Ghatotkacha protects Arjuna on the battlefield"}]}
+        review = {"keeps_promise": True, "checks": [
+            {"number": 1, "delivered": True, "scene": 1, "field": "narration",
+             "quote": "traditional storytelling", "gap": ""}], "overall_gap": ""}
+        with patch.object(ai, "ask_json", AsyncMock(return_value=review)):
+            assert await ai.audit_content_delivery("Tell a legend clearly as traditional storytelling", contract, script) == []
+    asyncio.run(run())
+
+
+def test_requested_kite_color_is_repeated_without_overwriting_a_conflict():
+    script = {"scenes": [{"visual": "A torn red paper kite"},
+                         {"visual": "Grandma holds the paper kite"},
+                         {"visual": "A blue kite flies"}]}
+    ai._fill_requested_kite_color("Keep the same kite color", script)
+    assert script["scenes"][1]["visual"] == "Grandma holds the red paper kite"
+    assert script["scenes"][2]["visual"] == "A blue kite flies"
+    assert not ai._consistent_kite_color(script["scenes"])
 
 
 def test_time_condition_cannot_be_proved_by_an_earlier_scene():
@@ -157,6 +225,24 @@ def test_incomplete_content_checklist_gets_one_retry():
     asyncio.run(run())
 
 
+def test_content_checklist_retries_invented_quote_before_rewriting_story():
+    async def run():
+        contract = {"promise": "Find a letter", "requirements": [
+            {"source": "finds a letter", "requirement": "Find the letter", "action_words": ["find"]}]}
+        script = {"scenes": [{"narration": "Mira finds a letter", "visual": "Mira picks up a letter"}]}
+        wrong = {"keeps_promise": True, "checks": [
+            {"number": 1, "delivered": True, "scene": 1, "field": "visual",
+             "quote": "Mira finds a letter", "gap": ""}], "overall_gap": ""}
+        right = {"keeps_promise": True, "checks": [
+            {"number": 1, "delivered": True, "scene": 1, "field": "visual",
+             "quote": "Mira picks up a letter", "gap": ""}], "overall_gap": ""}
+        model = AsyncMock(side_effect=[wrong, right])
+        with patch.object(ai, "ask_json", model):
+            assert await ai.audit_content_delivery("Mira finds a letter", contract, script) == []
+        assert model.await_count == 2
+    asyncio.run(run())
+
+
 def test_visual_rejects_two_moments_in_one_still():
     script = {"scenes": [
         {"visual": "The girl runs along the road, then hands the anklet to Grandma."},
@@ -188,6 +274,20 @@ def test_scene_alignment_requires_quotes_from_the_same_scene():
         with patch.object(ai, "ask_json", AsyncMock(return_value=invented)):
             with pytest.raises(RuntimeError, match="outside its scene"):
                 await ai.audit_scene_alignment(script, "en")
+    asyncio.run(run())
+
+
+def test_scene_alignment_retries_an_invented_citation():
+    async def run():
+        script = {"scenes": [{"narration": "They inspect the leak", "visual": "Two neighbors inspect the pipe"}]}
+        invented = {"scene_checks": [{"scene": 1, "aligned": False, "issue": "Repair shown early",
+                                      "narration_quote": "They inspect the leak", "visual_quote": "They finish the repair"}]}
+        corrected = {"scene_checks": [{"scene": 1, "aligned": True, "issue": "",
+                                       "narration_quote": "", "visual_quote": ""}]}
+        model = AsyncMock(side_effect=[invented, corrected])
+        with patch.object(ai, "ask_json", model):
+            assert await ai.audit_scene_alignment(script, "en") == []
+        assert model.await_count == 2
     asyncio.run(run())
 
 
@@ -461,6 +561,7 @@ def test_script_review_reuses_the_project_content_contract():
 
         checks = {"all_passed": True, "safety_passed": True, "checks": [], "fixes": [], "disclaimer": ""}
         with (patch.object(ai, "_agent", side_effect=agent),
+              patch.object(ai, "adjudicate_story_gaps", AsyncMock(side_effect=lambda idea, script, gaps: gaps)),
               patch.object(ai.ram_ai, "run_ram_ai_checks", return_value=checks),
               patch.object(ai, "extract_content_contract", AsyncMock(side_effect=AssertionError("re-extracted"))),
               patch.object(ai, "audit_content_delivery", AsyncMock(return_value=[])) as audit):
@@ -484,6 +585,7 @@ def test_independent_content_gap_blocks_an_optimistic_concept_review():
         checks = {"all_passed": True, "safety_passed": True, "checks": [], "fixes": [], "disclaimer": ""}
         with (patch.object(ai, "_agent", side_effect=agent),
               patch.object(ai.ram_ai, "run_ram_ai_checks", return_value=checks),
+              patch.object(ai, "adjudicate_story_gaps", AsyncMock(return_value=["The clamp is never fitted"])),
               patch.object(ai, "audit_content_delivery", AsyncMock(return_value=["The clamp is never fitted"]))):
             result = await ai.validate_script(script, "en", "Andhra Pradesh", 30, "fit the clamp", contract)
         assert result["concept_aligned"] is True
@@ -579,12 +681,47 @@ def test_edit_uses_earlier_shot_as_authority_for_recurring_props():
         with (patch.object(projects, "db", SimpleNamespace(projects=collection)),
               patch.object(projects, "get_object", AsyncMock(return_value=(b"current", "image/png"))),
               patch.object(projects, "save_media", AsyncMock(return_value="new.png")),
+              patch.object(ai, "audit_scene_image", AsyncMock(return_value=[])),
               patch.object(ai, "gen_image", AsyncMock(return_value=(b"new", "image/png", False))) as generate):
             await projects._scene_job("project", "user", "shot-2", "Show the repaired joint", b"earlier")
         prompt, refs = generate.await_args.args
         assert refs == [b"current", b"earlier"]
         assert "second image is the authoritative earlier view" in prompt
         assert "Close-up of the pipe joint" in prompt
+    asyncio.run(run())
+
+
+def test_scene_image_retries_review_gap_before_becoming_ready():
+    async def run():
+        scene = {"id": "s1", "visual": "Grandma shows an unpatched torn kite", "narration": "It is still torn"}
+        project = {"id": "p1", "scenes": [scene]}
+        collection = SimpleNamespace(find_one=AsyncMock(return_value=project), update_one=AsyncMock())
+        generate = AsyncMock(side_effect=[(b"premature-patch", "image/png", False),
+                                          (b"still-torn", "image/png", False)])
+        audit = AsyncMock(side_effect=[["A patch is already attached"], []])
+        with (patch.object(projects, "db", SimpleNamespace(projects=collection)),
+              patch.object(projects, "save_media", AsyncMock(return_value="accepted.png")),
+              patch.object(ai, "gen_image", generate), patch.object(ai, "audit_scene_image", audit)):
+            assert await projects._scene_job("p1", "user", "s1") == (b"still-torn", False)
+        assert generate.await_count == 2
+        assert "A patch is already attached" in generate.await_args.args[0]
+        assert collection.update_one.await_args.args[1]["$set"]["scenes.$.status"] == "ready"
+    asyncio.run(run())
+
+
+def test_scene_image_with_two_bad_reviews_is_not_approved():
+    async def run():
+        scene = {"id": "s1", "visual": "A torn kite", "narration": "The kite tore"}
+        collection = SimpleNamespace(find_one=AsyncMock(return_value={"scenes": [scene]}), update_one=AsyncMock())
+        save = AsyncMock()
+        with (patch.object(projects, "db", SimpleNamespace(projects=collection)),
+              patch.object(projects, "save_media", save),
+              patch.object(ai, "gen_image", AsyncMock(return_value=(b"wrong", "image/png", False))),
+              patch.object(ai, "audit_scene_image", AsyncMock(return_value=["The kite is already repaired"]))):
+            assert await projects._scene_job("p1", "user", "s1") is None
+        save.assert_not_awaited()
+        assert collection.update_one.await_args.args[1]["$set"]["scenes.$.status"] == "failed"
+        assert collection.update_one.await_args.args[1]["$set"]["scenes.$.approved"] is False
     asyncio.run(run())
 
 

@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: सीन 2: 'विशाल रूप धारण करना' (narration) दृश्य में अभी स्पष्ट नहीं हो रहा है, केवल अस्त्र का आगमन दिखाया गया है।; सीन 3: दृश्य (visual) में अस्त्र का सीने पर लगना (impact) दिखाया गया है, जबकि नारेशन अभी उस कार्य के होने की प्रक्रिया बता रहा है; नारेशन और ",
+      "seconds": 70.99
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 0,
+    "total": 1,
+    "pass_rate": 0.0
+  }
+}

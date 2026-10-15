@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "case": 3,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "A farmer notices a broken irrigation hose, turns off the water, fits a connector, and only then restarts the flow. Do not promise a higher yield.",
+      "passed": false,
+      "error": "RuntimeError: Scene alignment review cited evidence outside its scene",
+      "seconds": 22.81
+    },
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script does not provide verifiable scene evidence for: The kite must retain the same color throughout",
+      "seconds": 75.88
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 0,
+    "total": 2,
+    "pass_rate": 0.0
+  }
+}

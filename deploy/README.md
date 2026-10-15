@@ -1,3 +1,5 @@
+> For the Vercel frontend handoff and current status, see [PHASE_ZERO.md](PHASE_ZERO.md).
+
 # Limited cloud beta preparation
 
 Status: deployment files prepared, not deployed. Image build, cloud credentials,
@@ -30,6 +32,10 @@ inference and tuning use separately provisioned cloud GPU workers.
 For the approved interim narration voices, set `TTS_PROVIDER=google_chirp` and
 `GOOGLE_CLOUD_PROJECT=ayana-video-studio`; the VM identity needs Cloud Text-to-Speech
 access. The local ignored `backend/.env` already selects this provider.
+For timed captions with that voice, enable Cloud Speech-to-Text and grant the VM
+identity access to recognize speech. `GOOGLE_SPEECH_LOCATION=global` and
+`GOOGLE_SPEECH_MODEL=long` use the supported Tamil/Telugu recognizer; the
+regional `chirp_3` Tamil model is unavailable in `asia-south1`.
 
 ## Before deployment
 
@@ -55,8 +61,16 @@ access. The local ignored `backend/.env` already selects this provider.
    scene generation, voice, render, download and a restart. Do not advertise the
    health endpoint as database/provider readiness.
 
+Scene generation now sends each finished image to a visual story-state review. A
+mismatch gets one sequential retry and then stays failed for creator correction;
+configure Vertex AI access or `GEMINI_API_KEY` for that review. Google Cloud voice
+caption timing uses Speech-to-Text v2 and requires that API enabled on the project.
+For Tamil in the tested project, `GOOGLE_SPEECH_LOCATION=global` with the `long`
+model worked; the tested `chirp_3` model was unavailable in `asia-south1`. This
+means narration sent for timing can leave the Mumbai region.
+
 Registration is closed by default. Initially use only the owner's beta account;
-an invitation-management flow is not implemented. No bulk user import is included.
+specific tester emails can register through `BETA_INVITE_EMAILS`; no invitation-email sending UI is implemented. No bulk user import is included.
 GCS mode does not copy old laptop media. Old projects need an explicit migration;
 new test projects write to the bucket. Keep a backup of the database and media.
 

@@ -52,6 +52,7 @@ class LocalSetupTests(unittest.TestCase):
             good_checks = {"all_passed": True, "safety_passed": True, "checks": [],
                            "fixes": [], "disclaimer": "Text estimate"}
             with patch.object(ai, "_agent", side_effect=agent), \
+                 patch.object(ai, "adjudicate_story_gaps", new=AsyncMock(return_value=["Repair never appears"])), \
                  patch.object(ai.ram_ai, "run_ram_ai_checks", return_value=good_checks):
                 result = await ai.validate_script({"scenes": []}, "en", "Hyderabad", 30, "village pipe repair")
             self.assertFalse(result["concept_aligned"])

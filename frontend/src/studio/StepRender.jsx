@@ -1,3 +1,4 @@
+import FeedbackForm from "@/components/FeedbackForm";
 import { useEffect, useState } from "react";
 import { Loader2, Film, Download, Copy, Youtube, Captions, FileText, Image as ImageIcon, Share2 } from "lucide-react";
 import { toast } from "sonner";
@@ -161,6 +162,7 @@ export default function StepRender({ project, update }) {
           </div>
         </div>
       </div>
+      <div className="mt-6"><FeedbackForm projectId={project.id} /></div>
     </section>
   );
 }

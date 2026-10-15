@@ -1,0 +1,65 @@
+{
+  "cases": [
+    {
+      "case": 5,
+      "language": "hi",
+      "region": "Rajasthan",
+      "idea": "Two sisters find a lost school bag at the bus stop and return it unopened to its owner before the bus leaves. Do not invent a cash reward.",
+      "script": {
+        "title": "सच्ची ईमानदारी",
+        "scenes": [
+          {
+            "narration": "बस स्टैंड पर दो सगी बहनें, मीरा और पिंकी, घर लौट रही थीं। तभी उनकी नज़र बेंच पर रखे एक भूरे स्कूल बैग पर पड़ी।",
+            "visual": "Mira and Pinky standing at a rural bus stop, looking at a brown leather school bag resting on the bench.",
+            "beat": "hook"
+          },
+          {
+            "narration": "दोनों बहनों ने बस्ते को बिल्कुल नहीं खोला और उसे सुरक्षित उठा लिया।",
+            "visual": "Mira picks up the brown leather school bag while Pinky stays close by, both sisters looking at the bag without opening it.",
+            "beat": "setup"
+          },
+          {
+            "narration": "पास ही एक छात्र को बस में चढ़ते देख, वे तेज़ी से उसकी ओर दौड़ीं।",
+            "visual": "Mira and Pinky running towards a student who is about to board a blue bus.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "बस चलने से ठीक पहले उन्होंने बस्ता उस छात्र के हाथ में थमा दिया।",
+            "visual": "Mira handing the brown leather school bag to the student as he stands at the door of the blue bus.",
+            "beat": "twist"
+          },
+          {
+            "narration": "अपना बस्ता वापस पाकर छात्र मुस्कुराया और बस अपनी मंज़िल की ओर चल दी।",
+            "visual": "The student smiling at the two sisters from the bus window as the blue bus begins to move away from the stop.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 34.72,
+      "review": {
+        "overall": 84,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 56.81
+    },
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script does not provide verifiable scene evidence for: Use the traditional storytelling style.",
+      "seconds": 67.54
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  }
+}

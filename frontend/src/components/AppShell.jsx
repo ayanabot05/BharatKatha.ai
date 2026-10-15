@@ -4,7 +4,7 @@ import { api, errMsg } from "@/lib/api";
 import { toast } from "sonner";
 import { useLocale, UI_LANGUAGES } from "@/context/LocaleContext";
 import { Globe, LayoutGrid, Plus, TrendingUp, Settings, LogOut, Clapperboard, Menu } from "lucide-react";
-import { CursorGlow, Magnetic, RamAvatar } from "@/components/fx";
+import { Magnetic, RamAvatar } from "@/components/fx";
 
 export const Logo = ({ light = false }) => (
   <div className="flex items-center gap-2.5" data-testid="app-logo">
@@ -39,9 +39,9 @@ export default function AppShell({ children }) {
   const { locale, changeLocale, t } = useLocale();
   const newProject = useNewProject();
   return (
-    <div className="min-h-screen flex bg-[#fff8f3] text-[#4a3f58]">
-      <CursorGlow />
-      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-[#f0dfd8] bg-gradient-to-b from-[#fdeee9] via-[#fbf1ec] to-[#eaf3ea] p-5 sticky top-0 h-screen overflow-hidden">
+    <div className="min-h-screen flex bg-[#faf8f3] text-[#4a3f58]">
+
+      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-[#f0dfd8] bg-[#eef2eb] p-5 sticky top-0 h-screen overflow-hidden">
         <div className="relative"><Logo light /></div>
         <div className="relative mt-8"><Magnetic strength={0.25}>
           <button data-testid="sidebar-new-video-btn" onClick={newProject} className="btn-primary w-full min-w-[184px]"><Plus size={16} /> {t("new_video")}</button>
@@ -76,7 +76,7 @@ export default function AppShell({ children }) {
         </div>
       </aside>
       <div className="flex-1 min-w-0 relative">
-        <header className="md:hidden sticky top-0 z-40 backdrop-blur-xl bg-[#fdeee9]/90 flex items-center justify-between gap-2 border-b border-[#f0dfd8] px-3 sm:px-4 py-3">
+        <header className="md:hidden sticky top-0 z-40 backdrop-blur-xl bg-[#eef2eb]/95 flex items-center justify-between gap-2 border-b border-[#f0dfd8] px-3 sm:px-4 py-3">
           <Logo light />
           <div className="flex items-center gap-2 sm:gap-4 text-[#4a3f58] shrink-0">
             <select aria-label={t("language")} value={locale} onChange={(e) => changeLocale(e.target.value)} className="w-20 rounded-lg bg-white px-1 py-1.5 text-xs text-[#4a3f58] border border-[#f0dfd8]">
@@ -90,7 +90,7 @@ export default function AppShell({ children }) {
                 <button onClick={logout} className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm"><LogOut size={16} />{t("sign_out")}</button>
               </nav>
             </details>
-            <button onClick={newProject} data-testid="m-new-video-btn" className="rounded-lg bg-gradient-to-br from-[#d0687d] to-[#b44a63] text-white p-1.5"><Plus size={16} /></button>
+            <button aria-label={t("new_video")} onClick={newProject} data-testid="m-new-video-btn" className="rounded-lg bg-gradient-to-br from-[#d0687d] to-[#b44a63] text-white p-1.5"><Plus size={16} /></button>
           </div>
         </header>
         <main className="relative px-3 sm:px-6 lg:px-8 py-5 sm:py-7 max-w-7xl mx-auto">{children}</main>

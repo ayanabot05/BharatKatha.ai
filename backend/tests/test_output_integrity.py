@@ -84,7 +84,8 @@ def test_ai_narration_uses_one_synthesis_pass_at_the_chosen_speed():
         def concat(_locals, combined):
             combined.write_bytes(b"combined-mp3")
 
-        with (patch.object(projects, "owned", new=AsyncMock(return_value=project)),
+        with (patch.dict("os.environ", {"TTS_PROVIDER": "edge"}),
+              patch.object(projects, "owned", new=AsyncMock(return_value=project)),
               patch.object(projects, "upd", new=AsyncMock()) as update,
               patch.object(projects, "save_media", new=AsyncMock(return_value="saved.mp3")),
               patch.object(projects.ai, "tts_timed", new=AsyncMock(return_value=speech)) as tts,
@@ -100,6 +101,51 @@ def test_ai_narration_uses_one_synthesis_pass_at_the_chosen_speed():
         assert audio["padded_seconds"] == 0.0
 
     asyncio.run(check())
+
+
+def test_managed_voice_uses_recognized_word_times_for_captions():
+    async def check():
+        from types import SimpleNamespace
+        project = {"id": "voice-timing", "language": "en", "step": 5,
+                   "render": {"status": "idle"}, "captions_on": True,
+                   "scenes": [{"id": "a", "narration": "Hello world"}]}
+        speech = {"audio": b"mock-mp3", "words": [], "timing_source": "estimated"}
+        words = [{"text": "Hello", "start": .1, "end": .6},
+                 {"text": "world", "start": .7, "end": 1.5}]
+        def concat(_locals, combined):
+            combined.write_bytes(b"combined-mp3")
+        with (patch.dict("os.environ", {"TTS_PROVIDER": "google_chirp"}),
+              patch.object(projects, "owned", new=AsyncMock(return_value=project)),
+              patch.object(projects, "upd", new=AsyncMock()) as update,
+              patch.object(projects, "save_media", new=AsyncMock(return_value="saved.mp3")),
+              patch.object(projects.ai, "tts_timed", new=AsyncMock(return_value=speech)),
+              patch.object(projects.ai, "cloud_word_timestamps", new=AsyncMock(return_value=words)) as timing,
+              patch.object(projects.render, "duration", return_value=2.0),
+              patch.object(projects.render, "concat_audio", side_effect=concat),
+              patch.object(projects, "review_fingerprint", return_value="same")):
+            await projects.audio_ai("voice-timing", SimpleNamespace(voice="coral", speed=1.0), {"id": "user"})
+        timing.assert_awaited_once_with(b"mock-mp3", "en", "Hello world")
+        scene = update.await_args.kwargs["scenes"][0]
+        assert scene["caption_timing"] == "cloud_stt"
+        assert scene["audio_captions"][0]["start"] == .1
+    asyncio.run(check())
+
+
+def test_cloud_word_timing_rejects_mismatched_speech():
+    class Response:
+        ok = True
+        status_code = 200
+        def json(self):
+            return {"results": [{"alternatives": [{"words": [
+                {"word": "wrong", "startOffset": "0.1s", "endOffset": "0.5s"}]}]}]}
+    with (patch.dict("os.environ", {"GOOGLE_CLOUD_PROJECT": "ayana-video-studio"}),
+          patch("google.auth.default", return_value=(object(), "ayana-video-studio")),
+          patch("google.auth.transport.requests.AuthorizedSession") as session):
+        session.return_value.post.return_value = Response()
+        with pytest.raises(RuntimeError, match="did not match"):
+            ai._cloud_word_timestamps(b"mock-mp3", "en", "Hello world")
+        url = session.return_value.post.call_args.args[0]
+        assert "/v2/projects/ayana-video-studio/locations/global/recognizers/_:recognize" in url
 
 
 def test_google_cloud_voice_uses_selected_language_speaker_and_speed():
@@ -303,6 +349,26 @@ def test_best_scene_reference_prefers_immediate_predecessor_for_closeups():
     assert selected == b"img_3"
 
 
+def test_cloud_caption_alignment_preserves_script_when_speech_recognition_mishears_name():
+    words = [{"text": "Grandma", "start": 0.1, "end": 0.4},
+             {"text": "shows", "start": 0.5, "end": 0.8},
+             {"text": "Pear", "start": 0.9, "end": 1.2},
+             {"text": "the", "start": 1.2, "end": 1.35},
+             {"text": "kite", "start": 1.4, "end": 1.8}]
+    aligned = ai._align_caption_words("Grandma shows Veer the kite.", words)
+    assert " ".join(word["text"] for word in aligned) == "Grandma shows Veer the kite."
+    assert aligned[2]["start"] == 0.9 and aligned[-1]["end"] == 1.8
+
+
+def test_cloud_caption_alignment_folds_split_recognition_into_one_script_word():
+    words = [{"text": "பாட்டி", "start": 0, "end": 0.3},
+             {"text": "தேர்", "start": 0.4, "end": 0.7},
+             {"text": "எனக்கு", "start": 0.7, "end": 1.1}]
+    aligned = ai._align_caption_words("பாட்டி பேரனுக்குக்", words)
+    assert [word["text"] for word in aligned] == ["பாட்டி", "பேரனுக்குக்"]
+    assert aligned[-1]["start"] == 0.4 and aligned[-1]["end"] == 1.1
+
+
 def test_best_scene_reference_preserves_prop_when_characters_enter_later():
     project = {"script": {"characters": [{"name": "Ranga", "look": "farmer"},
                                            {"name": "Meena", "look": "mechanic"}]}}
@@ -311,6 +377,15 @@ def test_best_scene_reference_preserves_prop_when_characters_enter_later():
     inspection = {"visual": "Ranga and Meena inspect the damaged pipe joint."}
     assert projects.best_scene_reference(project, inspection,
                                          [(pipe, b"pipe"), (people, b"people")]) == b"pipe"
+
+
+def test_kite_scene_reuses_reference_with_grandmother_and_child():
+    project = {"script": {"characters": []}}
+    first = {"visual": "Grandmother and boy hold a torn red kite in the courtyard"}
+    closeup = {"visual": "Close-up of boy's hands pressing a patch onto the red kite"}
+    later = {"visual": "Grandmother and boy watch the repaired red kite rise"}
+    assert projects.best_scene_reference(project, later,
+                                         [(first, b"both-characters"), (closeup, b"closeup")]) == b"both-characters"
 
 
 def test_paused_image_batch_resumes_only_missing_scenes():

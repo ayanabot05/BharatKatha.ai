@@ -1,0 +1,108 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "Two neighbors repair a leaking village water pipe together. Keep the same two people throughout. No miracle or income claims.",
+      "script": {
+        "title": "నీటి సమస్య - మన ఊరి సాయం",
+        "scenes": [
+          {
+            "narration": "అరే, మన ఊరి నీళ్ల పైపు ఎక్కడ పగిలిందో చూడండి!",
+            "visual": "Close-up shot of water spraying out from a rusted metal pipe embedded in the red village soil near a coconut grove.",
+            "beat": "hook"
+          },
+          {
+            "narration": "రామయ్య, సోమయ్య ఇద్దరు పొరుగువారు కలిసి వచ్చారు. ఆ నీటి లీకేజీని ఆపాలని నిర్ణయించుకున్నారు.",
+            "visual": "Ramayya in a white dhoti and Somayya in a yellow vest standing next to the leaking metal pipe, looking at the damage.",
+            "beat": "setup"
+          },
+          {
+            "narration": "రామయ్య పట్టుకోగా, సోమయ్య ఆ పైపుకు గట్టిగా రబ్బరు పట్టీని బిగిస్తున్నాడు.",
+            "visual": "Somayya in a yellow vest wrapping a thick rubber patch around the metal pipe while Ramayya in a white dhoti holds the pipe steady.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "చివరకు ఇద్దరూ కలిసి క్లాంప్ వేసి లీకేజీని చక్కగా ఆపేశారు.",
+            "visual": "The two neighbors tightening a metal clamp over the rubber patch on the fixed metal pipe; no water is leaking anymore.",
+            "beat": "twist"
+          },
+          {
+            "narration": "చూశారా, పదిమంది సాయం ఉంటే ఎలాంటి పనైనా ఎంత సులభమో! మన ఊరి పనులు మనమే చేసుకోవాలి.",
+            "visual": "Ramayya and Somayya smiling at each other, standing in the lush green village setting with the repaired pipe behind them.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 39.11,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 61.45
+    },
+    {
+      "case": 3,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "A farmer notices a broken irrigation hose, turns off the water, fits a connector, and only then restarts the flow. Do not promise a higher yield.",
+      "script": {
+        "title": "పొలంలో చిన్న మరమ్మత్తు",
+        "scenes": [
+          {
+            "narration": "చూడండి, రామయ్య అనే మన రైతుకు పొలంలో ఒక చోట నల్లని నీటి గొట్టం తెగిపోయి ఉండటం కనిపించింది.",
+            "visual": "A close-up shot of a broken black rubber irrigation hose lying in the mud, with water spraying out of a visible tear.",
+            "beat": "hook"
+          },
+          {
+            "narration": "నీరు వృథా కాకుండా ఉండాలని, రామయ్య వెంటనే వెళ్లి నీటి ప్రవాహాన్ని పూర్తిగా ఆపేశాడు.",
+            "visual": "The farmer Ramayya reaches for a metal water valve and turns it clockwise firmly to shut off the water flow from the source.",
+            "beat": "setup"
+          },
+          {
+            "narration": "ఇప్పుడు తెగిపోయిన ఆ నల్లని నీటి గొట్టం చివరలను సరిచేసి, గట్టిగా ఉండే కొత్త కనెక్టర్‌ను జాగ్రత్తగా బిగిస్తున్నాడు.",
+            "visual": "Close-up of Ramayya's hands as he slides a plastic connector onto the broken ends of the black rubber irrigation hose and twists it to secure the connection.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "చివరగా, మళ్లీ నీటిని వదిలాడు. ఇప్పుడు ఆ నల్లని నీటి గొట్టం నుండి ఎక్కడా లీకేజీ లేదు, నీరు సాఫీగా వెళ్తోంది.",
+            "visual": "Ramayya turns the metal valve back on, and the water flows steadily through the repaired black rubber irrigation hose without any leaks.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 43.31,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The script does not provide verifiable scene evidence for: The protagonist must be a farmer."
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 66.58
+    },
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script does not provide verifiable scene evidence for: The grandmother instructs the grandson.; The script does not provide verifiable scene evidence for: The characters repair the kite.; Scene 3 narration and image are out of sync: The narration desc",
+      "seconds": 74.46
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 1,
+    "total": 3,
+    "pass_rate": 0.333
+  }
+}

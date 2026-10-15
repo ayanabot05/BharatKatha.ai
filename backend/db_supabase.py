@@ -25,7 +25,7 @@ def _clean_project(row):
     if not row:
         return None
     res = dict(row)
-    for col in ("script", "validation", "scenes", "audio", "render"):
+    for col in ("script", "validation", "scenes", "audio", "render", "brief", "content_contract"):
         if col in res:
             res[col] = _parse_json(res[col])
     if res.get("scenes") is None:
@@ -62,7 +62,7 @@ class SupabaseDB:
 
     def _init_pool(self):
         try:
-            self._pool = ThreadedConnectionPool(minconn=1, maxconn=10, dsn=self._clean_url)
+            self._pool = ThreadedConnectionPool(minconn=1, maxconn=10, dsn=self._clean_url, connect_timeout=10)
         except Exception as e:
             log.warning("Connection pool initialization: %s", e)
             self._pool = None
@@ -79,7 +79,7 @@ class SupabaseDB:
                 return conn
             except Exception as e:
                 log.warning("Pool getconn error: %s", e)
-        return psycopg2.connect(self._clean_url)
+        return psycopg2.connect(self._clean_url, connect_timeout=10)
 
     def _release_conn(self, conn, close=False):
         if self._pool and conn:
@@ -253,13 +253,23 @@ PROJECT_COLUMNS = {
     "id", "user_id", "title", "language", "region", "idea",
     "script", "validation", "approved", "style", "scenes",
     "audio", "captions_on", "render", "step", "duration", "tone",
-    "created_at", "updated_at"
+    "created_at", "updated_at", "brief", "content_contract"
 }
 
 
 class ProjectsCollection:
     def __init__(self, db): self.db = db
     async def create_index(self, *a, **k): pass
+
+    async def page(self, user_id, page, size):
+        totals = await self.db.execute("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE render->>'status' = 'done') AS ready FROM projects WHERE user_id = %s", (user_id,), fetchone=True)
+        rows = await self.db.execute("""SELECT id, title, language, style, step, updated_at,
+            jsonb_build_object('status', render->>'status') AS render,
+            COALESCE((SELECT jsonb_agg(x) FROM (SELECT jsonb_build_object('image_path', s->>'image_path') AS x
+              FROM jsonb_array_elements(COALESCE(scenes::jsonb, '[]'::jsonb)) s WHERE s->>'image_path' IS NOT NULL LIMIT 1) thumbs), '[]'::jsonb) AS scenes
+            FROM projects WHERE user_id = %s ORDER BY updated_at DESC, id DESC LIMIT %s OFFSET %s""",
+            (user_id, size, (page - 1) * size), fetchall=True)
+        return {"items": [_clean_project(r) for r in rows or []], "total": totals["total"], "ready": totals["ready"], "page": page, "size": size}
 
     def find(self, filt, projection=None): return ProjectCursor(self.db, filt)
 
@@ -313,7 +323,7 @@ class ProjectsCollection:
             if k not in PROJECT_COLUMNS:
                 continue
             cols.append(f"{k} = %s")
-            params.append(Json(v) if k in ("script", "validation", "scenes", "audio", "render") and v is not None else v)
+            params.append(Json(v) if k in ("script", "validation", "scenes", "audio", "render", "brief", "content_contract") and v is not None else v)
         if not cols: return
         params.append(pid)
         await self.db.execute(f"UPDATE projects SET {', '.join(cols)} WHERE id = %s", tuple(params), commit=True)

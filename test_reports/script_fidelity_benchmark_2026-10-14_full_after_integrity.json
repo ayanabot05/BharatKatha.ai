@@ -1,0 +1,229 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "Two neighbors repair a leaking village water pipe together. Keep the same two people throughout. No miracle or income claims.",
+      "script": {
+        "title": "పక్కవారికి తోడుగా",
+        "scenes": [
+          {
+            "narration": "ఊరి చివర మంచినీళ్ల పైపు లీక్ అవుతూ నీళ్లు వృథాగా పోతున్నాయి. పొరుగువారైన గంగమ్మ, రామయ్య అక్కడికి వచ్చారు.",
+            "visual": "Gangamma in a yellow saree and Ramayya in a white dhoti standing in a lush village path, looking at a leaking blue plastic water pipe spurting water.",
+            "beat": "hook"
+          },
+          {
+            "narration": "రామయ్య పైపు పగులును గట్టిగా పట్టుకున్నాడు. గంగమ్మ ఆ లీకేజీ మీద నల్లటి రబ్బరు ముక్కను ఉంచుతోంది.",
+            "visual": "Ramayya firmly holding the leaking part of the blue plastic pipe, while Gangamma places a thick black rubber patch over the crack.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "గంగమ్మ రబ్బరు చుట్టూ గట్టి తాడును చుడుతుంటే, రామయ్య దాన్ని కదలకుండా పట్టుకుని సహకరిస్తున్నాడు.",
+            "visual": "Gangamma wrapping a strong jute rope around the black rubber patch on the blue plastic pipe while Ramayya holds the pipe steady.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "ఇద్దరూ కలిసి తాడును ముడివేశారు. ఇప్పుడు నీటి లీకేజీ పూర్తిగా ఆగిపోయింది.",
+            "visual": "Close-up of the blue plastic pipe showing the black rubber patch tightly bound with jute rope, with no water leaking anymore.",
+            "beat": "twist"
+          },
+          {
+            "narration": "ఊరి నీరు వృథా కాకుండా ఆపిన గంగమ్మ, రామయ్య తమ పని పూర్తయ్యాక సంతోషంగా నవ్వుకున్నారు.",
+            "visual": "Gangamma and Ramayya standing next to the now-dry blue plastic pipe, smiling at each other in the bright Andhra village sunlight.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 55.5,
+      "review": {
+        "overall": 81,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 79.65
+    },
+    {
+      "case": 2,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "Mira finds Grandma's anklet near the village well and returns it to Grandma before sunset. Do not add a reward.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: సీన్ 3: 'అమ్మమ్మ పట్టీని తీసుకుని' అని ఉండటం వల్ల మీరా పాత్రకు బదులు అమ్మమ్మ తీసుకుంటున్నట్లు గందరగోళం ఉంది (పాత్ర గుర్తింపు లోపం).",
+      "seconds": 53.62
+    },
+    {
+      "case": 3,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "A farmer notices a broken irrigation hose, turns off the water, fits a connector, and only then restarts the flow. Do not promise a higher yield.",
+      "script": {
+        "title": "నీటి వృధాను అరికట్టే రైతు",
+        "scenes": [
+          {
+            "narration": "పొలంలో నీళ్లు వృథా అవుతుంటే ఎవరైనా చూస్తూ ఊరుకుంటారా? మన రామయ్య రైతు వెంటనే దాన్ని గమనించాడు.",
+            "visual": "A wide shot of Ramayya, a farmer in a white dhoti, walking through lush green fields in the Godavari region, pointing at a crack in a black irrigation hose.",
+            "beat": "hook"
+          },
+          {
+            "narration": "ముందుగా రామయ్య మోటార్ స్విచ్ ఆపి, నీటి ప్రవాహాన్ని పూర్తిగా నిలిపివేశాడు.",
+            "visual": "Ramayya reaches for an electrical switchboard and turns off the water pump, stopping the water flow from the black irrigation hose.",
+            "beat": "setup"
+          },
+          {
+            "narration": "ఆ తర్వాత రామయ్య పగిలిన పైపు భాగాన్ని శుభ్రం చేసి, సరిగ్గా కనెక్టర్‌ని బిగిస్తున్నాడు.",
+            "visual": "Close-up of Ramayya's hands carefully fitting a sturdy plastic connector over the damaged part of the black irrigation hose.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "చివరగా అంతా సరిచూసుకుని, రామయ్య మళ్ళీ మోటార్ వేయడంతో నీరు సక్రమంగా ప్రవహిస్తోంది.",
+            "visual": "Ramayya turns the pump back on, and the water flows smoothly through the fully repaired black irrigation hose without any leaks.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 36.38,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The script does not provide verifiable scene evidence for: The farmer must discover the damaged hose."
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 56.91
+    },
+    {
+      "case": 4,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "A girl and her father discover seeds in an old clay pot. They identify the seeds together and decide to save them for the next planting season. No magical reveal.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: సీన్ 3: నాన్న విత్తనాలను చూడకముందే 'గుర్తించాము' అని వాక్యం మొదలవ్వడం వల్ల దృశ్యానికి, మాటకి మధ్య సమన్వయం తగ్గింది.; సీన్ 4: 'నాన్న చెప్తుంటే' అనే మాట వినిపించేటప్పుడు, నాన్న మౌనంగా సూచనలు మాత్రమే ఇస్తూ ఉండాలి, కానీ దృశ్యంలో నాన్న చూస్తూ ఉండటం పర్వాలేదు, ",
+      "seconds": 55.85
+    },
+    {
+      "case": 5,
+      "language": "hi",
+      "region": "Rajasthan",
+      "idea": "Two sisters find a lost school bag at the bus stop and return it unopened to its owner before the bus leaves. Do not invent a cash reward.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script does not provide verifiable scene evidence for: The setting is a bus stop.; Requirement 8 (exactly two characters) is failed because scene 3 and scene 4 introduce a third character (the छात्रा) who is the owner of the bag. The cast is not limit",
+      "seconds": 63.2
+    },
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script does not provide verifiable scene evidence for: Use a traditional storytelling style.; While the requirement to protect Arjuna and sacrifice is met, the script introduces a third character, Karna, who is not listed in the characters list, viola",
+      "seconds": 56.84
+    },
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "script": {
+        "title": "பட்டமும் பாட்டியும்",
+        "scenes": [
+          {
+            "narration": "ஒரு பாட்டியும் அவரது பேரனும் முற்றத்தில் அமர்ந்திருக்கிறார்கள். கிழிந்த மஞ்சள் நிறப் பட்டத்தைப் பார்த்து அந்த பேரன் வருத்தப்படுகிறான்.",
+            "visual": "A grandmother and her grandson sitting together on a village courtyard floor, the boy holding a torn bright yellow kite.",
+            "beat": "hook"
+          },
+          {
+            "narration": "பாட்டி அந்த பேரனுக்கு எப்படி ஒட்டு போடுவது என்று சொல்லிக் கொடுக்கிறார்.",
+            "visual": "Close-up of the grandmother guiding her grandson's hands as they prepare a piece of yellow paper for the repair.",
+            "beat": "setup"
+          },
+          {
+            "narration": "பேரன் பாட்டியின் உதவியுடன், கிழிந்த இடத்தில் அந்த மஞ்சள் நிறக் காகிதத்தை கவனமாக ஒட்டுகிறான்.",
+            "visual": "A close-up shot showing the grandson carefully attaching the yellow paper patch over the tear on the yellow kite.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "ஒட்டு காய்ந்ததும், அந்த மஞ்சள் நிறப் பட்டத்தை இருவரும் சேர்ந்து வானில் பறக்க விடுகிறார்கள்.",
+            "visual": "The grandmother and her grandson standing in an open field, both holding the string of the now-repaired yellow kite as it begins to rise.",
+            "beat": "twist"
+          },
+          {
+            "narration": "மீண்டும் பறக்கத் தொடங்கிய அந்த மஞ்சள் நிறப் பட்டம் வானத்தில் அழகாக உயர்ந்து செல்கிறது.",
+            "visual": "The repaired yellow kite soaring high in the blue sky, viewed from below as the grandmother and grandson look up with smiles.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 59.25,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The script does not provide verifiable scene evidence for: The story must feature a grandson."
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 78.76
+    },
+    {
+      "case": 8,
+      "language": "mr",
+      "region": "Maharashtra",
+      "idea": "A potter's daughter finds a crack in a clay water pot, sets that pot aside, and makes a new pot with her father. Do not claim the cracked pot was repaired.",
+      "script": {
+        "title": "मातीची नवी पहाट",
+        "scenes": [
+          {
+            "narration": "कुंभार सई आणि तिचे बाबा आज एकत्र मातीकाम करत आहेत.",
+            "visual": "Sae, the potter's daughter, and her father, an elderly potter, standing together in their workshop in rural Maharashtra, surrounded by various brown clay pots.",
+            "beat": "hook"
+          },
+          {
+            "narration": "कामाच्या ओघात सईला एका रांजणावर बारीक तडा दिसला.",
+            "visual": "Close-up of Sae's hands pointing at a long, jagged crack on the side of a large brown clay water pot.",
+            "beat": "setup"
+          },
+          {
+            "narration": "तिने तो रांजण तिथेच बाजूला उचलून ठेवला.",
+            "visual": "Sae carefully picking up the brown clay water pot with the crack and setting it aside on a wooden shelf, away from the active workbench.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "आता बाबांच्या मार्गदर्शनाखाली तिने पुन्हा नवीन माती मळायला घेतली.",
+            "visual": "Sae and her father sitting at the spinning wheel, both their hands working together to shape a fresh, wet lump of soft brown clay into a new pot.",
+            "beat": "twist"
+          },
+          {
+            "narration": "दोघांच्या हातांनी मिळून एक नवीन मातीचा रांजण तयार झाला.",
+            "visual": "Sae and her father smiling as they finish shaping the sturdy new brown clay water pot on the spinning wheel.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 36.69,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 66.78
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 2,
+    "total": 8,
+    "pass_rate": 0.25
+  }
+}

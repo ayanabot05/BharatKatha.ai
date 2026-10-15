@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Heart, MessageCircle, Share2, Sparkles } from "lucide-react";
 
 export const SHOWCASE = [
@@ -11,14 +11,23 @@ export const SHOWCASE = [
 
 export default function PhoneShort({ className = "" }) {
   const [i, setI] = useState(0);
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    if (!("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
-    const t = setInterval(() => setI((x) => (x + 1) % SHOWCASE.length), 4000);
+    if (!visible) return;
+    const t = setInterval(() => { if (!document.hidden) setI((x) => (x + 1) % SHOWCASE.length); }, 4000);
     return () => clearInterval(t);
-  }, []);
+  }, [visible]);
   const s = SHOWCASE[i];
   return (
-    <div className={`relative ${className}`} data-testid="hero-phone">
+    <div ref={ref} className={`relative ${className}`} data-testid="hero-phone">
       <div className="absolute -inset-6 rounded-[3rem] bg-rose-300/35 blur-2xl" />
       <div className="relative w-[220px] sm:w-[300px] aspect-[9/19] rounded-[2.6rem] bg-[#e7efe7] p-2.5 shadow-2xl ring-1 ring-[#c4d8c9]">
         <div className="relative h-full w-full rounded-[2.1rem] overflow-hidden bg-[#e7efe7]">

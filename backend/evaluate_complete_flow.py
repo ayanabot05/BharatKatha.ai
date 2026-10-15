@@ -20,7 +20,7 @@ CASE = 7
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--stage", choices=("prepare", "fix-images", "render", "status"), required=True)
+    parser.add_argument("--stage", choices=("prepare", "fix-images", "refresh-audio", "render", "status"), required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
     parser.add_argument("--start-image", type=int, default=1)
     parser.add_argument("--only-images", help="Comma-separated one-based image numbers")
@@ -110,6 +110,15 @@ def main():
         raise RuntimeError("Run --stage prepare and inspect each image before rendering")
     pid = state["project_id"]
     p = call("GET", f"/projects/{pid}")
+    if args.stage == "refresh-audio":
+        p = call("POST", f"/projects/{pid}/audio/ai", {"voice": "coral", "speed": 1.0}, timeout=300)
+        state["audio_duration"] = p["audio"]["duration"]
+        state["caption_timing"] = [scene.get("caption_timing") for scene in p["scenes"]]
+        state["stage"] = "images_and_audio_ready"
+        STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps({"audio_duration": state["audio_duration"],
+                          "caption_timing": state["caption_timing"]}, indent=2), flush=True)
+        return
     if args.stage == "fix-images":
         instructions = [
             "Show the original torn red kite with bare ripped paper only. Remove EVERY white patch, tape strip, and repair mark. Grandma and boy may inspect it, but no repair has started. Keep Grandma's purple sari and the boy's blue shirt.",

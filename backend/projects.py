@@ -10,7 +10,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional, List
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from pydantic import BaseModel, Field
 
 import ai
@@ -101,11 +101,20 @@ class ProjectPatch(BaseModel):
 
 
 class ScriptIn(BaseModel):
-    idea: str = Field(min_length=3)
+    idea: str = Field(min_length=3, max_length=6000)
     language: str = "te"
     region: str = "Andhra Pradesh"
-    duration: int = 45
-    tone: str = "Emotional"
+    duration: int = Field(default=45, ge=15, le=180)
+    tone: str = Field(default="Emotional", max_length=100)
+    category: str = Field(default="", max_length=100)
+    audience: str = Field(default="", max_length=200)
+    platform: str = Field(default="YouTube Shorts", max_length=100)
+
+
+def requested_content(project):
+    brief = project.get("brief") or {}
+    details = "\n".join(f"{key}: {brief[key]}" for key in ("category", "audience", "platform") if brief.get(key))
+    return project.get("idea", "") + ("\nCreator preferences:\n" + details if details else "")
 
 
 class EditIn(BaseModel):
@@ -130,6 +139,7 @@ def review_fingerprint(project):
         "language": project.get("language"),
         "region": project.get("region"),
         "duration": project.get("duration"),
+        "brief": project.get("brief"),
     }
     return hashlib.sha256(json.dumps(content, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
@@ -145,7 +155,8 @@ def scenes_from_script(script, old=None):
     for i, s in enumerate(script.get("scenes", [])):
         candidate = old[i] if i < len(old) else {}
         # A rewritten visual cannot safely keep a picture from the earlier script.
-        prev = candidate if candidate.get("visual") == s.get("visual", "") else {}
+        prev = candidate if (candidate.get("visual") == s.get("visual", "")
+                             and candidate.get("narration") == s.get("narration", "")) else {}
         out.append({"id": prev.get("id") or new_id(), "narration": s.get("narration", ""), "visual": s.get("visual", ""),
                     "beat": s.get("beat", ""), "image_path": prev.get("image_path"), "status": prev.get("status", "pending"),
                     "placeholder": prev.get("placeholder", False), "approved": prev.get("approved", False),
@@ -179,6 +190,18 @@ async def create(body: ProjectIn, user=Depends(current_user)):
 @router.get("")
 async def list_projects(user=Depends(current_user)):
     return await db.projects.find({"user_id": user["id"]}, {"_id": 0}).sort("updated_at", -1).to_list(200)
+
+
+@router.get("/page")
+async def project_page(page: int = Query(default=1, ge=1, le=10000),
+                       size: int = Query(default=12, ge=1, le=24), user=Depends(current_user)):
+    if hasattr(type(db.projects), "page"):
+        return await db.projects.page(user["id"], page, size)
+    query = {"user_id": user["id"]}
+    total = await db.projects.count_documents(query)
+    rows = await db.projects.find(query, {"_id": 0}).sort("updated_at", -1).skip((page - 1) * size).to_list(size)
+    return {"items": rows, "total": total, "page": page, "size": size,
+            "ready": await db.projects.count_documents({**query, "render.status": "done"})}
 
 
 @router.get("/{pid}")
@@ -268,14 +291,15 @@ async def gen_script(pid: str, body: ScriptIn, user=Depends(current_user)):
     if (p.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "Wait for the current render to finish before making a new script")
     await check_daily_limit(user, "script_generated")
+    brief = {key: getattr(body, key) for key in ("category", "audience", "platform")}
     try:
-        script = await ai.write_script(body.idea, body.language, body.region, body.duration, body.tone, user_id=user["id"])
+        script = await ai.write_script(requested_content({"idea": body.idea, "brief": brief}), body.language, body.region, body.duration, body.tone, user_id=user["id"])
     except Exception as e:
         log.exception("script")
         raise HTTPException(502, f"Script generation failed: {e}")
     contract = script.pop("_content_contract", None)
     await upd(pid, idea=body.idea, language=body.language, region=body.region, duration=body.duration, tone=body.tone,
-              content_contract=contract,
+              content_contract=contract, brief=brief,
               script=script, scenes=scenes_from_script(script), title=script.get("title") or script.get("title_en") or "Untitled",
               validation=None, approved=False, audio=None, render={"status": "idle", "progress": 0}, step=2)
     await pulse.log_event(
@@ -293,7 +317,7 @@ async def validate(pid: str, user=Depends(current_user)):
         raise HTTPException(400, "Generate a script first")
     try:
         v = await ai.validate_script(p["script"], p["language"], p["region"], p.get("duration", 45),
-                                     p.get("idea", ""), p.get("content_contract"))
+                                     requested_content(p), p.get("content_contract"))
     except Exception as e:
         raise HTTPException(502, f"Validation failed: {e}")
     v["content_fingerprint"] = review_fingerprint(p)
@@ -317,7 +341,7 @@ async def improve(pid: str, user=Depends(current_user)):
     if p["validation"].get("content_gaps"):
         fixes["Missing story content"] = p["validation"]["content_gaps"]
     try:
-        script = await ai.write_script(p["idea"], p["language"], p["region"], p.get("duration", 45),
+        script = await ai.write_script(requested_content(p), p["language"], p["region"], p.get("duration", 45),
                                        p.get("tone", "Emotional"), feedback=fixes, previous=p["script"],
                                        user_id=user["id"], content_contract=p.get("content_contract"))
         contract = script.pop("_content_contract", None)
@@ -325,7 +349,7 @@ async def improve(pid: str, user=Depends(current_user)):
         raise HTTPException(502, f"Improve failed: {e}")
     try:
         v = await ai.validate_script(script, p["language"], p["region"], p.get("duration", 45),
-                                     p.get("idea", ""), contract)
+                                     requested_content(p), contract)
         v["content_fingerprint"] = review_fingerprint({**p, "script": script})
     except Exception as e:
         # The revised draft already passed content delivery. Preserve it when
@@ -380,14 +404,28 @@ async def _scene_job(pid, uid, sid, instruction=None, ref=None):
             # real image: edit it in place
             base = (await get_object(scene["image_path"]))[0]
             refs = [base, ref] if ref else [base]
-            data, mime, placeholder = await ai.gen_image(
-                ai.edit_prompt(p, instruction, scene, continuity_ref=bool(ref)), refs)
+            prompt = ai.edit_prompt(p, instruction, scene, continuity_ref=bool(ref))
         elif instruction:
             # no real image to edit (placeholder or none yet): regenerate the scene with the instruction applied
             edited = dict(scene, visual=f"{scene.get('visual', '')}. Also: {instruction}")
-            data, mime, placeholder = await ai.gen_image(ai.scene_prompt(p, edited, bool(ref)), [ref] if ref else None)
+            prompt = ai.scene_prompt(p, edited, bool(ref))
+            refs = [ref] if ref else None
         else:
-            data, mime, placeholder = await ai.gen_image(ai.scene_prompt(p, scene, bool(ref)), [ref] if ref else None)
+            prompt = ai.scene_prompt(p, scene, bool(ref))
+            refs = [ref] if ref else None
+        for attempt in range(2):
+            data, mime, placeholder = await ai.gen_image(prompt, refs)
+            if placeholder:
+                break
+            review_scene = dict(scene, visual=f"{scene.get('visual', '')}. Also: {instruction}") if instruction else scene
+            gaps = await ai.audit_scene_image(p, review_scene, data, mime, ref)
+            if not gaps:
+                break
+            if attempt == 1:
+                raise RuntimeError("Image does not show this story moment: " + "; ".join(gaps))
+            prompt += (" REVIEW CORRECTION: The prior result was rejected because "
+                       + "; ".join(gaps) + ". Recreate this scene with the CURRENT action only, "
+                       "keeping people, clothes, and objects consistent with the reference.")
         path = await save_media(uid, "scenes", data, "png" if "png" in mime else "jpg", mime)
         await db.projects.update_one({"id": pid, "scenes.id": sid},
                                      {"$set": {"scenes.$.image_path": path, "scenes.$.status": "ready",
@@ -419,8 +457,16 @@ def best_scene_reference(project, current, references):
         visual = (scene.get("visual") or "").lower()
         return {term for term in ("pipe", "joint", "clamp", "wrench", "tap", "valve", "well",
                                    "bucket", "door", "cart", "bicycle", "tree", "bridge", "boat",
-                                   "phone", "book", "field", "house", "machine", "rope")
+                                   "phone", "book", "field", "house", "machine", "rope", "kite", "patch")
                 if term in re.findall(r"[a-z]+", visual)}
+
+    def roles(scene):
+        visual = (scene.get("visual") or "").lower()
+        words = set(re.findall(r"[a-z]+", visual))
+        aliases = {"grandmother": {"grandma", "grandmother", "granny"},
+                   "grandfather": {"grandpa", "grandfather"},
+                   "child": {"boy", "girl", "child", "grandson", "granddaughter"}}
+        return {role for role, variants in aliases.items() if words & variants}
 
     current_props = prop_terms(current)
     names = ai.scene_character_names(project, current)
@@ -428,7 +474,8 @@ def best_scene_reference(project, current, references):
     for index, (previous, data) in enumerate(references):
         prop_overlap = len(current_props & prop_terms(previous))
         character_overlap = len(names & ai.scene_character_names(project, previous))
-        score = (prop_overlap, character_overlap, index)
+        role_overlap = len(roles(current) & roles(previous))
+        score = (prop_overlap, character_overlap + role_overlap, index)
         if score >= best_score:
             best, best_score = data, score
     return best
@@ -606,7 +653,9 @@ async def patch_scene(pid: str, sid: str, body: SceneTextIn, user=Depends(curren
                        "scenes.$.placeholder": False, "scenes.$.approved": False,
                        "scenes.$.versions": []})
     if "scenes.$.narration" in fields and fields["scenes.$.narration"] != scene.get("narration"):
-        fields.update({"scenes.$.audio_path": None, "scenes.$.audio_duration": None})
+        fields.update({"scenes.$.audio_path": None, "scenes.$.audio_duration": None,
+                       "scenes.$.image_path": None, "scenes.$.status": "pending",
+                       "scenes.$.approved": False, "scenes.$.placeholder": False})
         await upd(pid, audio=None)
     if fields:
         await upd(pid, render={"status": "idle", "progress": 0})
@@ -703,6 +752,17 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
                 raise ValueError("Voice provider returned unreadable audio")
             locals_.append(local)
             durations.append(measured)
+        if os.environ.get("TTS_PROVIDER", "edge").lower() == "google_chirp" and p.get("captions_on", True):
+            slots = asyncio.Semaphore(2)
+            async def time_words(index, speech):
+                async with slots:
+                    words = await ai.cloud_word_timestamps(
+                        speech["audio"], p.get("language", ""), p["scenes"][index]["narration"])
+                    if words[-1]["end"] > durations[index] + 0.25:
+                        raise RuntimeError("Cloud word timestamps exceed the narration duration")
+                    speech["words"] = words
+                    speech["timing_source"] = "cloud_stt"
+            await asyncio.gather(*(time_words(index, speech) for index, speech in enumerate(clips)))
         combined = work / "combined.mp3"
         await asyncio.to_thread(render.concat_audio, locals_, combined)
         return clips, durations, combined.read_bytes(), round(await asyncio.to_thread(render.duration, combined), 2)
@@ -772,7 +832,7 @@ async def render_timeline(project, audio_local):
             raise ValueError("Scene narration is incomplete. Generate narration again.")
         scale = total / sum(durations)
         offset = 0.0
-        timing = "provider"
+        timing = "cloud_stt" if all(s.get("caption_timing") == "cloud_stt" for s in scenes) else "provider"
         for scene, d in zip(scenes, durations):
             if project.get("captions_on", True):
                 local = scene.get("audio_captions")

@@ -13,7 +13,7 @@ import StepRender from "@/studio/StepRender";
 import { useLocale } from "@/context/LocaleContext";
 import StudioStepper from "@/components/StudioStepper";
 import LivePreview, { ramStatus } from "@/components/LivePreview";
-import { Confetti, CursorGlow } from "@/components/fx";
+import { Confetti } from "@/components/fx";
 
 const VIEWS = { 1: StepIdea, 2: StepScript, 3: StepStyle, 4: StepScenes, 5: StepAudio, 6: StepRender };
 
@@ -68,8 +68,14 @@ export default function Studio() {
   const busy = project && (project.scenes?.some((s) => s.status === "generating" || s.status === "queued") || project.render?.status === "rendering");
   useEffect(() => {
     if (!busy) return undefined;
-    const timer = setInterval(() => load(false), 3000);
-    return () => clearInterval(timer);
+    let stopped = false;
+    let timer;
+    const poll = async () => {
+      if (!document.hidden) await load(false);
+      if (!stopped) timer = setTimeout(poll, document.hidden ? 10000 : 3000);
+    };
+    timer = setTimeout(poll, 3000);
+    return () => { stopped = true; clearTimeout(timer); };
   }, [busy, load]);
 
   // Celebrate the moment a render finishes
@@ -94,7 +100,7 @@ export default function Studio() {
   const { state: ramState } = ramStatus(project, view);
   return (
     <div>
-      <CursorGlow />
+
       <Confetti fire={fire} />
       <div className="flex items-center gap-3 text-sm text-[#7b7083] mb-4">
         <Link to="/dashboard" onClick={(e) => { if (!canLeave()) e.preventDefault(); }} data-testid="studio-back-link" className="flex items-center gap-1 hover:text-[#a23f58]"><ChevronLeft size={16} />{t("my_videos")}</Link>

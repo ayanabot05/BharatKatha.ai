@@ -35,7 +35,7 @@ export default function StepIdea({ project, update }) {
   const [mode, setMode] = useState(project.idea ? "have" : null);
   const [cfg, setCfg] = useState({ language: project.language || "te", region: project.region || "Andhra Pradesh", duration: project.duration || 45, tone: project.tone || "Emotional" });
   const [idea, setIdea] = useState(project.idea || "");
-  const [find, setFind] = useState({ category: CATEGORIES[0], platform: PLATFORMS[0], audience: "Families & kids" });
+  const [find, setFind] = useState({ category: project.brief?.category || CATEGORIES[0], platform: project.brief?.platform || PLATFORMS[0], audience: project.brief?.audience || "Families & kids" });
   const [ideas, setIdeas] = useState([]);
   const [trends, setTrends] = useState([]);
   const [trendNote, setTrendNote] = useState("");
@@ -67,7 +67,7 @@ export default function StepIdea({ project, update }) {
     if (!text || text.trim().length < 3) return toast.error("Describe your idea first");
     setBusy("script");
     try {
-      const { data } = await api.post(`/projects/${project.id}/script/generate`, { idea: text, ...cfg, duration: Number(cfg.duration) });
+      const { data } = await api.post(`/projects/${project.id}/script/generate`, { idea: text, ...find, ...cfg, duration: Number(cfg.duration) });
       toast.success("Script ready — review it with the AI agents");
       update(data, 2);
     } catch (e) { toast.error(errMsg(e)); } finally { setBusy(""); }
@@ -91,6 +91,15 @@ export default function StepIdea({ project, update }) {
         <Pick label={t("tone")} testid="idea-tone-select" value={cfg.tone} onChange={(v) => setCfg({ ...cfg, tone: v })} items={TONES.map((item) => ({ v: item, l: item }))} />
       </div>
 
+          <div className="mt-4 mb-6 grid sm:grid-cols-3 gap-3">
+            <Pick label="Category" testid="find-category-select" value={find.category} onChange={(v) => { setFind({ ...find, category: v }); clearTrends(); }} items={CATEGORIES.map((c) => ({ v: c, l: c }))} />
+            <Pick label="Platform" testid="find-platform-select" value={find.platform} onChange={(v) => setFind({ ...find, platform: v })} items={PLATFORMS.map((c) => ({ v: c, l: c }))} />
+            <div className="space-y-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#587168]">Audience</div>
+              <Input data-testid="find-audience-input" value={find.audience} onChange={(e) => { setFind({ ...find, audience: e.target.value }); clearTrends(); }} />
+            </div>
+          </div>
+      <p className="mt-3 text-sm text-[#587168]">Length is a guide. We keep your story concise and allow a little extra time for a complete ending.</p>
       {mode === "have" && (
         <div className="mt-6 rise">
           <Textarea data-testid="idea-textarea" rows={4} value={idea} onChange={(e) => setIdea(e.target.value)} className="indic bg-[#f5f9f4] text-base"
@@ -104,14 +113,6 @@ export default function StepIdea({ project, update }) {
 
       {mode === "find" && (
         <div className="mt-6 rise">
-          <div className="mb-6 grid sm:grid-cols-3 gap-3">
-            <Pick label="Category" testid="find-category-select" value={find.category} onChange={(v) => { setFind({ ...find, category: v }); clearTrends(); }} items={CATEGORIES.map((c) => ({ v: c, l: c }))} />
-            <Pick label="Platform" testid="find-platform-select" value={find.platform} onChange={(v) => setFind({ ...find, platform: v })} items={PLATFORMS.map((c) => ({ v: c, l: c }))} />
-            <div className="space-y-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#587168]">Audience</div>
-              <Input data-testid="find-audience-input" value={find.audience} onChange={(e) => { setFind({ ...find, audience: e.target.value }); clearTrends(); }} />
-            </div>
-          </div>
           <div className="mb-6 rounded-2xl border border-cyan-500/30 bg-cyan-500/5 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div><div className="font-semibold">Recent videos for your topic</div><p className="text-xs text-[#587168]">Search YouTube using your language and story category. Use the ideas to make an original story.</p></div>

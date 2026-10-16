@@ -60,8 +60,11 @@ async def login(body: LoginIn, request: Request, response: Response):
     email = body.email.lower()
     ident = f"{request.client.host if request.client else 'x'}:{email}"
     att = await db.login_attempts.find_one({"identifier": ident})
-    if att and att.get("count", 0) >= 5 and att.get("locked_until", "") > now_iso():
-        raise HTTPException(429, "Too many attempts. Try again in 15 minutes.")
+    if att and att.get("count", 0) >= 5:
+        locked = att.get("locked_until")
+        locked_str = locked.isoformat() if hasattr(locked, "isoformat") else str(locked or "")
+        if locked_str > now_iso():
+            raise HTTPException(429, "Too many attempts. Try again in 15 minutes.")
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(body.password, user["password_hash"]):
         count = (att or {}).get("count", 0) + 1

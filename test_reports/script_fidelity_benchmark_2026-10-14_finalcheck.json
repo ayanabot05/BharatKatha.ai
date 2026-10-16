@@ -1,0 +1,95 @@
+{
+  "cases": [
+    {
+      "case": 2,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "Mira finds Grandma's anklet near the village well and returns it to Grandma before sunset. Do not add a reward.",
+      "script": {
+        "title": "అమ్మమ్మ కాలి పట్టీ",
+        "scenes": [
+          {
+            "narration": "మనమరాలు మీరా, తన అమ్మమ్మ కాలి పట్టీని ఊరి బావి దగ్గర గడ్డిలో పడి ఉండటం గమనించింది.",
+            "visual": "A young girl named Mira wearing a blue Pochampally cotton dress looking down at an intricate silver anklet lying on the dry red soil near a stone village well.",
+            "beat": "hook"
+          },
+          {
+            "narration": "అది అమ్మమ్మ పట్టీయే అని గుర్తుపట్టి, మీరా ఆ వెండి పట్టీని జాగ్రత్తగా తన చేతిలోకి తీసుకుంది.",
+            "visual": "Close-up of Mira picking up the shiny silver anklet from the ground, recognizing it as she holds it in her palm.",
+            "beat": "setup"
+          },
+          {
+            "narration": "సూర్యుడు అస్తమించకముందే అమ్మమ్మకు ఆ పట్టీని అందించాలని మీరా ఇంటి వైపు వేగంగా నడిచింది.",
+            "visual": "Mira walking briskly along a narrow village path lined with Deccan granite boulders, with the sun still visible in the sky.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "సూర్యాస్తమయం కావడానికి ముందే మీరా అమ్మమ్మకు ఆ వెండి పట్టీని తిరిగి ఇచ్చేసింది.",
+            "visual": "Mira handing the silver anklet to her elderly Grandma, who is sitting on a neem-tree wooden stool in her courtyard, while the sun is setting in the background.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 67.82,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 110.79
+    },
+    {
+      "case": 5,
+      "language": "hi",
+      "region": "Rajasthan",
+      "idea": "Two sisters find a lost school bag at the bus stop and return it unopened to its owner before the bus leaves. Do not invent a cash reward.",
+      "script": {
+        "title": "अमानत की वापसी",
+        "scenes": [
+          {
+            "narration": "बस स्टैंड की भीड़ में, दो बहनें मीरा और पूजा को अचानक ये नीला बस्ता पड़ा हुआ मिला।",
+            "visual": "Meera and Pooja, two sisters in colorful Rajasthani kurtas, standing at a dusty village bus stop, looking down at a worn-out blue school bag lying on the ground.",
+            "beat": "hook"
+          },
+          {
+            "narration": "उन्होंने अपनी ईमानदारी बनाए रखी और उस नीले बस्ते को बिना खोले बस के पास खड़े एक छात्र की तलाश की।",
+            "visual": "Meera and Pooja standing side by side, keeping their hands away from the blue school bag, looking around the bus stop area for the owner.",
+            "beat": "setup"
+          },
+          {
+            "narration": "बस के रवाना होने से ठीक पहले, उन्होंने भागकर वह नीला बस्ता अपने पास खड़े सहपाठी को थमा दिया।",
+            "visual": "Meera and Pooja handing the blue school bag directly to a schoolboy standing near the bus door just as the engine starts.",
+            "beat": "twist"
+          },
+          {
+            "narration": "सही मालिक तक बस्ता पहुँचाकर बहनों के चेहरे पर संतोष की मुस्कान आ गई।",
+            "visual": "The bus pulling away into the distance; the schoolboy looking back from the window with the blue school bag, while Meera and Pooja smile at each other.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 38.91,
+      "passed": false,
+      "error": "RuntimeError: Concept review cited invalid scene alignment evidence",
+      "seconds": 45.89
+    },
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script uses a generic narration style rather than adopting the tone or framing of a traditional storyteller (e.g., using a storyteller character or established oral tradition phrasing).; The story depicts a singular divine arrow strike, whereas the tr",
+      "seconds": 92.31
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 1,
+    "total": 3,
+    "pass_rate": 0.333
+  }
+}

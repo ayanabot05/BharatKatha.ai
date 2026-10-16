@@ -65,7 +65,7 @@ async def generate(body: GenerateRequest, authorization: str | None = Header(def
     except Exception as exc:
         message = str(exc).lower()
         if "quota" in message or "429" in message:
-            raise HTTPException(429, "Vertex image quota reached; retry later") from exc
+            raise HTTPException(429, "Vertex image capacity or quota reached; retry later") from exc
         if "403" in message or "permission" in message:
             raise HTTPException(503, "Vertex image access denied for worker identity") from exc
         raise HTTPException(502, "Vertex image request failed") from exc

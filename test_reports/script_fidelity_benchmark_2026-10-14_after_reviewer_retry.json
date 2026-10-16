@@ -1,0 +1,94 @@
+{
+  "cases": [
+    {
+      "case": 3,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "A farmer notices a broken irrigation hose, turns off the water, fits a connector, and only then restarts the flow. Do not promise a higher yield.",
+      "script": {
+        "title": "రైతు రత్తయ్య నీటి పొదుపు",
+        "scenes": [
+          {
+            "narration": "పొలంలో నీరు ఇలా వృధాగా బయటకు పోతుంటే ఎంత బాధగా ఉంటుంది కదా!",
+            "visual": "Wide shot of a lush green paddy field, showing water spraying out from a crack in a black plastic irrigation hose.",
+            "beat": "hook"
+          },
+          {
+            "narration": "రైతు రత్తయ్య గారు వెంటనే ఆ నీటి పంపు వద్దకు వెళ్లి మోటార్ స్విచ్ ఆపి నీటిని నిలిపేశారు.",
+            "visual": "Rattayya, a middle-aged farmer in a white dhoti, turns off the electrical pump switch near the black plastic irrigation hose.",
+            "beat": "setup"
+          },
+          {
+            "narration": "తెగిపోయిన పైపు భాగాన్ని కత్తెరతో కత్తిరించి తొలగిస్తున్నారు.",
+            "visual": "Close-up of Rattayya using a pair of shears to cut off the damaged section of the black plastic irrigation hose.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "ఇప్పుడు కొత్త కనెక్టర్‌ను రెండు వైపులా జాగ్రత్తగా బిగిస్తున్నారు.",
+            "visual": "Close-up of Rattayya's hands as he firmly slides and fits a new, grey plastic connector into the two open ends of the black plastic irrigation hose.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "మరమ్మత్తు పూర్తయ్యింది, ఇప్పుడు మళ్ళీ మోటార్ ఆన్ చేసి నీటిని పొలానికి మళ్ళిస్తున్నారు.",
+            "visual": "Rattayya turns the pump switch on; water now flows steadily and without leaks through the connected black plastic irrigation hose into the fields.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 61.55,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The script does not provide verifiable scene evidence for: The farmer must turn off the water."
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 98.65
+    },
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "script": {
+        "title": "பாட்டியின் பாடம்",
+        "scenes": [
+          {
+            "narration": "பாட்டியும் பேரனும் வீட்டின் முற்றத்தில் இருக்காங்க. கிழிந்த மஞ்சள் பட்டத்தை பார்த்து தம்பி வருத்தப்படுறான்.",
+            "visual": "An elderly grandmother and her grandson sitting in a courtyard, the boy holding a torn yellow kite looking sad.",
+            "beat": "hook"
+          },
+          {
+            "narration": "பாட்டி சொல்லிக்கொடுக்க, தம்பி தானே முன்வந்து கிழிந்த இடத்தில் பசை தடவி காகிதத்தை ஒட்டுறான்.",
+            "visual": "The grandson applying glue to the torn part of the yellow kite while the grandmother guides his hands to attach the paper patch.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "ஒட்டி முடித்த அந்த மஞ்சள் பட்டம், இப்போ காற்றோடு இணைந்து வானில் உயரே பறக்குது.",
+            "visual": "The grandson standing in a field holding the now-repaired yellow kite which is flying high in the blue sky.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 52.99,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 100.19
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  }
+}

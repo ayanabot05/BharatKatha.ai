@@ -1,0 +1,50 @@
+{
+  "login": {
+    "status": 200
+  },
+  "metadata": {
+    "status": 200,
+    "language_count": 11,
+    "styles": [
+      "human",
+      "cartoon",
+      "cinematic",
+      "emoji",
+      "animals",
+      "storybook"
+    ],
+    "engine_info": {
+      "script": "Gemini text API",
+      "images": "Vertex AI image worker",
+      "voice": "Two Edge neural voices per language by default; optional OpenAI TTS when explicitly configured",
+      "captions": "Script timing or Whisper"
+    }
+  },
+  "trending_ideas": {
+    "status": 200,
+    "items": 0
+  },
+  "growth_coach_synthetic": {
+    "status": 200,
+    "measured_count": 3,
+    "hypotheses_count": 3,
+    "weekly_days": 7
+  },
+  "project_reload": {
+    "status": 200,
+    "render_status": "done",
+    "video_path": "vidbharat/videos/46057842e877488e9a6c7200aa1f29a5/c197561d4a4b409590c7b0c00ab84172.mp4"
+  },
+  "thumbnail": {
+    "status": 200,
+    "path_exists": true
+  },
+  "authenticated_video_download": {
+    "status": 200,
+    "bytes": 2892730,
+    "content_type": "video/mp4"
+  },
+  "anonymous_video_download": {
+    "status": 401
+  }
+}

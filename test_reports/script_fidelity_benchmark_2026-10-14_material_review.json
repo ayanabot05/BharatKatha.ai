@@ -1,0 +1,366 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "Two neighbors repair a leaking village water pipe together. Keep the same two people throughout. No miracle or income claims.",
+      "script": {
+        "title": "నీటి చిక్కు - మన ఊరి సాయం",
+        "scenes": [
+          {
+            "narration": "చూడండి, ఊరి ప్రధాన పైపు నుంచి నీళ్లు ఎలా వృథాగా పోతున్నాయో! ఇలా అయితే ఊరంతా ఇబ్బందే.",
+            "visual": "A close-up of a rusted metal water pipe in a dusty village path, with clear water spraying out of a jagged hole in the center.",
+            "beat": "hook"
+          },
+          {
+            "narration": "పక్కనే ఉండే రామయ్య, సోమయ్య ఇది గమనించారు. ఇద్దరూ కలిసి ఈ సమస్యను పరిష్కరించాలని నిర్ణయించుకున్నారు.",
+            "visual": "Ramayya in his white pancha and Somayya in his beige dhoti walking towards the leaking pipe, looking concerned while carrying a heavy iron wrench and a rubber patch.",
+            "beat": "setup"
+          },
+          {
+            "narration": "రామయ్య పైపును గట్టిగా పట్టుకోగా, సోమయ్య తన చేతులతో లీకేజీ ఉన్న చోట రబ్బరు ప్యాచ్‌ను బిగుతుగా అమర్చుతున్నాడు.",
+            "visual": "Ramayya firmly holding the iron pipe while Somayya wraps a thick black rubber patch tightly around the leaking hole, his hands working with focus.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "ఇద్దరూ కలిసి పైపును సరిచేశారు. ఇప్పుడు నీటి వృథా ఆగింది, ఊరికి మళ్లీ నీళ్లు సక్రమంగా అందుతాయి.",
+            "visual": "The pipe now has the black rubber patch securely clamped with metal fasteners, with no water leaking out as the sun shines over the lush green coconut grove in the background.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 28.53,
+      "review": {
+        "overall": 85,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 55.86
+    },
+    {
+      "case": 2,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "Mira finds Grandma's anklet near the village well and returns it to Grandma before sunset. Do not add a reward.",
+      "script": {
+        "title": "అమ్మమ్మ కాలి పట్టీ",
+        "scenes": [
+          {
+            "narration": "ఊరి బావి దగ్గర ఆడుకుంటుంటే, మీరా కంట ఒక మెరుపు పడింది.",
+            "visual": "A young girl, Mira, walking near a stone village well, suddenly notices a silver anklet glinting in the red soil.",
+            "beat": "hook"
+          },
+          {
+            "narration": "అది అమ్మమ్మ కాలి పట్టీ! ఇప్పుడే తీసుకెళ్లి అమ్మమ్మకు ఇచ్చేయాలి.",
+            "visual": "Close-up of Mira picking up the worn silver anklet with her fingers and looking at it carefully.",
+            "beat": "setup"
+          },
+          {
+            "narration": "సూర్యుడు అస్తమించకముందే ఇంటికి చేరుకుంది మీరా.",
+            "visual": "A wide shot of Mira running through the village path while the sun is visibly low and golden in the sky.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "తప్పిన తన పట్టీని చూసి, అమ్మమ్మ మీరాను ప్రేమగా దగ్గరకు తీసుకుంది.",
+            "visual": "Mira handing the silver anklet to her smiling Grandma who is sitting on a porch, with the golden sunset light falling on them.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 42.63,
+      "review": {
+        "overall": 84,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": [
+          "సీన్ 3 మరియు 4 మధ్య నర్రేషన్ మరియు విజువల్స్ సమయం (timing) మరియు క్రమబద్ధీకరణలో చిన్న వ్యత్యాసం ఉంది.",
+          "సీన్ 4 లో పట్టీని అందజేయడం నర్రేషన్ లో లేదు, విజువల్ లో మాత్రమే ఉంది.",
+          "Scene 4: నర్రేషన్ లో పట్టీని ఇవ్వడం గురించి లేదు, కేవలం అమ్మమ్మ ప్రతిచర్య ఉంది. కానీ విజువల్ లో పట్టీని ఇవ్వడం చూపిస్తున్నారు."
+        ]
+      },
+      "passed": true,
+      "seconds": 97.13
+    },
+    {
+      "case": 3,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "A farmer notices a broken irrigation hose, turns off the water, fits a connector, and only then restarts the flow. Do not promise a higher yield.",
+      "script": {
+        "title": "నీటి వృథా - చిన్న చిట్కా",
+        "scenes": [
+          {
+            "narration": "పొలంలో నీరు ఇలా వృథా అవుతుంటే మనసు ఎలా ఒప్పుకుంటుంది?",
+            "visual": "Close-up of a black irrigation hose lying on the green grass, with water spraying forcefully from a large jagged crack in the side.",
+            "beat": "hook"
+          },
+          {
+            "narration": "చూడండి, మన రామయ్య గారు పైపు తెగిపోవడం గమనించారు. వెంటనే మోటారు స్విచ్ ఆఫ్ చేశారు.",
+            "visual": "Ramayya, the elderly farmer, walking quickly towards a control valve and turning the metal handle to shut off the water flow.",
+            "beat": "setup"
+          },
+          {
+            "narration": "నీరు ఆగగానే, తెగిన చోట ఒక కనెక్టర్‌ను జాగ్రత్తగా బిగిస్తున్నారు.",
+            "visual": "Ramayya kneeling on the soil, carefully fitting a new black plastic connector over the broken ends of the black irrigation hose, hands steady.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "ఇప్పుడు కనెక్టర్ బిగింపు పూర్తయ్యింది. మళ్ళీ స్విచ్ వేయగానే, నీరు నేరుగా మొక్కల వైపు సాగుతోంది.",
+            "visual": "Ramayya turning the control valve back on, followed by a close-up shot of the repaired black irrigation hose with no leaks, water flowing smoothly through it.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 28.26,
+      "review": {
+        "overall": 88,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 68.43
+    },
+    {
+      "case": 4,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "A girl and her father discover seeds in an old clay pot. They identify the seeds together and decide to save them for the next planting season. No magical reveal.",
+      "script": {
+        "title": "తాతయ్య ఇచ్చిన విత్తనాలు",
+        "scenes": [
+          {
+            "narration": "అటక మీద పాత సామాన్లు సర్దుతుండగా, నాన్నకు ఒక పాత మట్టి కుండ కనిపించింది.",
+            "visual": "A young girl and her father standing in a dusty attic, father holding a brown round clay pot.",
+            "beat": "hook"
+          },
+          {
+            "narration": "కుండలో ఏముందో చూడాలని ఇద్దరం ఎంతో కుతూహలంగా తెరిచాము.",
+            "visual": "Close-up of the girl and her father looking into the open brown clay pot together.",
+            "beat": "setup"
+          },
+          {
+            "narration": "అందులో కొన్ని గింజలు ఉన్నాయి. ఇవి వరి విత్తనాలని నాన్న గుర్తించారు.",
+            "visual": "The father gently pouring dried brown seeds from the brown clay pot into the girl's hands, both looking closely at the seeds.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "వచ్చే సీజన్‌లో మళ్ళీ నాటుదామని, ఆ విత్తనాలను జాగ్రత్తగా ఒక కొత్త డబ్బాలోకి మార్చాము.",
+            "visual": "The girl carefully pouring the brown seeds into a clean metal container while the father watches with a warm smile.",
+            "beat": "twist"
+          },
+          {
+            "narration": "పాత జ్ఞాపకాలు, భవిష్యత్తుకు భరోసాగా నిలిచాయి. మీకు కూడా ఇలాంటి పాత జ్ఞాపకాలు ఉన్నాయా?",
+            "visual": "The girl and her father standing together in the sunlight, holding the container of seeds securely.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 36.92,
+      "review": {
+        "overall": 85,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 64.68
+    },
+    {
+      "case": 5,
+      "language": "hi",
+      "region": "Rajasthan",
+      "idea": "Two sisters find a lost school bag at the bus stop and return it unopened to its owner before the bus leaves. Do not invent a cash reward.",
+      "script": {
+        "title": "बस्ता और समझदारी",
+        "scenes": [
+          {
+            "narration": "बस स्टैंड पर रिया और सिया को बेंच के पास एक लाल स्कूल बैग मिला।",
+            "visual": "Two sisters, Ria and Siya, standing at a village bus stop looking down at a red school bag lying on the ground.",
+            "beat": "hook"
+          },
+          {
+            "narration": "किसी की मेहनत का सामान है, बिना खोले मालिक को ढूँढते हैं।",
+            "visual": "Ria and Siya looking at the red school bag without opening it, then scanning the crowd at the busy bus stop.",
+            "beat": "setup"
+          },
+          {
+            "narration": "बस छूटने ही वाली थी कि उन्हें वो बच्चा दिख गया।",
+            "visual": "Ria and Siya running towards a young boy near a yellow bus that is about to start its engine.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "उन्होंने तुरंत वो बस्ता उसे वापस कर दिया।",
+            "visual": "Ria handing over the red school bag to the boy, who smiles back in relief before boarding the yellow bus.",
+            "beat": "twist"
+          },
+          {
+            "narration": "छोटी सी कोशिश ने किसी का दिन बना दिया।",
+            "visual": "Ria and Siya waving goodbye as the yellow bus pulls away from the bus stop.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 41.41,
+      "review": {
+        "overall": 84,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 67.22
+    },
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "script": {
+        "title": "घटोत्कच का बलिदान",
+        "scenes": [
+          {
+            "narration": "कुरुक्षेत्र का भीषण युद्ध चल रहा था, जहाँ कौरव सेना अर्जुन को घेरने की कोशिश कर रही थी।",
+            "visual": "A wide shot of a dusty battlefield during the Kurukshetra war with Arjuna standing firm in the center, surrounded by an army of soldiers in iron gear.",
+            "beat": "hook"
+          },
+          {
+            "narration": "तब भीम के पुत्र घटोत्कच ने अपनी मायावी शक्तियों से अर्जुन की रक्षा का संकल्प लिया।",
+            "visual": "Ghatotkacha, the tall, powerful, dark-skinned warrior, standing tall in front of Arjuna to shield him from incoming arrows.",
+            "beat": "setup"
+          },
+          {
+            "narration": "युद्ध के कठिन क्षण में, उन्होंने अपनी अंतिम शक्ति का उपयोग करके कौरवों के विनाशकारी अस्त्र को खुद पर ले लिया।",
+            "visual": "Ghatotkacha expanding his size significantly while shielding Arjuna from a glowing, golden supernatural projectile aimed at them.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "धर्म की विजय के लिए घटोत्कच ने वीरगति प्राप्त की और अर्जुन को सुरक्षित बचा लिया।",
+            "visual": "A close-up of Ghatotkacha smiling bravely before fading away, leaving behind a protected Arjuna who looks on with respect.",
+            "beat": "twist"
+          },
+          {
+            "narration": "आज भी लोग उस महान योद्धा के त्याग को सम्मान से याद करते हैं।",
+            "visual": "A peaceful sunset view over the empty battlefield, with a silhouette of a warrior fading into the horizon.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 48.1,
+      "review": {
+        "overall": 84,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": [
+          "दृश्य 3 में बलिदान की प्रक्रिया अधूरी है, जबकि बलिदान का मूल दृश्य 4 में दिखाया गया है।",
+          "क्रमानुसार, बलिदान के बाद ही अर्जुन का सुरक्षित होना दिखाया जाना चाहिए था।",
+          "Scene 3: बलिदान की पूर्ण प्रक्रिया यहाँ स्पष्ट नहीं है, बलिदान दृश्य 4 में दिखाया गया है।"
+        ]
+      },
+      "passed": true,
+      "seconds": 94.96
+    },
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "script": {
+        "title": "பழைய பட்டம் புதிய உயிர்",
+        "scenes": [
+          {
+            "narration": "பட்டம் கிழிஞ்சா தூக்கி எறியணுமா என்ன? பாட்டி சொல்றத கேளு.",
+            "visual": "A young boy holding a torn bright red kite, looking sad in a sunny village courtyard.",
+            "beat": "hook"
+          },
+          {
+            "narration": "முதல்ல, அந்த ஓட்டையைச் சரி செய்யச் சின்னதா ஒரு காகிதத்துண்டு எடுக்கணும்.",
+            "visual": "The grandmother guiding the boy's hands as he picks up a small piece of matching red paper.",
+            "beat": "setup"
+          },
+          {
+            "narration": "பாட்டி கத்துக்கொடுக்க, பையன் கவனமா பசை தடவி அந்த காகிதத்தை பட்டத்துல ஒட்டுறான்.",
+            "visual": "The boy carefully attaching the red paper patch over the tear on the red kite with the grandmother's help.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "அவ்வளவுதான்! பட்டம் ரெடி. இப்போ அது மறுபடியும் வானத்துல பறக்கத் தயாரா இருக்கு.",
+            "visual": "The red kite flying high in the blue sky, held by the smiling boy standing next to his grandmother.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 58.73,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 103.76
+    },
+    {
+      "case": 8,
+      "language": "mr",
+      "region": "Maharashtra",
+      "idea": "A potter's daughter finds a crack in a clay water pot, sets that pot aside, and makes a new pot with her father. Do not claim the cracked pot was repaired.",
+      "script": {
+        "title": "मातीचा नवा घडा",
+        "scenes": [
+          {
+            "narration": "सई रोज तिच्या बाबांच्या हाताला हात लावून मातीचे माठ बनवायची.",
+            "visual": "Sai and her father working together at a wooden pottery wheel in a sunlit Maharashtrian village workshop.",
+            "beat": "setup"
+          },
+          {
+            "narration": "आज एका नवीन घड्याची तपासणी करताना, तिला त्यामध्ये एक लहानशी तडा दिसली.",
+            "visual": "Close-up of Sai's fingers pointing at a thin, visible crack on the side of a brown clay water pot.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "तिने तो घडा तसाच बाजूला ठेवला, कारण त्यात पाणी टिकणार नव्हतं.",
+            "visual": "Sai gently picking up the cracked brown clay water pot and setting it aside on a dusty wooden shelf.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "मग सईने वडिलांच्या मार्गदर्शनाखाली माती मळली आणि एक नवीन मजबूत घडा तयार केला.",
+            "visual": "Sai and her father both putting their hands on the rotating clay on the wheel, shaping a new brown clay pot together.",
+            "beat": "twist"
+          },
+          {
+            "narration": "नव्या प्रयत्नातून तयार झालेला हा घडा आता एकदम पक्का होता.",
+            "visual": "Sai smiling as she holds a finished, perfectly shaped brown clay pot, with her father nodding in approval beside her.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 32.13,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 66.56
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 8,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

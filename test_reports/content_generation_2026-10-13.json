@@ -1,0 +1,432 @@
+{
+  "idea": "In an Andhra village, Ramayya and Somanna discover a leak at one rusty metal pipe joint with a four-bolt silver clamp. They first inspect it without touching tools, then fit the clamp and tighten its four bolts with a wrench. End with the same connected pipe and joint dry, with no water escaping. Keep both men's clothing and the exact joint consistent in every shot.",
+  "scope": "content-only generation; no image, speech, or video",
+  "script": {
+    "title": "నీటి లీకేజీ మరమ్మత్తు",
+    "title_en": "Repairing the Water Leak",
+    "category": "Village",
+    "hook": "ఏమిటిది, ఈ పైపు నుండి నీరు ఎలా కారుతోంది?",
+    "story": "రామయ్య, సోమన్న తమ ఊరిలోని తుప్పు పట్టిన పైపు లీకేజీని గమనించారు. వారు వెంటనే ఆ సమస్యను పరిష్కరించాలని నిర్ణయించుకున్నారు.",
+    "characters": [
+      {
+        "name": "Ramayya",
+        "look": "A middle-aged man wearing a clean white cotton dhoti and a light blue short-sleeved cotton shirt."
+      },
+      {
+        "name": "Somanna",
+        "look": "A middle-aged man wearing a clean white cotton dhoti and a bright yellow short-sleeved cotton shirt."
+      }
+    ],
+    "scenes": [
+      {
+        "narration": "ఏమిటిది, ఈ పైపు నుండి నీరు ఎలా కారుతోంది?",
+        "visual": "Ramayya in a light blue shirt and Somanna in a yellow shirt stand together in an Andhra village, pointing at a rusty metal pipe joint with water dripping.",
+        "beat": "hook"
+      },
+      {
+        "narration": "తుప్పు పట్టిన జాయింట్ దగ్గర లీకేజీని జాగ్రత్తగా పరిశీలిద్దాం.",
+        "visual": "Ramayya and Somanna in their consistent clothing lean in to inspect the same rusty metal pipe joint without touching any tools.",
+        "beat": "setup"
+      },
+      {
+        "narration": "ఈ వెండి క్లాంప్‌ను పైపు జాయింట్‌కు సరిగ్గా అమర్చుదాం.",
+        "visual": "Ramayya and Somanna carefully fit a four-bolt silver clamp onto the exact same rusty metal pipe joint.",
+        "beat": "conflict"
+      },
+      {
+        "narration": "ఇప్పుడు రెంచ్‌తో నాలుగు బోల్టులను గట్టిగా బిగిద్దాం.",
+        "visual": "Somanna uses a wrench to tighten the four bolts on the silver clamp while Ramayya holds the pipe steady, both in their consistent outfits.",
+        "beat": "twist"
+      },
+      {
+        "narration": "చూశారా, ఇప్పుడు లీకేజీ ఆగిపోయింది, జాయింట్ పొడిగా ఉంది.",
+        "visual": "A close-up of the same rusty metal pipe joint secured by the silver four-bolt clamp, perfectly dry with no water leaking.",
+        "beat": "ending"
+      }
+    ],
+    "ending": "చిన్న ప్రయత్నంతో నీటిని వృథా కాకుండా ఆపాం.",
+    "description": "ఆంధ్ర పల్లెటూరిలో రామయ్య, సోమన్న పైపు లీకేజీని ఎలా అరికట్టారో చూడండి. చిన్నపాటి మరమ్మత్తుతో నీటిని కాపాడుకోవచ్చు.",
+    "tags": [
+      "Andhra Pradesh",
+      "Village life",
+      "Water conservation",
+      "Telugu rural",
+      "DIY repair",
+      "Village fixing",
+      "Water saving",
+      "Ramayya Somanna"
+    ],
+    "hashtags": [
+      "#AndhraVillage",
+      "#WaterConservation",
+      "#VillageLife",
+      "#RepairWork",
+      "#TeluguShorts",
+      "#SaveWater"
+    ]
+  },
+  "result": "generated and passed content gate",
+  "responses": [
+    {
+      "promise": "The viewer will see a leak repair process in an Andhra village that transforms a dripping pipe joint into a dry, sealed connection.",
+      "requirements": [
+        {
+          "source": "In an Andhra village",
+          "requirement": "The setting must be an Andhra village.",
+          "action_words": []
+        },
+        {
+          "source": "Ramayya and Somanna",
+          "requirement": "Ramayya and Somanna must be the two people present.",
+          "action_words": []
+        },
+        {
+          "source": "discover a leak at one rusty metal pipe joint with a four-bolt silver clamp",
+          "requirement": "The joint must be a rusty metal pipe joint.",
+          "action_words": []
+        },
+        {
+          "source": "discover a leak at one rusty metal pipe joint with a four-bolt silver clamp",
+          "requirement": "The clamp must be a four-bolt silver clamp.",
+          "action_words": []
+        },
+        {
+          "source": "They first inspect it without touching tools",
+          "requirement": "Ramayya and Somanna inspect the leak without using tools.",
+          "action_words": [
+            "inspect"
+          ]
+        },
+        {
+          "source": "fit the clamp",
+          "requirement": "Ramayya and Somanna fit the silver clamp onto the pipe joint.",
+          "action_words": [
+            "fit"
+          ]
+        },
+        {
+          "source": "tighten its four bolts with a wrench",
+          "requirement": "Ramayya and Somanna tighten the four bolts using a wrench.",
+          "action_words": [
+            "tighten"
+          ]
+        },
+        {
+          "source": "End with the same connected pipe and joint dry, with no water escaping.",
+          "requirement": "The final shot must show the pipe joint dry with no water escaping.",
+          "action_words": []
+        },
+        {
+          "source": "Keep both men's clothing and the exact joint consistent in every shot.",
+          "requirement": "The clothing of the men must remain consistent throughout the video.",
+          "action_words": []
+        },
+        {
+          "source": "Keep both men's clothing and the exact joint consistent in every shot.",
+          "requirement": "The pipe joint appearance must remain consistent throughout the video.",
+          "action_words": []
+        }
+      ]
+    },
+    {
+      "title": "నీటి వృథాను అరికట్టడం",
+      "title_en": "Preventing Water Wastage",
+      "category": "Village",
+      "hook": "ఏమిటిది, పైపు నుండి నీరు ఎందుకు కారుతోంది?",
+      "story": "రామయ్య, సోమన్న తమ ఊరి పైపు నుండి నీరు లీక్ అవ్వడాన్ని గమనించారు. వెంటనే ఆ సమస్యను పరిష్కరించడానికి సిద్ధమయ్యారు.",
+      "characters": [
+        {
+          "name": "Ramayya",
+          "look": "A middle-aged man wearing a simple white cotton pancha and a light blue short-sleeved shirt."
+        },
+        {
+          "name": "Somanna",
+          "look": "A middle-aged man wearing a simple white cotton pancha and a yellow short-sleeved shirt."
+        }
+      ],
+      "scenes": [
+        {
+          "narration": "ఏమిటిది, పైపు నుండి నీరు ఎందుకు కారుతోంది?",
+          "visual": "Close-up of Ramayya and Somanna standing in an Andhra village, looking closely at a rusty metal pipe joint with water dripping from it.",
+          "beat": "hook"
+        },
+        {
+          "narration": "తుప్పు పట్టిన ఈ జాయింట్ దగ్గర లీకేజీ కనిపిస్తోంది.",
+          "visual": "Ramayya and Somanna carefully inspect the rusty metal pipe joint without using any tools, pointing at the exact spot where the water escapes.",
+          "beat": "setup"
+        },
+        {
+          "narration": "వెంటనే ఆ వెండి క్లాంప్‌ను బిగిద్దాం పదండి.",
+          "visual": "Ramayya and Somanna fit a silver four-bolt clamp around the rusty metal pipe joint, ensuring it covers the leak perfectly.",
+          "beat": "conflict"
+        },
+        {
+          "narration": "ఈ నాలుగు బోల్టులను రెంచ్‌తో గట్టిగా తిప్పాలి.",
+          "visual": "Ramayya holds the silver four-bolt clamp in place while Somanna uses a wrench to tighten each of the four bolts firmly.",
+          "beat": "twist"
+        },
+        {
+          "narration": "చూడండి, ఇప్పుడు చుక్క నీరు కూడా వృథా కావట్లేదు.",
+          "visual": "Close-up of the same rusty metal pipe joint now secured with the silver four-bolt clamp, completely dry with no water escaping.",
+          "beat": "ending"
+        }
+      ],
+      "ending": "చిన్న ప్రయత్నంతో ఎంత నీరు ఆదా అయ్యింది కదా?",
+      "description": "మా ఊరిలో పైపు లీకేజీని ఎలా అరికట్టామో ఈ వీడియోలో చూడండి. చిన్నపాటి మరమ్మత్తుతో నీటిని వృథా కాకుండా కాపాడుకోవచ్చు.",
+      "tags": [
+        "village life",
+        "Andhra Pradesh",
+        "water saving",
+        "DIY repair",
+        "village fixing",
+        "water conservation",
+        "Ramayya Somanna",
+        "Telugu rural"
+      ],
+      "hashtags": [
+        "#AndhraVillage",
+        "#WaterConservation",
+        "#VillageLife",
+        "#RepairWork",
+        "#TeluguShorts",
+        "#SaveWater"
+      ]
+    },
+    {
+      "keeps_promise": true,
+      "checks": [
+        {
+          "number": 1,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "Close-up of Ramayya and Somanna standing in an Andhra village",
+          "gap": ""
+        },
+        {
+          "number": 2,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "Ramayya and Somanna",
+          "gap": ""
+        },
+        {
+          "number": 3,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "rusty metal pipe joint",
+          "gap": ""
+        },
+        {
+          "number": 4,
+          "delivered": true,
+          "scene": 3,
+          "field": "visual",
+          "quote": "silver four-bolt clamp",
+          "gap": ""
+        },
+        {
+          "number": 5,
+          "delivered": true,
+          "scene": 2,
+          "field": "visual",
+          "quote": "Ramayya and Somanna carefully inspect the rusty metal pipe joint without using any tools",
+          "gap": ""
+        },
+        {
+          "number": 6,
+          "delivered": true,
+          "scene": 3,
+          "field": "visual",
+          "quote": "Ramayya and Somanna fit a silver four-bolt clamp around the rusty metal pipe joint",
+          "gap": ""
+        },
+        {
+          "number": 7,
+          "delivered": true,
+          "scene": 4,
+          "field": "visual",
+          "quote": "Somanna uses a wrench to tighten each of the four bolts firmly.",
+          "gap": ""
+        },
+        {
+          "number": 8,
+          "delivered": true,
+          "scene": 5,
+          "field": "visual",
+          "quote": "completely dry with no water escaping.",
+          "gap": ""
+        },
+        {
+          "number": 9,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "Ramayya... wearing a simple white cotton pancha and a light blue short-sleeved shirt... Somanna... wearing a simple white cotton pancha and a yellow short-sleeved shirt.",
+          "gap": ""
+        },
+        {
+          "number": 10,
+          "delivered": true,
+          "scene": 5,
+          "field": "visual",
+          "quote": "Close-up of the same rusty metal pipe joint now secured with the silver four-bolt clamp",
+          "gap": ""
+        }
+      ],
+      "overall_gap": ""
+    },
+    {
+      "title": "నీటి లీకేజీ మరమ్మత్తు",
+      "title_en": "Repairing the Water Leak",
+      "category": "Village",
+      "hook": "ఏమిటిది, ఈ పైపు నుండి నీరు ఎలా కారుతోంది?",
+      "story": "రామయ్య, సోమన్న తమ ఊరిలోని తుప్పు పట్టిన పైపు లీకేజీని గమనించారు. వారు వెంటనే ఆ సమస్యను పరిష్కరించాలని నిర్ణయించుకున్నారు.",
+      "characters": [
+        {
+          "name": "Ramayya",
+          "look": "A middle-aged man wearing a clean white cotton dhoti and a light blue short-sleeved cotton shirt."
+        },
+        {
+          "name": "Somanna",
+          "look": "A middle-aged man wearing a clean white cotton dhoti and a bright yellow short-sleeved cotton shirt."
+        }
+      ],
+      "scenes": [
+        {
+          "narration": "ఏమిటిది, ఈ పైపు నుండి నీరు ఎలా కారుతోంది?",
+          "visual": "Ramayya in a light blue shirt and Somanna in a yellow shirt stand together in an Andhra village, pointing at a rusty metal pipe joint with water dripping.",
+          "beat": "hook"
+        },
+        {
+          "narration": "తుప్పు పట్టిన జాయింట్ దగ్గర లీకేజీని జాగ్రత్తగా పరిశీలిద్దాం.",
+          "visual": "Ramayya and Somanna in their consistent clothing lean in to inspect the same rusty metal pipe joint without touching any tools.",
+          "beat": "setup"
+        },
+        {
+          "narration": "ఈ వెండి క్లాంప్‌ను పైపు జాయింట్‌కు సరిగ్గా అమర్చుదాం.",
+          "visual": "Ramayya and Somanna carefully fit a four-bolt silver clamp onto the exact same rusty metal pipe joint.",
+          "beat": "conflict"
+        },
+        {
+          "narration": "ఇప్పుడు రెంచ్‌తో నాలుగు బోల్టులను గట్టిగా బిగిద్దాం.",
+          "visual": "Somanna uses a wrench to tighten the four bolts on the silver clamp while Ramayya holds the pipe steady, both in their consistent outfits.",
+          "beat": "twist"
+        },
+        {
+          "narration": "చూశారా, ఇప్పుడు లీకేజీ ఆగిపోయింది, జాయింట్ పొడిగా ఉంది.",
+          "visual": "A close-up of the same rusty metal pipe joint secured by the silver four-bolt clamp, perfectly dry with no water leaking.",
+          "beat": "ending"
+        }
+      ],
+      "ending": "చిన్న ప్రయత్నంతో నీటిని వృథా కాకుండా ఆపాం.",
+      "description": "ఆంధ్ర పల్లెటూరిలో రామయ్య, సోమన్న పైపు లీకేజీని ఎలా అరికట్టారో చూడండి. చిన్నపాటి మరమ్మత్తుతో నీటిని కాపాడుకోవచ్చు.",
+      "tags": [
+        "Andhra Pradesh",
+        "Village life",
+        "Water conservation",
+        "Telugu rural",
+        "DIY repair",
+        "Village fixing",
+        "Water saving",
+        "Ramayya Somanna"
+      ],
+      "hashtags": [
+        "#AndhraVillage",
+        "#WaterConservation",
+        "#VillageLife",
+        "#RepairWork",
+        "#TeluguShorts",
+        "#SaveWater"
+      ]
+    },
+    {
+      "keeps_promise": true,
+      "checks": [
+        {
+          "number": 1,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "Ramayya in a light blue shirt and Somanna in a yellow shirt stand together in an Andhra village",
+          "gap": ""
+        },
+        {
+          "number": 2,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "Ramayya in a light blue shirt and Somanna in a yellow shirt stand together",
+          "gap": ""
+        },
+        {
+          "number": 3,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "rusty metal pipe joint",
+          "gap": ""
+        },
+        {
+          "number": 4,
+          "delivered": true,
+          "scene": 3,
+          "field": "visual",
+          "quote": "four-bolt silver clamp",
+          "gap": ""
+        },
+        {
+          "number": 5,
+          "delivered": true,
+          "scene": 2,
+          "field": "visual",
+          "quote": "Ramayya and Somanna in their consistent clothing lean in to inspect the same rusty metal pipe joint without touching any tools.",
+          "gap": ""
+        },
+        {
+          "number": 6,
+          "delivered": true,
+          "scene": 3,
+          "field": "visual",
+          "quote": "Ramayya and Somanna carefully fit a four-bolt silver clamp onto the exact same rusty metal pipe joint.",
+          "gap": ""
+        },
+        {
+          "number": 7,
+          "delivered": true,
+          "scene": 4,
+          "field": "visual",
+          "quote": "Somanna uses a wrench to tighten the four bolts on the silver clamp",
+          "gap": ""
+        },
+        {
+          "number": 8,
+          "delivered": true,
+          "scene": 5,
+          "field": "visual",
+          "quote": "perfectly dry with no water leaking.",
+          "gap": ""
+        },
+        {
+          "number": 9,
+          "delivered": true,
+          "scene": 4,
+          "field": "visual",
+          "quote": "both in their consistent outfits.",
+          "gap": ""
+        },
+        {
+          "number": 10,
+          "delivered": true,
+          "scene": 5,
+          "field": "visual",
+          "quote": "A close-up of the same rusty metal pipe joint secured by the silver four-bolt clamp",
+          "gap": ""
+        }
+      ],
+      "overall_gap": ""
+    }
+  ]
+}

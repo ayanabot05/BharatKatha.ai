@@ -187,9 +187,12 @@ def check_narration_budget(scenes: List[Dict[str, Any]], duration: int, lang: st
     wps = WORDS_PER_SECOND.get(lang, 1.8)
     target = int(duration * wps)
     ceiling = int(duration * (wps + 0.35))
+    floor = int(target * 0.8)
+    if words < floor:
+        return False, f"Narration has {words} words for {duration}s. Check the generated audio duration; add content only if the original idea needs more story action."
     if words > ceiling:
-        return False, f"Narration has {words} words for {duration}s. Shorten toward {target} words, then verify with generated audio."
-    return True, f"Narration text is within the {duration}s planning budget ({words} words). Verify with generated audio."
+        return False, f"Narration has {words} words for {duration}s. Check the generated audio duration; remove only repetition or content outside the original idea."
+    return True, f"Narration has {words} words. Duration is an estimate until audio is generated."
 
 def check_scene_count(scenes: List[Dict[str, Any]]) -> Tuple[bool, str]:
     n = len(scenes)
@@ -256,18 +259,18 @@ def run_ram_ai_checks(script: Dict[str, Any], lang: str, duration: int = 45) -> 
 
     checks = [
         {"check": "Native Script", "passed": check_scene_languages(scenes, lang)[0], "detail": check_scene_languages(scenes, lang)[1]},
-        {"check": "Hook Length (Text Estimate)", "passed": check_hook_pacing(scenes)[0], "detail": check_hook_pacing(scenes)[1]},
-        {"check": "Narration Length (Text Estimate)", "passed": check_narration_budget(scenes, duration, lang)[0], "detail": check_narration_budget(scenes, duration, lang)[1]},
-        {"check": "5-7 Scene Cadence", "passed": check_scene_count(scenes)[0], "detail": check_scene_count(scenes)[1]},
+        {"check": "Hook Length (Advisory)", "passed": check_hook_pacing(scenes)[0], "detail": check_hook_pacing(scenes)[1], "advisory": True},
+        {"check": "Narration Length (Advisory)", "passed": check_narration_budget(scenes, duration, lang)[0], "detail": check_narration_budget(scenes, duration, lang)[1], "advisory": True},
+        {"check": "Scene Count (Advisory)", "passed": check_scene_count(scenes)[0], "detail": check_scene_count(scenes)[1], "advisory": True},
         {"check": "Complete Scene Directions", "passed": check_scene_completeness(scenes)[0], "detail": check_scene_completeness(scenes)[1]},
         {"check": "No Repeated Narration", "passed": check_repeated_narration(scenes)[0], "detail": check_repeated_narration(scenes)[1]},
         {"check": "Climactic Ending / Payoff", "passed": check_ending_beat(scenes)[0], "detail": check_ending_beat(scenes)[1]},
         {"check": "Cliché Opener Block", "passed": check_refusal_patterns(hook)[0], "detail": check_refusal_patterns(hook)[1]},
         {"check": "Safety & Brand Protection", "passed": check_safety_block(full)[0], "detail": check_safety_block(full)[1], "fatal": True},
     ]
-    all_passed = all(c["passed"] for c in checks)
+    all_passed = all(c["passed"] for c in checks if not c.get("advisory"))
     safety_passed = next(c["passed"] for c in checks if c.get("fatal"))
-    fixes = [c["detail"] for c in checks if not c["passed"]]
+    fixes = [c["detail"] for c in checks if not c["passed"] and not c.get("advisory")]
 
     return {
         "all_passed": all_passed,

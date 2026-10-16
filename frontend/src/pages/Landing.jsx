@@ -1,89 +1,37 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight, Lightbulb, Mic, Captions, Film, Play, Pencil, Sparkles } from "lucide-react";
+import { ArrowRight, Menu, Check } from "lucide-react";
 import { Logo } from "@/components/AppShell";
 import PhoneShort from "@/components/PhoneShort";
 import { STYLES, LANGUAGES } from "@/constants/studio";
-import "./Landing.css";
-
-const FLOW = [
-  { icon: Lightbulb, title: "Find your idea", text: "Start with your own story or explore fresh regional ideas." },
-  { icon: Pencil, title: "Make it yours", text: "Review the script, choose a look, and edit each scene." },
-  { icon: Mic, title: "Give it a voice", text: "Add narration in your language or record your own voice." },
-  { icon: Captions, title: "Finish and share", text: "Add captions, a cover and post details, then export your video." },
-];
-
-function StyleCarousel() {
-  const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
-  useEffect(() => {
-    if (paused || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
-    const timer = window.setInterval(() => setActive((current) => (current + 1) % STYLES.length), 4200);
-    return () => window.clearInterval(timer);
-  }, [paused]);
-  const move = (direction) => setActive((current) => (current + direction + STYLES.length) % STYLES.length);
-  return (
-    <div className="landing-stage landing-style-stage" aria-label="Animated three-dimensional gallery of six video styles" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}>
-      <div className="landing-stage-glow" />
-      <div className="landing-orbit landing-orbit-one" aria-hidden="true" />
-      <div className="landing-orbit landing-orbit-two" aria-hidden="true" />
-      <div className="landing-carousel-perspective">
-        <div className="landing-carousel" style={{ transform: `rotateX(-7deg) rotateY(${-active * 60}deg)` }}>
-          {STYLES.map((style, index) => <div className="landing-carousel-face" style={{ transform: `rotateY(${index * 60}deg) translateZ(var(--carousel-depth))` }} key={style.id} aria-hidden={index !== active}>
-            <div className="landing-carousel-image"><img src={`/styles/${style.id}.jpg`} alt={index === active ? `${style.label} video style preview` : ""} /></div>
-            <div className="landing-carousel-caption"><span>SCENE {String(index + 1).padStart(2, "0")}</span><strong>{style.label}</strong><span>{style.hint}</span></div>
-          </div>)}
-        </div>
-      </div>
-      <div className="landing-stage-label"><Sparkles size={15} /> Choose your style</div>
-      <div className="landing-carousel-controls"><button type="button" onClick={() => move(-1)} aria-label="Previous video style"><ChevronLeft size={19} /></button><div aria-live="polite"><strong>{STYLES[active].label}</strong><span>{active + 1} / {STYLES.length}</span></div><button type="button" onClick={() => move(1)} aria-label="Next video style"><ChevronRight size={19} /></button></div>
-    </div>
-  );
-}
-
-function HeroVisual() {
-  return <div className="landing-demo-wrap"><div className="landing-demo-orbit" aria-hidden="true" /><PhoneShort className="landing-demo-phone" /></div>;
-}
+import "./PhaseZero.css";
 
 export default function Landing() {
-  return (
-    <div className="landing-page">
-      <header className="landing-header"><div className="landing-shell landing-nav">
-        <Logo light />
-        <nav className="landing-nav-links" aria-label="Main navigation"><a href="#styles">Styles</a><a href="#how">How it works</a><a href="#languages">Languages</a></nav>
-        <div className="landing-nav-actions"><Link to="/login" data-testid="landing-login-link" className="landing-text-link">Sign in</Link><Link to="/register" data-testid="landing-get-started-btn" className="landing-button landing-button-small">Start creating <ArrowRight size={16} /></Link></div>
-      </div></header>
-
-      <main>
-        <section className="landing-hero"><div className="landing-shell landing-hero-grid">
-          <div className="landing-hero-copy">
-            <div className="landing-eyebrow"><span className="landing-eyebrow-dot" /> A video studio for your stories</div>
-            <h1>Every story<br />deserves to be <em>seen.</em></h1>
-            <p className="landing-lede">Tell Ram AI your idea in your language. Shape the script, choose your characters, edit the scenes and make a short video that feels like yours.</p>
-            <div className="landing-hero-actions"><Link to="/register" data-testid="hero-cta-btn" className="landing-button">Make your first video <ArrowRight size={19} /></Link><a href="#how" className="landing-outline-button"><Play size={16} /> See how it works</a></div>
-            <div className="landing-hero-proof"><div><strong>6</strong><span>story styles</span></div><div><strong>10</strong><span>Indian languages</span></div><div><strong>9:16</strong><span>short video format</span></div></div>
-          </div>
-          <HeroVisual />
-        </div></section>
-
-        <section id="languages" className="landing-language-band"><div className="landing-shell landing-language-inner">
-          <div><span className="landing-kicker">Speak naturally</span><h2>Your language belongs here.</h2></div>
-          <div className="landing-languages" aria-label="Supported creation languages">{LANGUAGES.filter((l) => l.id !== "en").map((l) => <span key={l.id} lang={l.id} className="indic">{l.native}</span>)}</div>
-        </div></section>
-
-        <section id="styles" className="landing-section landing-styles-section"><div className="landing-shell">
-          <div className="landing-section-intro"><div><span className="landing-kicker">Choose a world</span><h2>One idea. Six ways to tell it.</h2></div><p>From a familiar face to a painted tale, pick the visual mood that fits your story.</p></div>
-          <StyleCarousel />
-        </div></section>
-
-        <section id="how" className="landing-section landing-how-section"><div className="landing-shell landing-how-grid">
-          <div className="landing-how-intro"><span className="landing-kicker">From thought to video</span><h2>Make it one step at a time.</h2><p>You can go back, change your mind and keep shaping the video before you export it.</p><Link to="/register" className="landing-inline-link">Open the studio <ArrowRight size={17} /></Link></div>
-          <div className="landing-flow">{FLOW.map(({ icon: Icon, title, text }, index) => <div className="landing-flow-step" key={title}><span className="landing-flow-number">0{index + 1}</span><span className="landing-flow-icon"><Icon size={21} /></span><div><h3>{title}</h3><p>{text}</p></div></div>)}</div>
-        </div></section>
-
-        <section className="landing-closing"><div className="landing-shell landing-closing-inner"><div><Film size={28} /><h2>The next great story<br />could start with yours.</h2><p>Start small. Create in your own voice. Keep improving with every video.</p></div><Link to="/register" data-testid="footer-cta-btn" className="landing-button landing-button-light">Create a story <ArrowRight size={18} /></Link></div></section>
-      </main>
-      <footer className="landing-footer"><div className="landing-shell"><Logo light /><span>Made in India for Indian storytellers</span><span>© VidBharat</span></div></footer>
-    </div>
-  );
+  const [paused, setPaused] = useState(false);
+  return <div className="phase-landing">
+    <header className="phase-nav phase-wrap"><Link to="/" aria-label="Home"><Logo light /></Link>
+      <nav aria-label="Main navigation"><a href="#how">How it works</a><a href="#styles">Story styles</a><Link to="/login" data-testid="landing-login-link">Sign in</Link></nav>
+      <details className="phase-mobile-menu"><summary aria-label="Open menu"><Menu /></summary><nav><a href="#how">How it works</a><a href="#styles">Story styles</a><Link to="/login">Sign in</Link></nav></details>
+      <Link to="/register" className="btn-primary" data-testid="landing-get-started-btn">Create a video</Link>
+    </header>
+    <main>
+      <section className="phase-wrap phase-hero">
+        <div><span className="phase-eyebrow">Your story. Your language.</span><h1>A little idea.<br />A story worth<br /><em>sharing.</em></h1>
+          <p>Turn your idea into a narrated video with beautiful pictures, captions and a voice that fits. Review the story at every step.</p>
+          <Link to="/register" className="btn-primary" data-testid="hero-cta-btn">Make your first video <ArrowRight size={18} /></Link>
+          <a href="#how" className="phase-text-link">See how it works</a>
+          <div className="phase-assurance"><span><Check size={15} /> Edit before you export</span><span><Check size={15} /> Made for your phone</span></div>
+        </div>
+        <div className="phase-phone"><span className="phase-phone-label">A story from the studio</span><PhoneShort /><span className="phase-phone-note">Illustrative demo · your story is created from your idea</span></div>
+      </section>
+      <section id="styles" className="phase-styles" aria-labelledby="styles-title">
+        <div className="phase-wrap phase-section-heading"><div><span className="phase-eyebrow">Find your look</span><h2 id="styles-title">Six styles. Your imagination.</h2></div><button className="btn-secondary" onClick={() => setPaused(!paused)} aria-pressed={paused}>{paused ? "Play gallery" : "Pause gallery"}</button></div>
+        <div className={`phase-gallery ${paused ? "paused" : ""}`}><div className="phase-track">{[...STYLES, ...STYLES].map((style, i) => <figure key={i} aria-hidden={i >= STYLES.length}><img src={`/styles/${style.id}.jpg`} alt={i < STYLES.length ? style.label : ""} loading="lazy" width="200" height="250" /><figcaption>{style.label}</figcaption></figure>)}</div></div>
+      </section>
+      <section id="how" className="phase-wrap phase-how"><span className="phase-eyebrow">Simple from the start</span><h2>Tell it. Shape it. Share it.</h2><div className="phase-steps">
+        {[['01', 'Tell us your idea', 'Choose a language and describe what your story should say.'], ['02', 'Make it yours', 'Read the story, check each picture and listen to the voice.'], ['03', 'Save your video', 'Get a video with captions, plus a title and post details.']].map(([n,title,copy]) => <article key={n}><span>{n}</span><h3>{title}</h3><p>{copy}</p></article>)}
+      </div><div className="phase-languages" aria-label="Creation languages">{LANGUAGES.map(l => <span lang={l.id} key={l.id}>{l.native}</span>)}</div></section>
+      <section className="phase-wrap phase-start"><div><h2>Your next story starts here.</h2><p>Private beta. Help shape the studio with your feedback.</p></div><Link to="/register" className="btn-primary" data-testid="footer-cta-btn">Start creating <ArrowRight size={18} /></Link></section>
+    </main><footer className="phase-wrap phase-footer"><Logo light /><span>Made for Indian storytellers</span><Link to="/login">Sign in</Link></footer>
+  </div>;
 }

@@ -1,0 +1,152 @@
+{
+  "source": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\fresh_acceptance_2026-10-13.json",
+  "idea": "In an Andhra village, Ramayya and Somanna discover a leak at one rusty metal pipe joint with a four-bolt silver clamp. They first inspect it without touching tools, then fit the clamp and tighten its four bolts with a wrench. End with the same connected pipe and joint dry, with no water escaping. Keep both men's clothing and the exact joint consistent in every shot.",
+  "script": {
+    "hook": "మన ఇంటి పైపు ఎందుకు లీక్ అవుతోంది?",
+    "tags": [
+      "Village Life",
+      "DIY Repair",
+      "Andhra Pradesh",
+      "Water Leakage",
+      "Telugu Shorts",
+      "Rural India",
+      "Practical Tips",
+      "Godavari"
+    ],
+    "story": "రామయ్య, సోమన్న కలిసి ఒక పాత ఇనుప పైపు లీకేజీని గమనించారు. వారు ఒక సిల్వర్ క్లాంప్‌ను ఉపయోగించి లీకేజీని సమర్థవంతంగా అరికట్టారు.",
+    "title": "నీటి లీకేజీకి పరిష్కారం",
+    "ending": "మీరు ఎప్పుడైనా ఇలా చిన్న లీకేజీలను బాగు చేశారా?",
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": "Ramayya and Somanna standing in a lush Godavari delta garden, pointing at a rusted metal pipe joint with water spraying out.",
+        "narration": "మన ఇంటి పైపు ఎందుకు లీక్ అవుతోంది?"
+      },
+      {
+        "beat": "setup",
+        "visual": "Close-up of Ramayya and Somanna looking closely at the rusted metal pipe joint with four bolts, no tools visible yet.",
+        "narration": "అక్కడ ఉన్న తుప్పు పట్టిన పైపును జాగ్రత్తగా పరిశీలించారు."
+      },
+      {
+        "beat": "conflict",
+        "visual": "Somanna holding a shiny four-bolt silver clamp against the leaking rusty pipe joint.",
+        "narration": "వెంటనే ఒక నాలుగు బోల్టుల సిల్వర్ క్లాంప్‌ను తీసుకువచ్చారు."
+      },
+      {
+        "beat": "twist",
+        "visual": "Ramayya using a metal wrench to tighten the four bolts on the silver clamp wrapped around the rusty pipe joint.",
+        "narration": "స్పానర్‌తో నాలుగు బోల్టులను గట్టిగా బిగించారు."
+      },
+      {
+        "beat": "ending",
+        "visual": "The same rusty metal pipe joint is now dry with the four-bolt silver clamp tightly secured, no water escaping.",
+        "narration": "ఇప్పుడు నీరు లీక్ అవ్వకుండా పైపు భలే తయారైంది కదా!"
+      }
+    ],
+    "category": "Village",
+    "hashtags": [
+      "#TeluguShorts",
+      "#VillageLife",
+      "#AndhraPradesh",
+      "#DIY",
+      "#Repair",
+      "#Godavari"
+    ],
+    "title_en": "The Solution to the Water Leak",
+    "characters": [
+      {
+        "look": "An elderly man in a white cotton dhoti and a plain white shirt with a towel on his shoulder.",
+        "name": "Ramayya"
+      },
+      {
+        "look": "A middle-aged man in a light blue lungi and a simple short-sleeved cotton shirt.",
+        "name": "Somanna"
+      }
+    ],
+    "description": "ఆంధ్ర పల్లెటూరిలో రామయ్య, సోమన్న ఒక పాత పైపు లీకేజీని ఎలా అరికట్టారో చూడండి. పాత వస్తువులను కాపాడుకోవడం మన బాధ్యత."
+  },
+  "contract": {
+    "promise": "The viewer will see Ramayya and Somanna successfully repair a leaking pipe in an Andhra village using a silver clamp.",
+    "requirements": [
+      {
+        "source": "In an Andhra village",
+        "requirement": "The setting is an Andhra village.",
+        "action_words": []
+      },
+      {
+        "source": "Ramayya and Somanna",
+        "requirement": "The characters include Ramayya.",
+        "action_words": []
+      },
+      {
+        "source": "Ramayya and Somanna",
+        "requirement": "The characters include Somanna.",
+        "action_words": []
+      },
+      {
+        "source": "discover a leak at one rusty metal pipe joint",
+        "requirement": "The men discover a leak at a rusty metal pipe joint.",
+        "action_words": [
+          "discover"
+        ]
+      },
+      {
+        "source": "inspect it without touching tools",
+        "requirement": "The men inspect the joint.",
+        "action_words": [
+          "inspect"
+        ]
+      },
+      {
+        "source": "inspect it without touching tools",
+        "requirement": "The men refrain from touching tools during inspection.",
+        "action_words": []
+      },
+      {
+        "source": "fit the clamp",
+        "requirement": "The men fit the four-bolt silver clamp onto the joint.",
+        "action_words": [
+          "fit"
+        ]
+      },
+      {
+        "source": "tighten its four bolts with a wrench",
+        "requirement": "The men tighten the four bolts.",
+        "action_words": [
+          "tighten"
+        ]
+      },
+      {
+        "source": "tighten its four bolts with a wrench",
+        "requirement": "The men use a wrench to tighten the bolts.",
+        "action_words": []
+      },
+      {
+        "source": "End with the same connected pipe and joint dry",
+        "requirement": "The pipe joint is dry at the end.",
+        "action_words": []
+      },
+      {
+        "source": "with no water escaping",
+        "requirement": "No water escapes from the joint at the end.",
+        "action_words": []
+      },
+      {
+        "source": "Keep both men's clothing",
+        "requirement": "The men's clothing remains consistent in every shot.",
+        "action_words": []
+      },
+      {
+        "source": "and the exact joint consistent in every shot",
+        "requirement": "The pipe joint remains consistent in every shot.",
+        "action_words": []
+      }
+    ]
+  },
+  "gaps": [
+    "Scene 1 does not explicitly show: The men discover a leak at a rusty metal pipe joint.",
+    "Scene 2 does not explicitly show: The men inspect the joint.",
+    "Scene 3 does not explicitly show: The men fit the four-bolt silver clamp onto the joint."
+  ],
+  "result": "content gaps found"
+}

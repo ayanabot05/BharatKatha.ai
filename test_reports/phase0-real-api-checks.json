@@ -1,0 +1,37 @@
+[
+  {
+    "check": "signed-out project list",
+    "status": 401,
+    "pass": true
+  },
+  {
+    "check": "real configured account login",
+    "status": 200,
+    "pass": true
+  },
+  {
+    "check": "authenticated Supabase pagination",
+    "status": 200,
+    "pass": true
+  },
+  {
+    "check": "/api/projects/not-owned-test-project",
+    "status": 404,
+    "pass": true
+  },
+  {
+    "check": "/api/media/not-owned-test-file",
+    "status": 404,
+    "pass": true
+  },
+  {
+    "check": "/api/projects/page?size=10000",
+    "status": 422,
+    "pass": true
+  },
+  {
+    "check": "logout removes access",
+    "status": 401,
+    "pass": true
+  }
+]

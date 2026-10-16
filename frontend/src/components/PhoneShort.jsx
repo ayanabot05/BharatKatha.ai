@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Heart, MessageCircle, Share2, Sparkles } from "lucide-react";
 
 export const SHOWCASE = [
@@ -11,19 +11,28 @@ export const SHOWCASE = [
 
 export default function PhoneShort({ className = "" }) {
   const [i, setI] = useState(0);
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    if (!("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
-    const t = setInterval(() => setI((x) => (x + 1) % SHOWCASE.length), 4000);
+    if (!visible) return;
+    const t = setInterval(() => { if (!document.hidden) setI((x) => (x + 1) % SHOWCASE.length); }, 4000);
     return () => clearInterval(t);
-  }, []);
+  }, [visible]);
   const s = SHOWCASE[i];
   return (
-    <div className={`relative ${className}`} data-testid="hero-phone">
+    <div ref={ref} className={`relative ${className}`} data-testid="hero-phone">
       <div className="absolute -inset-6 rounded-[3rem] bg-rose-300/35 blur-2xl" />
-      <div className="relative w-[220px] sm:w-[300px] aspect-[9/19] rounded-[2.6rem] bg-slate-950 p-2.5 shadow-2xl ring-1 ring-slate-500/30">
-        <div className="relative h-full w-full rounded-[2.1rem] overflow-hidden bg-[#3A3040]">
+      <div className="relative flex flex-col w-[220px] sm:w-[300px] aspect-[9/19] rounded-[2.6rem] bg-[#e7efe7] p-2.5 shadow-2xl ring-1 ring-[#c4d8c9]">
+        <div data-testid="hero-phone-screen" className=" absolute inset-2.5 rounded-[2.1rem] overflow-hidden bg-[#29443e]">
           <img key={i} src={s.img} alt="AI scene" className="absolute inset-0 h-full w-full object-cover kenburns" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#29443e]/50 via-transparent to-[#29443e]/70" />
           <div className="absolute top-3 inset-x-3 flex gap-1">
             {SHOWCASE.map((_, j) => (
               <div key={j} className="h-0.5 flex-1 rounded bg-white/25 overflow-hidden">
@@ -37,7 +46,7 @@ export default function PhoneShort({ className = "" }) {
             Telugu Kathalu · <span className="text-rose-200">Shorts</span>
           </div>
           <div key={`c${i}`} className="pop absolute bottom-20 inset-x-4 text-center">
-            <span className="indic inline-block rounded-xl bg-black/60 backdrop-blur px-3 py-2 text-white font-bold text-[15px] leading-snug">{s.cap}</span>
+            <span className="indic inline-block rounded-xl bg-[#29443e]/75 backdrop-blur px-3 py-2 text-white font-bold text-[15px] leading-snug">{s.cap}</span>
           </div>
           <div className="absolute right-2.5 bottom-24 flex flex-col items-center gap-4 text-white text-[10px] font-semibold">
             <div className="flex flex-col items-center"><Heart size={22} className="fill-rose-500 text-rose-500" /></div>

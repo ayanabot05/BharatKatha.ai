@@ -2,7 +2,13 @@
 .git
 #!include:.gitignore
 **/*.env
+.env
+backend/.env
+frontend/.env
 **/env.txt
+**/.piper-models/**
+**/.hindi-eval-model/**
+**/.hindi-eval-hf/**
 **/node_modules/**
 **/build/**
 **/__pycache__/**

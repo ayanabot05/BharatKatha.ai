@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script fulfills the requirements but fails to maintain the continuity of the two characters across the final scene, as the ending visual shows Arjuna standing alone without clearly maintaining the presence or continuity of the interaction between the ",
+      "seconds": 62.36
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 0,
+    "total": 1,
+    "pass_rate": 0.0
+  }
+}

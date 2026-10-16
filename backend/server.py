@@ -1,4 +1,5 @@
 import os
+import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
@@ -6,6 +7,8 @@ from typing import List, Optional
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, Response
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field
+from starlette.responses import JSONResponse
+import beta_controls
 
 from core import (db, client, current_user, media_user, hash_password, verify_password, set_auth_cookies, decode,
                   cookie_options, make_token, now_iso, new_id, get_object, init_storage, log)
@@ -17,7 +20,7 @@ from projects import router as projects_router
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 # httpx INFO logs include the full YouTube URL, including its API key.
 logging.getLogger("httpx").setLevel(logging.WARNING)
-app = FastAPI(title="VidBharat Studio")
+app = FastAPI(title="BharatKatha Studio")
 api = APIRouter(prefix="/api")
 
 
@@ -39,7 +42,8 @@ def public(u):
 
 @api.post("/auth/register")
 async def register(body: RegisterIn, response: Response):
-    if os.environ.get("BETA_REGISTRATION", "true").lower() != "true":
+    invited = {email.strip().lower() for email in os.environ.get("BETA_INVITE_EMAILS", "").split(",") if email.strip()}
+    if os.environ.get("BETA_REGISTRATION", "true").lower() != "true" and body.email.lower() not in invited:
         raise HTTPException(403, "This beta is invite-only. Contact the owner for access.")
     email = body.email.lower()
     if await db.users.find_one({"email": email}):
@@ -94,22 +98,59 @@ async def me(user=Depends(current_user)):
 
 # ---------- media ----------
 @api.get("/media/{path:path}")
-async def media(path: str, user=Depends(media_user)):
+async def media(path: str, download: bool = False, user=Depends(media_user)):
     rec = await db.files.find_one({"storage_path": path, "user_id": user["id"], "is_deleted": False})
     if not rec:
         raise HTTPException(404, "File not found")
     data, ct = await get_object(path)
-    return Response(content=data, media_type=rec.get("content_type", ct), headers={"Cache-Control": "private, max-age=86400"})
+    headers = {"Cache-Control": "private, max-age=86400"}
+    if download:
+        filename = os.path.basename(path).replace('"', "")
+        headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return Response(content=data, media_type=rec.get("content_type", ct), headers=headers)
 
 
 # ---------- meta / ideas / voice ----------
 @api.get("/meta")
 async def meta():
+    import piper_tts
+    import supertonic_tts
+    import premium_tts
+    try:
+        piper_languages = sorted(piper_tts.voices())
+    except RuntimeError as exc:
+        log.warning("Piper configuration is unavailable: %s", exc)
+        piper_languages = []
+    try:
+        premium_rates = premium_tts.pricing()
+    except RuntimeError as exc:
+        log.warning("Premium voice pricing is unavailable: %s", exc)
+        premium_rates = {}
+    configured_voice_provider = os.environ.get("TTS_PROVIDER", "edge").lower()
+    default_voice_provider = configured_voice_provider
+    if default_voice_provider in {"google_chirp", "openai"} and default_voice_provider not in premium_rates:
+        default_voice_provider = "edge"
+    voice_engine = {
+        "google_chirp": "Google Cloud Chirp 3 HD",
+        "openai": "OpenAI TTS",
+        "piper": "Operator-hosted Piper voice",
+        "supertonic": "Cloud-hosted Supertonic 3 voice" if os.environ.get("SUPERTONIC_HINDI_SERVICE_URL") else "Local Supertonic 3 voice",
+        "edge": "Two Edge neural voices per language",
+    }.get(default_voice_provider, "Unavailable voice provider")
     return {"voices": ai.VOICES, "languages": ai.LANGS, "styles": list(ai.STYLE_PROMPTS.keys()),
+            "premium_voice_rates": premium_rates,
+            "voice_providers": [
+                {"id": "piper", "name": "Piper (open source)", "type": "open", "languages": piper_languages},
+                {"id": "supertonic", "name": "Supertonic 3", "type": "open",
+                 "languages": ["hi", "en"] if supertonic_tts.available() else []},
+                {"id": "edge", "name": "Edge neural voice", "type": "hosted", "languages": [] if os.environ.get("APP_ENV") == "production" else sorted(ai.EDGE_VOICES)},
+                {"id": "google_chirp", "name": "Google Chirp 3 HD (premium)", "type": "premium", "languages": sorted(ai.CHIRP_LANGUAGES) if configured_voice_provider == "google_chirp" and "google_chirp" in premium_rates else []},
+                {"id": "openai", "name": "OpenAI TTS (premium)", "type": "premium", "languages": sorted(ai.EDGE_VOICES) if configured_voice_provider == "openai" and "openai" in premium_rates and os.environ.get("OPENAI_API_KEY") else []},
+            ], "default_voice_provider": default_voice_provider,
             "engines": {"script": "Gemini text API", "images": "Vertex AI image worker" if ai.IMAGE_PROVIDER == "worker" else "Gemini image API",
-                        "voice": "Two Edge neural voices per language by default; optional OpenAI TTS when explicitly configured", "captions": "Script timing or Whisper"},
+                        "voice": voice_engine, "captions": "Script timing or Whisper"},
             "ram_ai": {"version": "2.0", "kind": "rule-guided prompt layer",
-                       "note": "Not a trained model. Feedback loop learns from your own users."}}
+                       "note": "Stable prompt release. Feedback is collected for human review; no automatic training."}}
 
 
 class IdeasIn(BaseModel):
@@ -123,7 +164,7 @@ class IdeasIn(BaseModel):
 @api.post("/ideas/suggest")
 async def ideas(body: IdeasIn, user=Depends(current_user)):
     try:
-        data = await ai.suggest_ideas(body.language, body.region, body.category, body.platform, body.audience)
+        data = await ai.suggest_ideas(body.language, body.region, body.category, body.platform, body.audience, user["id"])
     except Exception as e:
         raise HTTPException(502, f"Idea generation failed: {e}")
     for idea in data:
@@ -156,12 +197,21 @@ class PreviewIn(BaseModel):
     text: str = Field(min_length=1, max_length=300)
     speed: float = 1.0
     language: str = ""
+    provider: Optional[str] = None
+    max_cost_inr: Optional[float] = Field(default=None, gt=0)
 
 
 @api.post("/voice/preview")
 async def voice_preview(body: PreviewIn, user=Depends(current_user)):
+    import premium_tts
     try:
-        data = await ai.tts(body.text, body.voice, body.speed, body.language)
+        premium_tts.authorize((body.provider or os.environ.get("TTS_PROVIDER", "edge")).lower(),
+                              [body.text], body.max_cost_inr)
+    except RuntimeError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    try:
+        data = await ai.tts(body.text, body.voice, body.speed, body.language,
+                            provider=body.provider or "", max_cost_inr=body.max_cost_inr)
     except Exception as e:
         raise HTTPException(502, f"Voice preview failed: {e}")
     return Response(content=data, media_type="audio/mpeg")
@@ -189,25 +239,27 @@ async def pulse_winners(language: str = "te", region: str = "", limit: int = 6, 
 
 # ---------- growth coach ----------
 class VideoStat(BaseModel):
-    title: str
-    views: int = 0
-    avg_viewed_pct: float = 0
-    viewed_vs_swiped_pct: float = 0
-    likes: int = 0
-    retention: List[float] = []
+    title: str = Field(min_length=1, max_length=200)
+    views: Optional[int] = Field(default=None, ge=0)
+    avg_viewed_pct: Optional[float] = Field(default=None, ge=0, le=1000)
+    viewed_vs_swiped_pct: Optional[float] = Field(default=None, ge=0, le=100)
+    likes: Optional[int] = Field(default=None, ge=0)
+    retention: List[Optional[float]] = Field(default_factory=list, max_length=7)
 
 
 class CoachIn(BaseModel):
-    channel_name: str = "My channel"
-    niche: str = "Stories"
-    language: str = "te"
-    subscribers: int = 0
-    videos: List[VideoStat] = Field(min_length=1)
-    goal: Optional[str] = None
+    channel_name: str = Field(default="My channel", max_length=200)
+    niche: str = Field(default="Stories", max_length=200)
+    language: str = Field(default="te", max_length=10)
+    subscribers: Optional[int] = Field(default=None, ge=0)
+    videos: List[VideoStat] = Field(min_length=1, max_length=10)
+    goal: Optional[str] = Field(default=None, max_length=500)
 
 
 @api.post("/coach/analyze")
 async def coach_analyze(body: CoachIn, user=Depends(current_user)):
+    if any(value is not None and (not 0 <= value <= 1000) for video in body.videos for value in video.retention):
+        raise HTTPException(422, "Retention must be a positive percentage or left blank.")
     try:
         report = await ai.coach(body.model_dump())
     except Exception as e:
@@ -215,6 +267,38 @@ async def coach_analyze(body: CoachIn, user=Depends(current_user)):
     doc = {"id": new_id(), "user_id": user["id"], "input": body.model_dump(), "report": report, "created_at": now_iso()}
     await db.coach_reports.insert_one(dict(doc))
     return doc
+
+
+class FeedbackIn(BaseModel):
+    project_id: Optional[str] = Field(default=None, max_length=64)
+    rating: int = Field(ge=1, le=5)
+    area: str = Field(min_length=1, max_length=40)
+    comment: str = Field(min_length=3, max_length=2000)
+    permission_to_train: bool = False
+
+
+@api.post("/feedback")
+async def feedback(body: FeedbackIn, user=Depends(current_user)):
+    project = None
+    if body.project_id:
+        project = await db.projects.find_one({"id": body.project_id, "user_id": user["id"]})
+        if not project:
+            raise HTTPException(404, "Project not found")
+    record = {"id": new_id(), "user_id": user["id"], "event": "beta_feedback",
+              "language": (project or {}).get("language", ""), "region": "", "genre": "", "hook": "",
+              "idea_title": "", "project_id": body.project_id or "", "created_at": now_iso(),
+              "meta": {**body.model_dump(exclude={"project_id"}), "reviewed": False, "release": "phase-0",
+                       "project_updated_at": (project or {}).get("updated_at")}}
+    # Unlike optional activity logging, feedback must persist before showing success.
+    await db.pulse_events.insert_one(record)
+    return {"id": record["id"], "saved": True}
+
+
+@api.get("/feedback")
+async def feedback_inbox(user=Depends(current_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(403, "Admin access required")
+    return await db.pulse_events.find({"event": "beta_feedback"}, {"_id": 0}).sort("created_at", -1).to_list(50)
 
 
 @api.get("/coach/reports")
@@ -225,15 +309,35 @@ async def coach_reports(user=Depends(current_user)):
 @api.get("/health")
 @api.get("/")
 async def root():
-    return {"app": "VidBharat Studio", "ok": True}
+    return {"app": "BharatKatha Studio", "ok": True}
+
+
+@api.get("/ready")
+async def ready():
+    """Check database and persistent storage without exposing configuration."""
+    try:
+        if os.environ.get("DATABASE_URL"):
+            await db.execute("SELECT 1", fetchall=True)
+        else:
+            await db.command("ping")
+        bucket_name = os.environ.get("GCS_BUCKET")
+        if os.environ.get("APP_ENV") == "production" and not bucket_name:
+            raise RuntimeError("Persistent storage is unconfigured")
+        if bucket_name:
+            from cloud_storage import client
+            if not await asyncio.to_thread(lambda: client().bucket(bucket_name).exists(timeout=10)):
+                raise RuntimeError("Persistent storage is unavailable")
+    except Exception:
+        log.error("Readiness check failed: database or storage unavailable")
+        raise HTTPException(503, "Service dependencies are unavailable")
+    return {"ok": True}
 
 
 app.include_router(api)
 app.include_router(projects_router)
 
-cors_origins = [
-    "http://localhost:3003",
-    "http://127.0.0.1:3003",
+cors_origins = [] if os.environ.get("APP_ENV") == "production" else [
+    "http://localhost:3004", "http://127.0.0.1:3004",
 ]
 env_frontend = os.environ.get("FRONTEND_URL", "").strip()
 if env_frontend:
@@ -246,9 +350,41 @@ app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=cors_or
                    allow_methods=["*"], allow_headers=["*"])
 
 
+@app.middleware("http")
+async def beta_boundary(request: Request, call_next):
+    path = request.url.path
+    production = os.environ.get("APP_ENV") == "production"
+    if path.startswith("/api/") and request.method in {"POST", "PATCH", "DELETE", "PUT"}:
+        origin = request.headers.get("origin")
+        if origin and origin not in cors_origins:
+            return JSONResponse({"detail": "This website is not allowed to change your studio."}, status_code=403)
+        if production or os.environ.get("RATE_LIMIT_ENABLED") == "true":
+            try:
+                ident = beta_controls.identity(request)
+                allowed, wait = await beta_controls.consume(ident + ":writes", 30, 60)
+                if allowed and path not in {"/api/auth/refresh", "/api/auth/logout"}:
+                    allowed, wait = await beta_controls.consume(ident + ":daily", 200, 86400)
+                if not allowed:
+                    return JSONResponse({"detail": f"Beta limit reached. Please try again in {wait} seconds."},
+                                        status_code=429, headers={"Retry-After": str(wait)})
+            except Exception:
+                log.exception("Beta rate limiter unavailable")
+                return JSONResponse({"detail": "The studio is temporarily busy. Please try again shortly."}, status_code=503)
+    response = await call_next(request)
+    if path.startswith("/api/") and not path.startswith("/api/media/"):
+        response.headers["Cache-Control"] = "private, no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
 @app.on_event("startup")
 async def startup():
     if os.environ.get("APP_ENV") == "production":
+        if not os.environ.get("DATABASE_URL"):
+            raise RuntimeError("Phase 0 production requires Supabase DATABASE_URL")
+        await db.execute("SELECT brief, content_contract FROM projects LIMIT 0", fetchall=True)
+        await db.execute("SELECT scene_job_started_at, scene_job_token FROM projects LIMIT 0", fetchall=True)
+        await db.execute("SELECT bucket FROM request_limits LIMIT 0", fetchall=True)
         if not os.environ.get("GCS_BUCKET"):
             raise RuntimeError("Cloud beta requires GCS_BUCKET for persistent media")
         if os.environ.get("ALLOW_IMAGE_FALLBACK", "false").lower() == "true":
@@ -272,6 +408,8 @@ async def startup():
         init_storage()
     except Exception as e:
         log.error(f"Storage init failed: {e}")
+        if os.environ.get("APP_ENV") == "production":
+            raise RuntimeError("Cloud storage is unavailable; fix storage access before accepting users") from e
 
 
 @app.on_event("shutdown")

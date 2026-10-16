@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The story fulfills the requirements regarding Ghatotkacha's sacrifice to save Arjuna during the Kurukshetra war in a traditional tone.; दृश्य 3: narration के 'विशाल रूप धारण करने' से पहले visual में उसे सामान्य आकार में दिखाना चाहिए।; दृश्य 4: narration म",
+      "seconds": 60.3
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 0,
+    "total": 1,
+    "pass_rate": 0.0
+  }
+}

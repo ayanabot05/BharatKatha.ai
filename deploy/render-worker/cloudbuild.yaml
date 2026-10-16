@@ -1,0 +1,7 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: [build, -f, deploy/render-worker/Dockerfile, -t, '${_IMAGE}', .]
+images: ['${_IMAGE}']
+substitutions:
+  _IMAGE: 'asia-south1-docker.pkg.dev/ayana-video-studio/vidbharat-beta/render-worker:review'
+timeout: 1800s

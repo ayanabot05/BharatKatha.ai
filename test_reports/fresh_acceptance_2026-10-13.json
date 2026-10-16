@@ -1,0 +1,316 @@
+{
+  "scope": "fresh minimally edited diagnostic, not approved for publication",
+  "events": [
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52/script/generate",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52/script/validate",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52/script/approve",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52/scenes/generate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52/audio/ai",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52/scenes/b5e3c09c799a4af49e23cd1c8986b4d5/approve",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52/scenes/16e659021e46477eb5226f701e477ead/approve",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/projects/a4633c5b71d04f0da3bbae0ea8a09b52/scenes/0fa2f738a7a54ce1b306beda7d53ba58/approve",
+      "status": 200
+    }
+  ],
+  "project_id": "a4633c5b71d04f0da3bbae0ea8a09b52",
+  "script": {
+    "hook": "మన ఇంటి పైపు ఎందుకు లీక్ అవుతోంది?",
+    "tags": [
+      "Village Life",
+      "DIY Repair",
+      "Andhra Pradesh",
+      "Water Leakage",
+      "Telugu Shorts",
+      "Rural India",
+      "Practical Tips",
+      "Godavari"
+    ],
+    "story": "రామయ్య, సోమన్న కలిసి ఒక పాత ఇనుప పైపు లీకేజీని గమనించారు. వారు ఒక సిల్వర్ క్లాంప్‌ను ఉపయోగించి లీకేజీని సమర్థవంతంగా అరికట్టారు.",
+    "title": "నీటి లీకేజీకి పరిష్కారం",
+    "ending": "మీరు ఎప్పుడైనా ఇలా చిన్న లీకేజీలను బాగు చేశారా?",
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": "Ramayya and Somanna standing in a lush Godavari delta garden, pointing at a rusted metal pipe joint with water spraying out.",
+        "narration": "మన ఇంటి పైపు ఎందుకు లీక్ అవుతోంది?"
+      },
+      {
+        "beat": "setup",
+        "visual": "Close-up of Ramayya and Somanna looking closely at the rusted metal pipe joint with four bolts, no tools visible yet.",
+        "narration": "అక్కడ ఉన్న తుప్పు పట్టిన పైపును జాగ్రత్తగా పరిశీలించారు."
+      },
+      {
+        "beat": "conflict",
+        "visual": "Somanna holding a shiny four-bolt silver clamp against the leaking rusty pipe joint.",
+        "narration": "వెంటనే ఒక నాలుగు బోల్టుల సిల్వర్ క్లాంప్‌ను తీసుకువచ్చారు."
+      },
+      {
+        "beat": "twist",
+        "visual": "Ramayya using a metal wrench to tighten the four bolts on the silver clamp wrapped around the rusty pipe joint.",
+        "narration": "స్పానర్‌తో నాలుగు బోల్టులను గట్టిగా బిగించారు."
+      },
+      {
+        "beat": "ending",
+        "visual": "The same rusty metal pipe joint is now dry with the four-bolt silver clamp tightly secured, no water escaping.",
+        "narration": "ఇప్పుడు నీరు లీక్ అవ్వకుండా పైపు భలే తయారైంది కదా!"
+      }
+    ],
+    "category": "Village",
+    "hashtags": [
+      "#TeluguShorts",
+      "#VillageLife",
+      "#AndhraPradesh",
+      "#DIY",
+      "#Repair",
+      "#Godavari"
+    ],
+    "title_en": "The Solution to the Water Leak",
+    "characters": [
+      {
+        "look": "An elderly man in a white cotton dhoti and a plain white shirt with a towel on his shoulder.",
+        "name": "Ramayya"
+      },
+      {
+        "look": "A middle-aged man in a light blue lungi and a simple short-sleeved cotton shirt.",
+        "name": "Somanna"
+      }
+    ],
+    "description": "ఆంధ్ర పల్లెటూరిలో రామయ్య, సోమన్న ఒక పాత పైపు లీకేజీని ఎలా అరికట్టారో చూడండి. పాత వస్తువులను కాపాడుకోవడం మన బాధ్యత."
+  },
+  "validation": {
+    "all_passed": true,
+    "safe": true,
+    "concept_aligned": true,
+    "fixes": [
+      "టైటిల్ ను 'నీటి లీకేజీకి పరిష్కారం' అని కాకుండా, 'లీక్ అవుతున్న పైపును ఇలా సులభంగా బాగు చేయండి!' అని ఆకర్షణీయంగా మార్చండి.",
+      "హుక్ లైన్ లో 'ఎందుకు లీక్ అవుతోంది?' అని ప్రశ్న అడగడం కంటే, 'పైపు లీక్ అవుతుందా? కంగారు పడకండి!' అని పరిష్కారంపై దృష్టి పెట్టండి.",
+      "సీన్ 3లో క్లాంప్ వేసేటప్పుడు నీరు చిమ్మడం కొనసాగుతున్నట్లు చూపితే ఆందోళన (urgency) పెరుగుతుంది.",
+      "హుక్ సీన్: 'మన ఇంటి పైపు ఎందుకు లీక్ అవుతోంది?' అనే ప్రశ్నకు బదులుగా, 'పైపు లీక్ అయితే వేల రూపాయల బిల్లు కట్టాల్సిందే.. కానీ ఈ చిన్న చిట్కా చూస్తే చాలు!' అని చెబితే ప్రేక్షకులు ఆసక్తిగా చూస్తారు.",
+      "పేసింగ్: సన్నివేశాల మధ్య గ్యాప్ తగ్గించి, వాయిస్ ఓవర్ వేగంగా ఉండాలి.",
+      "విజువల్: క్లోజప్ షాట్స్ మరింత స్పష్టంగా, లీక్ అవుతున్న నీటిని హైలైట్ చేస్తూ చూపించాలి.",
+      "ఎమోషనల్ పేఆఫ్: చివర్లో రామయ్య, సోమన్న సంతోషంగా నవ్వుకుంటే ఆ దృశ్యానికి మరింత కనెక్టివిటీ పెరుగుతుంది.",
+      "సీన్ 2లో తుప్పు పట్టిన పైపును తాకేటప్పుడు జాగ్రత్త (చేతి గ్లౌవ్స్ లేదా క్లాత్ ఉపయోగించడం) గురించి ఒక చిన్న డైలాగ్ జోడిస్తే బాగుంటుంది, ఎందుకంటే పాత పైపుల అంచులు పదునుగా ఉంటాయి."
+    ]
+  },
+  "scenes": [
+    {
+      "id": "b5e3c09c799a4af49e23cd1c8986b4d5",
+      "narration": "మన ఇంటి పైపు ఎందుకు లీక్ అవుతోంది?",
+      "visual": "Ramayya and Somanna standing in a lush Godavari delta garden, pointing at a rusted metal pipe joint with water spraying out.",
+      "status": "ready",
+      "error": null,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/2488792d8948496589bd1f21195864d7.png",
+      "approved": false,
+      "audio_duration": 3.58
+    },
+    {
+      "id": "16e659021e46477eb5226f701e477ead",
+      "narration": "అక్కడ ఉన్న తుప్పు పట్టిన పైపును జాగ్రత్తగా పరిశీలించారు.",
+      "visual": "Close-up of Ramayya and Somanna looking closely at the rusted metal pipe joint with four bolts, no tools visible yet.",
+      "status": "ready",
+      "error": null,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/9172d5175033458da69be8546bafafa6.png",
+      "approved": false,
+      "audio_duration": 5.21
+    },
+    {
+      "id": "0fa2f738a7a54ce1b306beda7d53ba58",
+      "narration": "వెంటనే ఒక నాలుగు బోల్టుల సిల్వర్ క్లాంప్‌ను తీసుకువచ్చారు.",
+      "visual": "Somanna holding a shiny four-bolt silver clamp against the leaking rusty pipe joint.",
+      "status": "ready",
+      "error": null,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/04a2a7c2217e406a884d9d1540f1f693.png",
+      "approved": false,
+      "audio_duration": 5.11
+    },
+    {
+      "id": "fead9847a0b94266a58bb3581fef962d",
+      "narration": "స్పానర్‌తో నాలుగు బోల్టులను గట్టిగా బిగించారు.",
+      "visual": "Ramayya using a metal wrench to tighten the four bolts on the silver clamp wrapped around the rusty pipe joint.",
+      "status": "ready",
+      "error": null,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/94488179951a42658e6896bbec0a1ebb.png",
+      "approved": false,
+      "audio_duration": 4.51
+    },
+    {
+      "id": "9d478487d0034a4d8d5e422b877af3e0",
+      "narration": "ఇప్పుడు నీరు లీక్ అవ్వకుండా పైపు భలే తయారైంది కదా!",
+      "visual": "The same rusty metal pipe joint is now dry with the four-bolt silver clamp tightly secured, no water escaping.",
+      "status": "ready",
+      "error": null,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/46a3676a235b4dceb56f98b3d5105cac.png",
+      "approved": false,
+      "audio_duration": 4.78
+    }
+  ],
+  "audio": {
+    "mode": "ai",
+    "path": "vidbharat/audio/46057842e877488e9a6c7200aa1f29a5/53a8cd0d554b41cc861a4c2d62f17c09.mp3",
+    "speed": 0.75,
+    "voice": "fable",
+    "duration": 23.22,
+    "padded_seconds": 0.0,
+    "requested_speed": 1.0,
+    "duration_matched": false
+  },
+  "render": {
+    "status": "idle",
+    "progress": 0
+  }
+}

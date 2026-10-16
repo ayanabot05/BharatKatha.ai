@@ -1,0 +1,59 @@
+{
+  "cases": [
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "script": {
+        "title": "பட்டமும் பாட்டியும்",
+        "scenes": [
+          {
+            "narration": "பாட்டியும் அவளது பேரனும் கையில் கிழிந்த சிவப்பு பட்டத்தோடு அமர்ந்துள்ளார்கள்.",
+            "visual": "A grandmother and her young grandson sitting in a sunny village courtyard, holding a torn red paper kite.",
+            "beat": "hook"
+          },
+          {
+            "narration": "இந்தக் கிழிந்த பட்டத்தை எப்படி சரி செய்வது என்று பாட்டி தன் பேரனுக்குக் கற்றுக்கொடுக்கிறாள்.",
+            "visual": "The grandmother pointing at the torn area of the red paper kite, guiding the boy's hands.",
+            "beat": "setup"
+          },
+          {
+            "narration": "பாட்டியின் வழிகாட்டுதலில் பேரன் ஒரு காகிதத் துண்டை எடுத்து கிழிந்த இடத்தில் பசை கொண்டு ஒட்டுகிறான்.",
+            "visual": "Close-up of the boy's hands carefully attaching a paper patch to the torn part of the red paper kite with glue.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "ஒட்டிய காகிதம் காய்ந்ததும், இருவரும் சேர்ந்து பட்டத்தை வானில் பறக்க விடுகிறார்கள்.",
+            "visual": "The boy and grandmother standing in an open field, the repaired red paper kite starting to rise into the air.",
+            "beat": "twist"
+          },
+          {
+            "narration": "அதே சிவப்பு பட்டம் இப்போது வானத்தில் அழகாகப் பறந்து கொண்டிருக்கிறது.",
+            "visual": "The red paper kite flying high and steady in the blue sky, viewed from below.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 28.69,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The script does not provide verifiable scene evidence for: The story includes a grandmother character.",
+          "The script does not provide verifiable scene evidence for: The story includes a grandson character."
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 45.9
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 0,
+    "total": 1,
+    "pass_rate": 0.0
+  }
+}

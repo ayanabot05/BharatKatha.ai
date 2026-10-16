@@ -52,6 +52,7 @@ class LocalSetupTests(unittest.TestCase):
             good_checks = {"all_passed": True, "safety_passed": True, "checks": [],
                            "fixes": [], "disclaimer": "Text estimate"}
             with patch.object(ai, "_agent", side_effect=agent), \
+                 patch.object(ai, "adjudicate_story_gaps", new=AsyncMock(return_value=["Repair never appears"])), \
                  patch.object(ai.ram_ai, "run_ram_ai_checks", return_value=good_checks):
                 result = await ai.validate_script({"scenes": []}, "en", "Hyderabad", 30, "village pipe repair")
             self.assertFalse(result["concept_aligned"])
@@ -155,9 +156,9 @@ class LocalSetupTests(unittest.TestCase):
     def test_health_and_anonymous_auth(self):
         async def check():
             async with AsyncClient(transport=ASGITransport(app=server.app), base_url="http://localhost:8000") as client:
-                response = await client.get("/api/health", headers={"Origin": "http://localhost:3003"})
+                response = await client.get("/api/health", headers={"Origin": "http://localhost:3004"})
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.headers["access-control-allow-origin"], "http://localhost:3003")
+                self.assertEqual(response.headers["access-control-allow-origin"], "http://localhost:3004")
                 self.assertEqual((await client.get("/api/auth/me")).status_code, 401)
                 self.assertEqual((await client.post("/api/auth/refresh")).status_code, 401)
                 response = await client.post("/api/auth/logout")
@@ -220,6 +221,7 @@ class LocalSetupTests(unittest.TestCase):
                 "scenes": [
                     {"id": "s-1", "status": "generating"},
                     {"id": "s-2", "status": "ready"},
+                    {"id": "s-3", "status": "queued"},
                 ],
             }
             fake_db = unittest.mock.MagicMock()
@@ -234,6 +236,7 @@ class LocalSetupTests(unittest.TestCase):
                 self.assertIn("interrupted", healed["render"]["message"].lower())
                 self.assertEqual(healed["scenes"][0]["status"], "failed")
                 self.assertEqual(healed["scenes"][1]["status"], "ready")
+                self.assertEqual(healed["scenes"][2]["status"], "failed")
                 mock_upd.assert_awaited_once()
         asyncio.run(check())
 

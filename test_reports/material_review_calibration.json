@@ -1,0 +1,167 @@
+{
+  "definition": "Reviewer classification on 20 authored controls; not end-to-end content accuracy.",
+  "correct": 20,
+  "total": 20,
+  "cases": [
+    {
+      "case": "1-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "1-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The request specifies the action of fitting the clamp around the joint, whereas the visual only shows the clamp being held beside it without the installation occurring."
+      ]
+    },
+    {
+      "case": "2-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "2-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The request explicitly asks to turn off the water before fitting the connector, but the scenes show the connector being fitted while water is still spraying."
+      ]
+    },
+    {
+      "case": "3-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "3-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The request explicitly required the anklet to be returned before sunset, but the scene depicts the event occurring at midnight."
+      ]
+    },
+    {
+      "case": "4-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "4-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The request specifies that Grandma teaches the grandson to attach the patch, but the scene shows Grandma doing the work while the boy merely watches."
+      ]
+    },
+    {
+      "case": "5-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "5-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The request explicitly asks for the bag to be returned unopened, but the scene shows the sisters opening it."
+      ]
+    },
+    {
+      "case": "6-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "6-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The creator explicitly requested 'Do not add a reward', but the scene depicts the owner providing a cash payment."
+      ]
+    },
+    {
+      "case": "7-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "7-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The requested red kite was changed to a blue kite in the second scene."
+      ]
+    },
+    {
+      "case": "8-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "8-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The narration and visual explicitly depict repairing the old pot, which directly contradicts the instruction to set it aside and make a new one."
+      ]
+    },
+    {
+      "case": "9-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "9-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The request specifically asked for the warrior to sacrifice his life, but the scenes explicitly show him escaping unharmed and celebrating, which directly contradicts the requested plot point."
+      ]
+    },
+    {
+      "case": "10-valid",
+      "expected_block": false,
+      "blocked": false,
+      "correct": true,
+      "gaps": []
+    },
+    {
+      "case": "10-invalid",
+      "expected_block": true,
+      "blocked": true,
+      "correct": true,
+      "gaps": [
+        "The content explicitly contradicts the requested outcome by having the character destroy the seeds rather than save them."
+      ]
+    }
+  ]
+}

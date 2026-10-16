@@ -1,0 +1,346 @@
+{
+  "project_id": "689d06a42e2b4f86a66fdd4efdae0679",
+  "idea": "In an Andhra Pradesh village, Ramayya and Somanna discover a leak in a rusty metal water pipe. Show them inspect the same damaged joint, fit a metal clamp with a wrench, and confirm that the same pipe joint is sealed with no water escaping. Show those actions in order and keep both people and the joint consistent across all shots.",
+  "script": {
+    "hook": "మన ఊరి నీటి పైపు ఎందుకు లీక్ అవుతోంది?",
+    "tags": [
+      "Andhra Pradesh",
+      "Village Life",
+      "Water Conservation",
+      "Rural India",
+      "Telugu Shorts",
+      "Hard Work",
+      "Community Service",
+      "Godavari"
+    ],
+    "story": "రామయ్య, సోమన్న తుప్పు పట్టిన పైపు లీకును గుర్తించారు. ఇద్దరూ కలిసి మెటల్ క్లాంప్‌ను బిగించి నీటి వృథాను అరికట్టారు.",
+    "title": "నీటి వృథాను ఆపిన రామయ్య, సోమన్న",
+    "ending": "మనం కూడా మన ఊరి వనరులను ఇలాగే కాపాడుకుందామా?",
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": "A close-up shot of a rusty, dark brown metal water pipe in an Andhra village with water spurting out from a jagged crack at the joint.",
+        "narration": "మన ఊరి నీటి పైపు ఎందుకు లీక్ అవుతోంది?"
+      },
+      {
+        "beat": "setup",
+        "visual": "Ramayya and Somanna kneel beside the same rusty pipe, pointing at the exact same leaking joint while discussing it in a sunny village field.",
+        "narration": "రామయ్య, సోమన్న ఇద్దరూ ఆ పగిలిన పైపు జాయింట్‌ను నిశితంగా పరిశీలిస్తున్నారు."
+      },
+      {
+        "beat": "conflict",
+        "visual": "Somanna holds a heavy metal clamp against the rusty joint while Ramayya uses a large silver wrench to tighten the bolt, locking the clamp in place.",
+        "narration": "చూడండి, ఇక్కడ తుప్పు పట్టి నీరు బయటకు వస్తోంది చూడండి."
+      },
+      {
+        "beat": "twist",
+        "visual": "Close-up of the wrench turning the bolt on the silver metal clamp, which is now firmly secured over the rusty, damaged pipe joint.",
+        "narration": "ఇద్దరూ కలిసి క్లాంప్‌ను గట్టిగా బిగించి లీకును ఆపే ప్రయత్నం చేశారు."
+      },
+      {
+        "beat": "ending",
+        "visual": "The same rusty pipe joint is shown with the metal clamp fixed perfectly; the water flow has stopped completely and the area around the pipe is dry.",
+        "narration": "ఇప్పుడు పైపు నుండి నీరు పడటం లేదు. ఇలాగే మనం నీటిని కాపాడుకుందాం."
+      }
+    ],
+    "category": "Village",
+    "hashtags": [
+      "#TeluguShorts",
+      "#VillageLife",
+      "#WaterSaving",
+      "#AndhraPradesh",
+      "#Inspiring",
+      "#Nature"
+    ],
+    "title_en": "Ramayya and Somanna stop the water waste",
+    "characters": [
+      {
+        "look": "An elderly man in a white cotton dhoti, wearing a simple white towel over his shoulder.",
+        "name": "రామయ్య"
+      },
+      {
+        "look": "A middle-aged man wearing a simple blue shirt and white lungi, holding a rusty wrench.",
+        "name": "సోమన్న"
+      }
+    ],
+    "description": "గోదావరి తీరంలో రామయ్య మరియు సోమన్న కలిసి ఒక చిన్న నీటి లీకేజీని ఎలా సరిచేశారో ఈ వీడియోలో చూడండి. చిన్న ప్రయత్నంతో నీటిని వృథా కాకుండా కాపాడుకోవడం చాలా ముఖ్యం."
+  },
+  "validation": {
+    "safe": true,
+    "fixes": [
+      "హుక్ (Hook) మరింత ఉత్కంఠభరితంగా ఉండాలి. ఉదాహరణకు: 'ఈ చిన్న తప్పు వల్ల మన ఊరిలో రోజుకు వందల లీటర్ల నీరు వృథా అవుతోంది!' అని మార్చండి.",
+      "ఎండింగ్ సీన్ (Scene 5) లో కేవలం పైపును చూపించడమే కాకుండా, రామయ్య మరియు సోమన్న సంతోషంగా నవ్వుకుంటూ ఒకరికొకరు అభినందించుకుంటే ప్రేక్షకులు మరింతగా కనెక్ట్ అవుతారు.",
+      "టైటిల్ మరింత ఆకర్షణీయంగా మార్చండి. ఉదాహరణకు: 'మన ఊరి నీటిని కాపాడిన ఇద్దరు రైతులు - స్ఫూర్తిదాయకమైన వీడియో!'",
+      "హుక్: 'మన ఊరి నీటి పైపు ఎందుకు లీక్ అవుతోంది?' అని అడగడం కంటే, 'ఈ ఒక్క చిన్న తప్పు వల్ల మన ఊరికి నీళ్లు రావడం లేదా?' అని ప్రశ్నిస్తే ప్రేక్షకులు వెంటనే కనెక్ట్ అవుతారు.",
+      "పేసింగ్: సన్నివేశాల మధ్య గ్యాప్ తగ్గించి, ఆ లీకేజీ వల్ల నీరు వృథా అవుతుంటే గ్రామస్తులు బాధపడే ఒక షాట్ యాడ్ చేస్తే ఎమోషనల్ పెయిడ్ ఆఫ్ బాగుంటుంది.",
+      "క్యూరియాసిటీ లూప్: వీడియో చివరలో 'మీ ఊరిలో కూడా ఇలాంటి సమస్యలు ఉంటే ఏం చేస్తారు?' అని అడగడం ద్వారా కామెంట్స్ పెంచవచ్చు.",
+      "విజువల్స్: మొదటి సన్నివేశంలో నీరు వృథా అవుతున్నప్పుడు బ్యాక్‌గ్రౌండ్‌లో 'నీటి చుక్క ప్రాణంతో సమానం' అనే ఎమోషనల్ మ్యూజిక్ యాడ్ చేయండి.",
+      "సీన్ 3లో 'చూడండి, ఇక్కడ తుప్పు పట్టి నీరు బయటకు వస్తోంది చూడండి' అనే వాక్యం కొంచెం పునరావృతం అవుతోంది, దానిని 'చూడండి, ఇక్కడ తుప్పు పట్టి నీరు వృథా అవుతోంది' అని మార్చండి."
+    ],
+    "agents": [
+      {
+        "key": "concept",
+        "name": "Ram AI Concept Editor",
+        "fixes": [],
+        "score": 100,
+        "misses": [],
+        "aligned": true,
+        "verdict": "ఈ స్క్రిప్ట్ అన్ని షరతులను పాటిస్తూ చాలా స్పష్టంగా ఉంది.",
+        "strengths": [
+          "అన్ని దశలు క్రమ పద్ధతిలో ఉన్నాయి.",
+          "రామయ్య మరియు సోమన్న పాత్రలు స్థిరంగా ఉన్నాయి.",
+          "లీక్ పరిశీలన నుండి మరమ్మత్తు పూర్తి చేసే వరకు విజువల్స్ స్పష్టంగా ఉన్నాయి."
+        ],
+        "requirements": [
+          {
+            "source": "In an Andhra Pradesh village",
+            "status": "met",
+            "evidence": [
+              {
+                "field": "visual",
+                "quote": "A close-up shot of a rusty, dark brown metal water pipe in an Andhra village",
+                "scene": 1
+              }
+            ]
+          },
+          {
+            "source": "Ramayya and Somanna discover a leak in a rusty metal water pipe",
+            "status": "met",
+            "evidence": [
+              {
+                "field": "visual",
+                "quote": "Ramayya and Somanna kneel beside the same rusty pipe, pointing at the exact same leaking joint",
+                "scene": 2
+              }
+            ]
+          },
+          {
+            "source": "Show them inspect the same damaged joint",
+            "status": "met",
+            "evidence": [
+              {
+                "field": "narration",
+                "quote": "రామయ్య, సోమన్న ఇద్దరూ ఆ పగిలిన పైపు జాయింట్‌ను నిశితంగా పరిశీలిస్తున్నారు.",
+                "scene": 2
+              }
+            ]
+          },
+          {
+            "source": "fit a metal clamp with a wrench",
+            "status": "met",
+            "evidence": [
+              {
+                "field": "visual",
+                "quote": "Somanna holds a heavy metal clamp against the rusty joint while Ramayya uses a large silver wrench to tighten the bolt",
+                "scene": 3
+              }
+            ]
+          },
+          {
+            "source": "confirm that the same pipe joint is sealed with no water escaping",
+            "status": "met",
+            "evidence": [
+              {
+                "field": "visual",
+                "quote": "The same rusty pipe joint is shown with the metal clamp fixed perfectly; the water flow has stopped completely",
+                "scene": 5
+              }
+            ]
+          },
+          {
+            "source": "Show those actions in order",
+            "status": "met",
+            "evidence": [
+              {
+                "field": "visual",
+                "quote": "Ramayya and Somanna kneel beside the same rusty pipe",
+                "scene": 2
+              },
+              {
+                "field": "visual",
+                "quote": "Somanna holds a heavy metal clamp against the rusty joint while Ramayya uses a large silver wrench",
+                "scene": 3
+              },
+              {
+                "field": "visual",
+                "quote": "The same rusty pipe joint is shown with the metal clamp fixed perfectly",
+                "scene": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "trend",
+        "name": "Ram AI Audience Guide",
+        "fixes": [
+          "హుక్ (Hook) మరింత ఉత్కంఠభరితంగా ఉండాలి. ఉదాహరణకు: 'ఈ చిన్న తప్పు వల్ల మన ఊరిలో రోజుకు వందల లీటర్ల నీరు వృథా అవుతోంది!' అని మార్చండి.",
+          "ఎండింగ్ సీన్ (Scene 5) లో కేవలం పైపును చూపించడమే కాకుండా, రామయ్య మరియు సోమన్న సంతోషంగా నవ్వుకుంటూ ఒకరికొకరు అభినందించుకుంటే ప్రేక్షకులు మరింతగా కనెక్ట్ అవుతారు.",
+          "టైటిల్ మరింత ఆకర్షణీయంగా మార్చండి. ఉదాహరణకు: 'మన ఊరి నీటిని కాపాడిన ఇద్దరు రైతులు - స్ఫూర్తిదాయకమైన వీడియో!'"
+        ],
+        "score": 85,
+        "verdict": "ఈ వీడియో కంటెంట్ గ్రామీణ ప్రాంతాలకు చాలా సందర్భోచితంగా ఉంది, అయితే క్లైమాక్స్‌లో భావోద్వేగపూరితమైన కనెక్టివిటీ అవసరం.",
+        "strengths": [
+          "గ్రామీణ జీవనశైలి మరియు నీటి సంరక్షణ వంటి సామాజిక బాధ్యతాయుతమైన అంశాన్ని ఎంచుకోవడం బాగుంది.",
+          "రామయ్య, సోమన్న పాత్రల రూపకల్పన సహజంగా ఉంది.",
+          "దృశ్యాలు (Scenes) కథా క్రమానికి అనుగుణంగా స్పష్టంగా ఉన్నాయి."
+        ]
+      },
+      {
+        "key": "hook",
+        "name": "Ram AI Hook Specialist",
+        "fixes": [
+          "హుక్: 'మన ఊరి నీటి పైపు ఎందుకు లీక్ అవుతోంది?' అని అడగడం కంటే, 'ఈ ఒక్క చిన్న తప్పు వల్ల మన ఊరికి నీళ్లు రావడం లేదా?' అని ప్రశ్నిస్తే ప్రేక్షకులు వెంటనే కనెక్ట్ అవుతారు.",
+          "పేసింగ్: సన్నివేశాల మధ్య గ్యాప్ తగ్గించి, ఆ లీకేజీ వల్ల నీరు వృథా అవుతుంటే గ్రామస్తులు బాధపడే ఒక షాట్ యాడ్ చేస్తే ఎమోషనల్ పెయిడ్ ఆఫ్ బాగుంటుంది.",
+          "క్యూరియాసిటీ లూప్: వీడియో చివరలో 'మీ ఊరిలో కూడా ఇలాంటి సమస్యలు ఉంటే ఏం చేస్తారు?' అని అడగడం ద్వారా కామెంట్స్ పెంచవచ్చు.",
+          "విజువల్స్: మొదటి సన్నివేశంలో నీరు వృథా అవుతున్నప్పుడు బ్యాక్‌గ్రౌండ్‌లో 'నీటి చుక్క ప్రాణంతో సమానం' అనే ఎమోషనల్ మ్యూజిక్ యాడ్ చేయండి."
+        ],
+        "score": 65,
+        "verdict": "స్క్రిప్ట్ బాగుంది, కానీ హుక్ మరియు ఎమోషనల్ కనెక్ట్ ఇంకాస్త పవర్‌ఫుల్‌గా ఉండాలి.",
+        "strengths": [
+          "గ్రామీణ నేపథ్యంలో సామాజిక బాధ్యతను చాటిచెప్పడం బాగుంది.",
+          "సందేశం చాలా క్లియర్ గా ఉంది.",
+          "విజువల్స్ మరియు సన్నివేశాల క్రమం స్పష్టంగా ఉన్నాయి."
+        ]
+      },
+      {
+        "key": "safety",
+        "name": "Ram AI Safety Guard",
+        "safe": true,
+        "fixes": [
+          "సీన్ 3లో 'చూడండి, ఇక్కడ తుప్పు పట్టి నీరు బయటకు వస్తోంది చూడండి' అనే వాక్యం కొంచెం పునరావృతం అవుతోంది, దానిని 'చూడండి, ఇక్కడ తుప్పు పట్టి నీరు వృథా అవుతోంది' అని మార్చండి."
+        ],
+        "flags": [],
+        "score": 95,
+        "verdict": "వీడియో సందేశం చాలా బాగుంది మరియు సమాజానికి ఉపయోగకరంగా ఉంది.",
+        "strengths": [
+          "సామాజిక బాధ్యతను పెంపొందించే మంచి సందేశం.",
+          "నీటి సంరక్షణపై అవగాహన కల్పించే సరళమైన కథనం.",
+          "సాంకేతికంగా ఎటువంటి అభ్యంతరకరమైన విషయాలు లేవు."
+        ]
+      }
+    ],
+    "overall": 86,
+    "all_passed": true,
+    "disclaimer": "Evaluated against Indian short-form story structure. Not an algorithmic view forecast.",
+    "ram_ai_fixes": [],
+    "rating_label": "Ram AI Craft Opinion",
+    "ram_ai_checks": [
+      {
+        "check": "Native Script",
+        "detail": "Every scene uses the expected script. This does not verify language or natural phrasing.",
+        "passed": true
+      },
+      {
+        "check": "Hook Length (Text Estimate)",
+        "detail": "Hook text is concise (7 words). Spoken duration must be checked using audio.",
+        "passed": true
+      },
+      {
+        "check": "Narration Length (Text Estimate)",
+        "detail": "Narration text is within the 30s planning budget (43 words). Verify with generated audio.",
+        "passed": true
+      },
+      {
+        "check": "5-7 Scene Cadence",
+        "detail": "Optimal scene count (5).",
+        "passed": true
+      },
+      {
+        "check": "Complete Scene Directions",
+        "detail": "Every scene has narration and a visual direction.",
+        "passed": true
+      },
+      {
+        "check": "No Repeated Narration",
+        "detail": "No scene narration is repeated verbatim.",
+        "passed": true
+      },
+      {
+        "check": "Climactic Ending / Payoff",
+        "detail": "Ending delivers payoff/CTA.",
+        "passed": true
+      },
+      {
+        "check": "Cliché Opener Block",
+        "detail": "No cliché openings.",
+        "passed": true
+      },
+      {
+        "check": "Safety & Brand Protection",
+        "fatal": true,
+        "detail": "Clean and safe for all audiences.",
+        "passed": true
+      }
+    ],
+    "concept_aligned": true,
+    "content_fingerprint": "b9fdd50afcba74ca87ffe1988702eca525a3ca0ad94d5ae492fe5a3622672780"
+  },
+  "scenes": [
+    {
+      "id": "25c5572f474948be9b634301eee2f849",
+      "beat": "hook",
+      "status": "pending",
+      "visual": "A close-up shot of a rusty, dark brown metal water pipe in an Andhra village with water spurting out from a jagged crack at the joint.",
+      "approved": false,
+      "versions": [],
+      "narration": "మన ఊరి నీటి పైపు ఎందుకు లీక్ అవుతోంది?",
+      "audio_path": null,
+      "image_path": null,
+      "placeholder": false,
+      "audio_duration": null
+    },
+    {
+      "id": "9d191e1a02df46d1b8647fb62f284c18",
+      "beat": "setup",
+      "status": "pending",
+      "visual": "Ramayya and Somanna kneel beside the same rusty pipe, pointing at the exact same leaking joint while discussing it in a sunny village field.",
+      "approved": false,
+      "versions": [],
+      "narration": "రామయ్య, సోమన్న ఇద్దరూ ఆ పగిలిన పైపు జాయింట్‌ను నిశితంగా పరిశీలిస్తున్నారు.",
+      "audio_path": null,
+      "image_path": null,
+      "placeholder": false,
+      "audio_duration": null
+    },
+    {
+      "id": "f3ae754ebe034f00bab81f7a5ce197c6",
+      "beat": "conflict",
+      "status": "pending",
+      "visual": "Somanna holds a heavy metal clamp against the rusty joint while Ramayya uses a large silver wrench to tighten the bolt, locking the clamp in place.",
+      "approved": false,
+      "versions": [],
+      "narration": "చూడండి, ఇక్కడ తుప్పు పట్టి నీరు బయటకు వస్తోంది చూడండి.",
+      "audio_path": null,
+      "image_path": null,
+      "placeholder": false,
+      "audio_duration": null
+    },
+    {
+      "id": "a3e5947c3f4f473398bebd64165fa019",
+      "beat": "twist",
+      "status": "pending",
+      "visual": "Close-up of the wrench turning the bolt on the silver metal clamp, which is now firmly secured over the rusty, damaged pipe joint.",
+      "approved": false,
+      "versions": [],
+      "narration": "ఇద్దరూ కలిసి క్లాంప్‌ను గట్టిగా బిగించి లీకును ఆపే ప్రయత్నం చేశారు.",
+      "audio_path": null,
+      "image_path": null,
+      "placeholder": false,
+      "audio_duration": null
+    },
+    {
+      "id": "9710b6b0afc04941bfd2967813973734",
+      "beat": "ending",
+      "status": "pending",
+      "visual": "The same rusty pipe joint is shown with the metal clamp fixed perfectly; the water flow has stopped completely and the area around the pipe is dry.",
+      "approved": false,
+      "versions": [],
+      "narration": "ఇప్పుడు పైపు నుండి నీరు పడటం లేదు. ఇలాగే మనం నీటిని కాపాడుకుందాం.",
+      "audio_path": null,
+      "image_path": null,
+      "placeholder": false,
+      "audio_duration": null
+    }
+  ]
+}

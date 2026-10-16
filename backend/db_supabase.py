@@ -2,12 +2,15 @@
 import os
 import json
 import asyncio
+from contextvars import ContextVar
 import logging
 from typing import Any, Dict, List, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor, Json
 
 log = logging.getLogger("vidbharat.db")
+active_scene_token = ContextVar("active_scene_token", default=None)
+active_render_token = ContextVar("active_render_token", default=None)
 
 
 def _parse_json(val):
@@ -25,7 +28,7 @@ def _clean_project(row):
     if not row:
         return None
     res = dict(row)
-    for col in ("script", "validation", "scenes", "audio", "render"):
+    for col in ("script", "validation", "scenes", "audio", "render", "brief", "content_contract"):
         if col in res:
             res[col] = _parse_json(res[col])
     if res.get("scenes") is None:
@@ -62,7 +65,7 @@ class SupabaseDB:
 
     def _init_pool(self):
         try:
-            self._pool = ThreadedConnectionPool(minconn=1, maxconn=10, dsn=self._clean_url)
+            self._pool = ThreadedConnectionPool(minconn=1, maxconn=10, dsn=self._clean_url, connect_timeout=10)
         except Exception as e:
             log.warning("Connection pool initialization: %s", e)
             self._pool = None
@@ -79,7 +82,7 @@ class SupabaseDB:
                 return conn
             except Exception as e:
                 log.warning("Pool getconn error: %s", e)
-        return psycopg2.connect(self._clean_url)
+        return psycopg2.connect(self._clean_url, connect_timeout=10)
 
     def _release_conn(self, conn, close=False):
         if self._pool and conn:
@@ -253,13 +256,72 @@ PROJECT_COLUMNS = {
     "id", "user_id", "title", "language", "region", "idea",
     "script", "validation", "approved", "style", "scenes",
     "audio", "captions_on", "render", "step", "duration", "tone",
-    "created_at", "updated_at"
+    "created_at", "updated_at", "brief", "content_contract", "scene_job_started_at", "scene_job_token"
 }
 
 
 class ProjectsCollection:
     def __init__(self, db): self.db = db
     async def create_index(self, *a, **k): pass
+
+    async def claim_scene_job(self, pid, uid, token):
+        row = await self.db.execute("""UPDATE projects SET scene_job_started_at = NOW(),
+            scene_job_token = %s, updated_at = NOW()
+            WHERE id = %s AND user_id = %s
+              AND (scene_job_started_at IS NULL OR scene_job_started_at < NOW() - INTERVAL '25 minutes')
+              AND COALESCE(render->>'status', '') <> 'rendering'
+              AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(scenes, '[]'::jsonb)) s
+                              WHERE s->>'status' IN ('queued', 'generating'))
+            RETURNING scene_job_started_at""", (token, pid, uid), fetchone=True)
+        return bool(row)
+
+    async def release_scene_job(self, pid, uid, token):
+        await self.db.execute("""UPDATE projects SET scene_job_started_at = NULL,
+            scene_job_token = NULL, updated_at = NOW()
+            WHERE id = %s AND user_id = %s AND scene_job_token = %s""", (pid, uid, token))
+
+    async def recover_expired_scene_job(self, pid, uid, token):
+        row = await self.db.execute("""UPDATE projects SET
+            scenes = (SELECT COALESCE(jsonb_agg(CASE
+                WHEN s->>'status' IN ('queued', 'generating')
+                THEN s || '{"status":"failed","error":"Generation was interrupted. Retry missing pictures to continue."}'::jsonb
+                ELSE s END ORDER BY n), '[]'::jsonb)
+                FROM jsonb_array_elements(COALESCE(scenes, '[]'::jsonb)) WITH ORDINALITY AS x(s,n)),
+            scene_job_started_at = NULL, scene_job_token = NULL, updated_at = NOW()
+            WHERE id = %s AND user_id = %s AND scene_job_token = %s
+              AND scene_job_started_at < NOW() - INTERVAL '25 minutes'
+            RETURNING id""", (pid, uid, token), fetchone=True)
+        return bool(row)
+
+    async def claim_render_job(self, pid, uid, token, queued_at):
+        row = await self.db.execute("""UPDATE projects SET render = %s,
+            scene_job_started_at = NULL, scene_job_token = NULL, updated_at = NOW()
+            WHERE id = %s AND user_id = %s
+              AND COALESCE(render->>'status', '') <> 'rendering'
+              AND (scene_job_started_at IS NULL OR scene_job_started_at < NOW() - INTERVAL '25 minutes')
+              AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(scenes, '[]'::jsonb)) s
+                              WHERE s->>'status' IN ('queued', 'generating'))
+            RETURNING id""",
+            (Json({"status": "rendering", "progress": 1, "message": "Queued",
+                   "claim_token": token, "queued_at": queued_at}), pid, uid),
+            fetchone=True)
+        return bool(row)
+
+    async def fail_render_claim(self, pid, uid, token):
+        await self.db.execute("""UPDATE projects SET render = %s, updated_at = NOW()
+            WHERE id = %s AND user_id = %s AND render->>'claim_token' = %s""",
+            (Json({"status": "failed", "progress": 0,
+                   "message": "Could not queue render. Please retry."}), pid, uid, token))
+
+    async def page(self, user_id, page, size):
+        totals = await self.db.execute("SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE render->>'status' = 'done') AS ready FROM projects WHERE user_id = %s", (user_id,), fetchone=True)
+        rows = await self.db.execute("""SELECT id, title, language, style, step, updated_at,
+            jsonb_build_object('status', render->>'status') AS render,
+            COALESCE((SELECT jsonb_agg(x) FROM (SELECT jsonb_build_object('image_path', s->>'image_path') AS x
+              FROM jsonb_array_elements(COALESCE(scenes::jsonb, '[]'::jsonb)) s WHERE s->>'image_path' IS NOT NULL LIMIT 1) thumbs), '[]'::jsonb) AS scenes
+            FROM projects WHERE user_id = %s ORDER BY updated_at DESC, id DESC LIMIT %s OFFSET %s""",
+            (user_id, size, (page - 1) * size), fetchall=True)
+        return {"items": [_clean_project(r) for r in rows or []], "total": totals["total"], "ready": totals["ready"], "page": page, "size": size}
 
     def find(self, filt, projection=None): return ProjectCursor(self.db, filt)
 
@@ -303,8 +365,11 @@ class ProjectsCollection:
                 if sc.get("id") == sid:
                     for k, v in sets.items(): sc[k.replace("scenes.$.", "")] = v
                     for k, v in pushes.items(): sc.setdefault(k.replace("scenes.$.", ""), []).append(v)
-            await self.db.execute("UPDATE projects SET scenes = %s, updated_at = NOW() WHERE id = %s",
-                                  (Json(scenes), pid), commit=True)
+            scene_token = active_scene_token.get()
+            guard = " AND scene_job_token = %s" if scene_token else ""
+            params = (Json(scenes), pid, scene_token) if scene_token else (Json(scenes), pid)
+            await self.db.execute(f"UPDATE projects SET scenes = %s, updated_at = NOW() WHERE id = %s{guard}",
+                                  params, commit=True)
             return
         sets = update.get("$set", {})
         if not sets: return
@@ -313,10 +378,18 @@ class ProjectsCollection:
             if k not in PROJECT_COLUMNS:
                 continue
             cols.append(f"{k} = %s")
-            params.append(Json(v) if k in ("script", "validation", "scenes", "audio", "render") and v is not None else v)
+            params.append(Json(v) if k in ("script", "validation", "scenes", "audio", "render", "brief", "content_contract") and v is not None else v)
         if not cols: return
         params.append(pid)
-        await self.db.execute(f"UPDATE projects SET {', '.join(cols)} WHERE id = %s", tuple(params), commit=True)
+        scene_token, render_token = active_scene_token.get(), active_render_token.get()
+        guard = ""
+        if scene_token:
+            guard += " AND scene_job_token = %s"
+            params.append(scene_token)
+        if render_token:
+            guard += " AND render->>'claim_token' = %s"
+            params.append(render_token)
+        await self.db.execute(f"UPDATE projects SET {', '.join(cols)} WHERE id = %s{guard}", tuple(params), commit=True)
 
     async def delete_one(self, filt):
         if filt.get("id"):

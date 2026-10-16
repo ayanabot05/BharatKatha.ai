@@ -1,0 +1,146 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "Two neighbors repair a leaking village water pipe together. Keep the same two people throughout. No miracle or income claims.",
+      "script": {
+        "title": "పల్లెటూరి బంధం",
+        "scenes": [
+          {
+            "narration": "మన ఊరి సెంటర్లో ఉన్న పైపు ఇది. ఎప్పటి నుండో నీళ్లు వృథాగా పోతున్నాయి.",
+            "visual": "A rusty metal water pipe embedded in the village ground, leaking water onto the mud path.",
+            "beat": "hook"
+          },
+          {
+            "narration": "ఇది చూసి రాము, సోమయ్య మౌనంగా ఉండలేదు. ఇద్దరూ కలిసి పని మొదలుపెట్టారు.",
+            "visual": "Ramu and Somayya kneeling together by the pipe, looking at the leak with determination.",
+            "beat": "setup"
+          },
+          {
+            "narration": "రాము పైపును గట్టిగా పట్టుకోగా, సోమయ్య తన దగ్గర ఉన్న రెంచితో లీకేజీని బిగించాడు.",
+            "visual": "Somayya using a heavy metal wrench to tighten the joint while Ramu holds the pipe firmly with both hands.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "చివరకు నీటి లీకేజీ ఆగింది. ఇద్దరి మొహాల్లోనూ ఒకటే తృప్తి.",
+            "visual": "The pipe joint is now secure, no more water is leaking, and both men stand up wiping their hands with a smile.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 21.35,
+      "review": {
+        "overall": 84,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 42.95
+    },
+    {
+      "case": 2,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "Mira finds Grandma's anklet near the village well and returns it to Grandma before sunset. Do not add a reward.",
+      "passed": false,
+      "error": "RuntimeError: Content audit did not check every promise; please retry",
+      "seconds": 31.46
+    },
+    {
+      "case": 3,
+      "language": "te",
+      "region": "Andhra Pradesh",
+      "idea": "A farmer notices a broken irrigation hose, turns off the water, fits a connector, and only then restarts the flow. Do not promise a higher yield.",
+      "script": {
+        "title": "నీటి వృథాను ఆపే రైతు",
+        "scenes": [
+          {
+            "narration": "పొలంలో నీరు పెడుతుంటే, రామయ్యకు ఒకచోట గొట్టం విరిగి నీరు వృథాగా పోవడం కనిపించింది.",
+            "visual": "A close-up shot of a green irrigation hose lying in the soil, with a clear crack visible and water leaking out onto the dry earth as Ramayya stands nearby looking at it.",
+            "beat": "hook"
+          },
+          {
+            "narration": "వెంటనే రామయ్య మోటార్ పంపు వద్దకు వెళ్లి, నీటి ప్రవాహాన్ని పూర్తిగా ఆపేశాడు.",
+            "visual": "Ramayya walks over to a metal valve box in the field and turns the red handle firmly to shut off the water flow, stopping the leak.",
+            "beat": "setup"
+          },
+          {
+            "narration": "ఇప్పుడు విరిగిన ఆ భాగంలో, రామయ్య కొత్త కనెక్టర్‌ను జాగ్రత్తగా బిగిస్తున్నాడు.",
+            "visual": "Ramayya kneeling in the field, carefully aligning a sturdy plastic hose connector over the crack and tightening it firmly with his hands.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "కనెక్టర్ బిగించడం పూర్తయింది, ఇప్పుడు రామయ్య మళ్ళీ మోటార్ ఆన్ చేసి నీటిని పారిస్తున్నాడు.",
+            "visual": "Ramayya turns the valve handle back on, and the water flows smoothly through the connected hose without any leaks towards the green field.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 32.27,
+      "review": {
+        "overall": 80,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 56.25
+    },
+    {
+      "case": 4,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "A girl and her father discover seeds in an old clay pot. They identify the seeds together and decide to save them for the next planting season. No magical reveal.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: సన్నివేశం 3: నరేషన్ లో ఇద్దరూ కలిసి గుర్తించడం అని ఉంది, కానీ విజువల్స్ లో రామయ్య చేతిలో విత్తనాలు చూపినప్పుడే అన్విత గమనించాలి, ఒకేసారి జరగడం వల్ల నరేషన్-విజువల్ సమన్వయం కొద్దిగా తగ్గింది.; సన్నివేశం 4: నరేషన్ లో భద్రపరచాలని నిర్ణయించుకున్నట్లు చెప్పిన వ",
+      "seconds": 34.98
+    },
+    {
+      "case": 5,
+      "language": "hi",
+      "region": "Rajasthan",
+      "idea": "Two sisters find a lost school bag at the bus stop and return it unopened to its owner before the bus leaves. Do not invent a cash reward.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script does not provide verifiable scene evidence for: The story must feature two sisters; The time condition must be shown in the same scene as: The sisters must return the bag unopened to its owner",
+      "seconds": 30.74
+    },
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The time condition must be shown in the same scene as: Adopt a traditional storytelling style; The time condition must be shown in the same scene as: Adopt a traditional storytelling style; Scene 2: विजुअल में घटोत्कच के अस्त्र को पकड़ने की क्रिया दिखाई ग",
+      "seconds": 33.78
+    },
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script does not provide verifiable scene evidence for: The kite must maintain its original color throughout the story.; The time condition must be shown in the same scene as: Attach the paper patch to the kite.; காட்சி 3: விவரிப்பில் பட்டம் காய்வதற்கு",
+      "seconds": 36.17
+    },
+    {
+      "case": 8,
+      "language": "mr",
+      "region": "Maharashtra",
+      "idea": "A potter's daughter finds a crack in a clay water pot, sets that pot aside, and makes a new pot with her father. Do not claim the cracked pot was repaired.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: सीन ३ मध्ये, दृश्यात सई आणि तिचे बाबा आधीच चाकावर बसलेले दिसत आहेत, परंतु निवेदनात बाबा 'तिथे येतात' असे सांगितले आहे. कृती निवेदनापूर्वीच घडत असल्याने हा क्रम चुकीचा आहे.",
+      "seconds": 35.83
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 2,
+    "total": 8,
+    "pass_rate": 0.25
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "scope": "isolated_ffmpeg_only_not_studio_project",
+  "source_audio": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\piper-audio-te-2026-10-15\\te_short.mp3",
+  "source_audio_seconds": 3.47,
+  "caption_timing": "estimated",
+  "caption_count": 2,
+  "caption_clip_seconds": 0.86,
+  "mux_seconds": 0.247,
+  "mp4_path": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\p0-telugu-local\\isolated-render.mp4",
+  "mp4_bytes": 84849,
+  "mp4_duration_seconds": 3.47,
+  "srt_path": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\p0-telugu-local\\isolated-render.srt",
+  "decode": "PASS"
+}

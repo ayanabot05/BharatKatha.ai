@@ -12,6 +12,7 @@ What it does NOT do:
   - It does not predict virality.
 """
 from collections import Counter
+import os
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 
@@ -69,6 +70,8 @@ async def _recent(days: int, language: str = "", region: str = "", event: str = 
 
 async def pulse_hooks_for(language: str, region: str, limit: int = 6, days: int = 30, user_id: str = "") -> List[Dict[str, Any]]:
     """Real hooks that survived approvals. Scoped to user_id when provided to prevent privacy leakage."""
+    if os.environ.get("PERSONALIZED_HOOKS", "false").lower() != "true":
+        return []
     rows = await _recent(days, language=language, region=region, event="script_approved", user_id=user_id)
     counts: Counter = Counter()
     genres: Dict[str, str] = {}
@@ -134,7 +137,7 @@ async def learning_report(user_id: str = "") -> Dict[str, Any]:
         "approved": approved,
         "rejected": rejected,
         "rendered": rendered,
-        "fine_tune_allowed": rendered >= 300,
-        "gate": "300 rendered shorts with real 3-second-hold numbers before any fine-tune is legitimate.",
-        "note": "Feedback-loop learning is active. Weight training is off until the gate is passed.",
+        "fine_tune_allowed": False,
+        "gate": "Requires explicit permission, human-reviewed examples, held-out evaluation and an approved cloud training run.",
+        "note": "Activity is recorded for review. Model weights are never updated automatically.",
     }

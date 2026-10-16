@@ -1,0 +1,394 @@
+{
+  "idea": "Selected story: Why did Mira return the prize envelope?\nStory promise: At a Jaipur school, Mira finds a lost prize envelope and returns it unopened to her teacher. She learns it belongs to a classmate who needs the scholarship.\nOpening question or hook: Why did Mira give up the envelope she found?\nRequired payoff: The classmate receives the scholarship and thanks Mira. Mira accepts no money or reward.",
+  "language": "hi",
+  "scope": "content-only generation; no image, speech, or video",
+  "script": {
+    "title": "मीरा की ईमानदारी",
+    "title_en": "Mira's Honesty",
+    "category": "Moral",
+    "hook": "मीरा ने वो कीमती लिफाफा वापस क्यों कर दिया?",
+    "story": "जयपुर के स्कूल में मीरा को एक इनाम का लिफाफा मिला। बिना लालच, उसने उसे अपने शिक्षक को लौटाया। इससे एक जरूरतमंद सहपाठी को अपनी स्कॉलरशिप वापस मिल गई।",
+    "characters": [
+      {
+        "name": "मीरा",
+        "look": "A young Indian schoolgirl with a tidy ponytail wearing a crisp white and navy blue school uniform."
+      },
+      {
+        "name": "शिक्षक",
+        "look": "A kind-faced teacher in his 40s wearing a light blue formal shirt and glasses."
+      },
+      {
+        "name": "सहपाठी",
+        "look": "A young boy in a navy blue school uniform looking anxious and worried."
+      }
+    ],
+    "scenes": [
+      {
+        "narration": "मीरा ने वो कीमती लिफाफा वापस क्यों कर दिया?",
+        "visual": "Close-up of Mira standing in a Jaipur school hallway, holding a thick cream-colored envelope with a 'Prize' stamp visible on the back.",
+        "beat": "hook"
+      },
+      {
+        "narration": "स्कूल के बरामदे में मीरा को यह लिफाफा पड़ा मिला। उसने बिना इसे खोले ही अपने शिक्षक को सौंप दिया।",
+        "visual": "Mira walking into the staff room and handing the sealed cream-colored envelope to her teacher.",
+        "beat": "setup"
+      },
+      {
+        "narration": "शिक्षक ने लिफाफा खोला और पता चला कि यह एक जरूरी स्कॉलरशिप का इनाम था, जो उस सहपाठी का था जिसे इसकी बेहद जरूरत थी।",
+        "visual": "The teacher opens the cream-colored envelope, pulls out a scholarship document, and gestures toward the worried classmate standing nearby.",
+        "beat": "conflict"
+      },
+      {
+        "narration": "सहपाठी को स्कॉलरशिप मिली और उसने मीरा का शुक्रिया अदा किया, लेकिन मीरा ने कोई इनाम या पैसा लेने से मना कर दिया।",
+        "visual": "The classmate bows slightly to thank Mira, while Mira smiles and shakes her head politely to decline a cash reward.",
+        "beat": "ending"
+      }
+    ],
+    "ending": "ईमानदारी ही सबसे बड़ा इनाम है। क्या आपने कभी निस्वार्थ मदद की है?",
+    "description": "जयपुर के एक स्कूल में मीरा की ईमानदारी ने बदल दी उसके सहपाठी की जिंदगी। देखिए कैसे उसने बिना किसी लालच के अपनी जिम्मेदारी निभाई।",
+    "tags": [
+      "Mira",
+      "Jaipur School",
+      "Moral Story",
+      "Honesty",
+      "Hindi Kahani",
+      "Inspirational",
+      "Kindness",
+      "Student Life"
+    ],
+    "hashtags": [
+      "#shorts",
+      "#moralstories",
+      "#jaipur",
+      "#honesty",
+      "#hindikahani",
+      "#inspiration"
+    ]
+  },
+  "result": "generated and passed content gate",
+  "responses": [
+    {
+      "promise": "Mira finds a lost prize envelope at a Jaipur school and returns it unopened to her teacher, leading to her classmate receiving a much-needed scholarship, while Mira refuses any reward.",
+      "requirements": [
+        {
+          "source": "At a Jaipur school",
+          "requirement": "The story must be set at a school in Jaipur.",
+          "action_words": []
+        },
+        {
+          "source": "Mira finds a lost prize envelope",
+          "requirement": "Mira must discover an envelope that contains a prize.",
+          "action_words": [
+            "finds"
+          ]
+        },
+        {
+          "source": "returns it unopened to her teacher",
+          "requirement": "Mira must hand the envelope to her teacher without opening it.",
+          "action_words": [
+            "returns"
+          ]
+        },
+        {
+          "source": "She learns it belongs to a classmate",
+          "requirement": "Mira must discover that the envelope belongs to a classmate.",
+          "action_words": [
+            "learns"
+          ]
+        },
+        {
+          "source": "who needs the scholarship",
+          "requirement": "The classmate must require the scholarship for their needs.",
+          "action_words": []
+        },
+        {
+          "source": "The classmate receives the scholarship",
+          "requirement": "The classmate must get the scholarship.",
+          "action_words": [
+            "receives"
+          ]
+        },
+        {
+          "source": "thanks Mira",
+          "requirement": "The classmate must express gratitude to Mira.",
+          "action_words": [
+            "thanks"
+          ]
+        },
+        {
+          "source": "Mira accepts no money or reward",
+          "requirement": "Mira must decline any form of reward or money.",
+          "action_words": [
+            "accepts"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "मीरा की ईमानदारी",
+      "title_en": "Mira's Honesty",
+      "category": "Moral",
+      "hook": "मीरा ने वो कीमती लिफाफा वापस क्यों कर दिया?",
+      "story": "जयपुर के एक स्कूल में मीरा को एक खोया हुआ इनाम का लिफाफा मिला। उसने बिना खोले उसे अपने शिक्षक को सौंप दिया, जिससे उसके जरूरतमंद सहपाठी को स्कॉलरशिप मिल सकी।",
+      "characters": [
+        {
+          "name": "मीरा",
+          "look": "A young Indian schoolgirl wearing a clean white and blue school uniform with a simple ponytail."
+        },
+        {
+          "name": "शिक्षक",
+          "look": "A kind-looking middle-aged male teacher wearing a formal shirt and spectacles."
+        },
+        {
+          "name": "सहपाठी",
+          "look": "A shy boy student in a blue school uniform, looking worried."
+        }
+      ],
+      "scenes": [
+        {
+          "narration": "मीरा ने वो कीमती लिफाफा वापस क्यों कर दिया?",
+          "visual": "Mira standing in a sunny school corridor in Jaipur, looking at a thick yellow paper envelope she just found on the floor.",
+          "beat": "hook"
+        },
+        {
+          "narration": "स्कूल के बरामदे में मीरा को यह लिफाफा मिला। उसने इसे खोला नहीं और सीधे अपने शिक्षक के पास ले गई।",
+          "visual": "Mira walking into a classroom and handing the sealed yellow envelope to her male teacher standing by the blackboard.",
+          "beat": "setup"
+        },
+        {
+          "narration": "शिक्षक को पता चला कि यह लिफाफा उसी के एक जरूरतमंद छात्र का था जिसे स्कॉलरशिप की बहुत जरूरत थी।",
+          "visual": "The teacher opening the envelope to find a scholarship certificate and smiling as he looks at the shy boy student in the front row.",
+          "beat": "conflict"
+        },
+        {
+          "narration": "छात्र को स्कॉलरशिप मिली और उसने मीरा का शुक्रिया अदा किया। मीरा ने इनाम का कोई पैसा नहीं लिया।",
+          "visual": "The boy student folding his hands in gratitude towards Mira, while Mira politely shakes her head to refuse any money, smiling warmly.",
+          "beat": "ending"
+        }
+      ],
+      "ending": "ईमानदारी ही सबसे बड़ा इनाम है। क्या आपने कभी किसी की बिना किसी स्वार्थ के मदद की है?",
+      "description": "जयपुर के एक स्कूल में मीरा ने अपनी ईमानदारी की एक मिसाल कायम की। देखिए कैसे उसकी एक छोटी सी कोशिश ने एक छात्र की मदद की।",
+      "tags": [
+        "Mira",
+        "Jaipur School",
+        "Moral Story",
+        "Honesty",
+        "Hindi Kahani",
+        "Inspirational",
+        "Kindness",
+        "Student Life"
+      ],
+      "hashtags": [
+        "#shorts",
+        "#moralstories",
+        "#jaipur",
+        "#honesty",
+        "#hindikahani",
+        "#inspiration"
+      ]
+    },
+    {
+      "keeps_promise": true,
+      "checks": [
+        {
+          "number": 1,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "Mira standing in a sunny school corridor in Jaipur",
+          "gap": ""
+        },
+        {
+          "number": 2,
+          "delivered": true,
+          "scene": 1,
+          "field": "narration",
+          "quote": "मीरा को एक खोया हुआ इनाम का लिफाफा मिला।",
+          "gap": ""
+        },
+        {
+          "number": 3,
+          "delivered": true,
+          "scene": 2,
+          "field": "narration",
+          "quote": "उसने इसे खोला नहीं और सीधे अपने शिक्षक के पास ले गई।",
+          "gap": ""
+        },
+        {
+          "number": 4,
+          "delivered": true,
+          "scene": 3,
+          "field": "narration",
+          "quote": "शिक्षक को पता चला कि यह लिफाफा उसी के एक जरूरतमंद छात्र का था",
+          "gap": ""
+        },
+        {
+          "number": 5,
+          "delivered": true,
+          "scene": 3,
+          "field": "narration",
+          "quote": "जिसे स्कॉलरशिप की बहुत जरूरत थी।",
+          "gap": ""
+        },
+        {
+          "number": 6,
+          "delivered": true,
+          "scene": 4,
+          "field": "narration",
+          "quote": "छात्र को स्कॉलरशिप मिली",
+          "gap": ""
+        },
+        {
+          "number": 7,
+          "delivered": true,
+          "scene": 4,
+          "field": "narration",
+          "quote": "उसने मीरा का शुक्रिया अदा किया।",
+          "gap": ""
+        },
+        {
+          "number": 8,
+          "delivered": true,
+          "scene": 4,
+          "field": "narration",
+          "quote": "मीरा ने इनाम का कोई पैसा नहीं लिया।",
+          "gap": ""
+        }
+      ],
+      "overall_gap": ""
+    },
+    {
+      "title": "मीरा की ईमानदारी",
+      "title_en": "Mira's Honesty",
+      "category": "Moral",
+      "hook": "मीरा ने वो कीमती लिफाफा वापस क्यों कर दिया?",
+      "story": "जयपुर के स्कूल में मीरा को एक इनाम का लिफाफा मिला। बिना लालच, उसने उसे अपने शिक्षक को लौटाया। इससे एक जरूरतमंद सहपाठी को अपनी स्कॉलरशिप वापस मिल गई।",
+      "characters": [
+        {
+          "name": "मीरा",
+          "look": "A young Indian schoolgirl with a tidy ponytail wearing a crisp white and navy blue school uniform."
+        },
+        {
+          "name": "शिक्षक",
+          "look": "A kind-faced teacher in his 40s wearing a light blue formal shirt and glasses."
+        },
+        {
+          "name": "सहपाठी",
+          "look": "A young boy in a navy blue school uniform looking anxious and worried."
+        }
+      ],
+      "scenes": [
+        {
+          "narration": "मीरा ने वो कीमती लिफाफा वापस क्यों कर दिया?",
+          "visual": "Close-up of Mira standing in a Jaipur school hallway, holding a thick cream-colored envelope with a 'Prize' stamp visible on the back.",
+          "beat": "hook"
+        },
+        {
+          "narration": "स्कूल के बरामदे में मीरा को यह लिफाफा पड़ा मिला। उसने बिना इसे खोले ही अपने शिक्षक को सौंप दिया।",
+          "visual": "Mira walking into the staff room and handing the sealed cream-colored envelope to her teacher.",
+          "beat": "setup"
+        },
+        {
+          "narration": "शिक्षक ने लिफाफा खोला और पता चला कि यह एक जरूरी स्कॉलरशिप का इनाम था, जो उस सहपाठी का था जिसे इसकी बेहद जरूरत थी।",
+          "visual": "The teacher opens the cream-colored envelope, pulls out a scholarship document, and gestures toward the worried classmate standing nearby.",
+          "beat": "conflict"
+        },
+        {
+          "narration": "सहपाठी को स्कॉलरशिप मिली और उसने मीरा का शुक्रिया अदा किया, लेकिन मीरा ने कोई इनाम या पैसा लेने से मना कर दिया।",
+          "visual": "The classmate bows slightly to thank Mira, while Mira smiles and shakes her head politely to decline a cash reward.",
+          "beat": "ending"
+        }
+      ],
+      "ending": "ईमानदारी ही सबसे बड़ा इनाम है। क्या आपने कभी निस्वार्थ मदद की है?",
+      "description": "जयपुर के एक स्कूल में मीरा की ईमानदारी ने बदल दी उसके सहपाठी की जिंदगी। देखिए कैसे उसने बिना किसी लालच के अपनी जिम्मेदारी निभाई।",
+      "tags": [
+        "Mira",
+        "Jaipur School",
+        "Moral Story",
+        "Honesty",
+        "Hindi Kahani",
+        "Inspirational",
+        "Kindness",
+        "Student Life"
+      ],
+      "hashtags": [
+        "#shorts",
+        "#moralstories",
+        "#jaipur",
+        "#honesty",
+        "#hindikahani",
+        "#inspiration"
+      ]
+    },
+    {
+      "keeps_promise": true,
+      "checks": [
+        {
+          "number": 1,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "Close-up of Mira standing in a Jaipur school hallway",
+          "gap": ""
+        },
+        {
+          "number": 2,
+          "delivered": true,
+          "scene": 1,
+          "field": "visual",
+          "quote": "holding a thick cream-colored envelope with a 'Prize' stamp visible on the back",
+          "gap": ""
+        },
+        {
+          "number": 3,
+          "delivered": true,
+          "scene": 2,
+          "field": "visual",
+          "quote": "Mira walking into the staff room and handing the sealed cream-colored envelope to her teacher",
+          "gap": ""
+        },
+        {
+          "number": 4,
+          "delivered": true,
+          "scene": 3,
+          "field": "visual",
+          "quote": "The teacher opens the cream-colored envelope, pulls out a scholarship document, and gestures toward the worried classmate standing nearby.",
+          "gap": ""
+        },
+        {
+          "number": 5,
+          "delivered": true,
+          "scene": 3,
+          "field": "narration",
+          "quote": "पता चला कि यह एक जरूरी स्कॉलरशिप का इनाम था, जो उस सहपाठी का था जिसे इसकी बेहद जरूरत थी।",
+          "gap": ""
+        },
+        {
+          "number": 6,
+          "delivered": true,
+          "scene": 4,
+          "field": "narration",
+          "quote": "सहपाठी को स्कॉलरशिप मिली",
+          "gap": ""
+        },
+        {
+          "number": 7,
+          "delivered": true,
+          "scene": 4,
+          "field": "visual",
+          "quote": "The classmate bows slightly to thank Mira",
+          "gap": ""
+        },
+        {
+          "number": 8,
+          "delivered": true,
+          "scene": 4,
+          "field": "visual",
+          "quote": "Mira smiles and shakes her head politely to decline a cash reward",
+          "gap": ""
+        }
+      ],
+      "overall_gap": ""
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "project_id": "4a58783bd08d4d488ec3ad0733514479",
+  "phase": "render",
+  "approved_script": true,
+  "review_passed": true,
+  "scenes": [
+    {
+      "id": "8dd413c0462e461c924e1fd61d763150",
+      "status": "ready",
+      "placeholder": false,
+      "approved": true,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/1e23a1e3af4647188ae99dbfe263b2b1.png",
+      "error": null,
+      "visual": "A close-up shot of a rusted water pipe dripping water onto the wet soil of a garden.",
+      "audio_duration": 3.02,
+      "caption_timing": "provider"
+    },
+    {
+      "id": "b9b2104d6d79496d8238ab96648b6945",
+      "status": "ready",
+      "placeholder": false,
+      "approved": true,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/d594df233221400f9630ed8879f93459.png",
+      "error": null,
+      "visual": "Ramayya and Somanna walking together through a lush green coconut grove in the morning mist.",
+      "audio_duration": 3.6,
+      "caption_timing": "provider"
+    },
+    {
+      "id": "20df974865194869880e8b1d29295942",
+      "status": "ready",
+      "placeholder": false,
+      "approved": true,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/45526ca8952e4801878850540fd5432d.png",
+      "error": null,
+      "visual": "Both men kneeling on the ground, pointing at the damaged joint of the pipe.",
+      "audio_duration": 3.84,
+      "caption_timing": "provider"
+    },
+    {
+      "id": "854110b455fa43cd970fa4b7e8e9edd3",
+      "status": "ready",
+      "placeholder": false,
+      "approved": true,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/43b49cf4bd5a4a2099daecdc48bba690.png",
+      "error": null,
+      "visual": "Ramayya holds the wrench steady while Somanna tightens the metal clamp on the pipe.",
+      "audio_duration": 3.29,
+      "caption_timing": "provider"
+    },
+    {
+      "id": "c6056a50b5ec4a2f947426fab6d390ad",
+      "status": "ready",
+      "placeholder": false,
+      "approved": true,
+      "image_path": "vidbharat/scenes/46057842e877488e9a6c7200aa1f29a5/7100ecf1aa5549c2b0f70a495f3779ca.png",
+      "error": null,
+      "visual": "Water flowing steadily through the pipe as both men smile at each other in the sunlight.",
+      "audio_duration": 7.49,
+      "caption_timing": "provider"
+    }
+  ],
+  "audio": {
+    "mode": "ai",
+    "duration": 21.29,
+    "voice": "fable"
+  },
+  "render": {
+    "srt": "1\n00:00:00,100 --> 00:00:01,428\nమన ఇంటి నీటి కుళాయి\n\n2\n00:00:01,441 --> 00:00:02,869\nఎందుకు లీక్ అవుతోంది\n\n3\n00:00:03,127 --> 00:00:05,445\nరామయ్య సోమన్న కలిసి పైపు\n\n4\n00:00:05,458 --> 00:00:06,473\nదగ్గరకు వెళ్లారు\n\n5\n00:00:06,736 --> 00:00:08,778\nఇద్దరూ కలిసి పాత లీకేజీని\n\n6\n00:00:08,791 --> 00:00:10,294\nక్షుణ్ణంగా పరిశీలించారు\n\n7\n00:00:10,585 --> 00:00:12,815\nఒకరికొకరు సాయం చేసుకుంటూ పైపును\n\n8\n00:00:12,828 --> 00:00:13,604\nబిగించారు\n\n9\n00:00:13,883 --> 00:00:16,301\nపని పూర్తయ్యాక చిరునవ్వుతో నీటి\n\n10\n00:00:16,313 --> 00:00:17,579\nప్రవాహాన్ని చూశారు\n\n11\n00:00:18,456 --> 00:00:19,922\nమీ ఇంట్లో ఇలాంటి సాయం\n\n12\n00:00:19,934 --> 00:00:21,125\nఎప్పుడైనా జరిగిందా\n",
+    "status": "done",
+    "message": "Your video is ready",
+    "duration": 21.24,
+    "progress": 100,
+    "video_path": "vidbharat/videos/46057842e877488e9a6c7200aa1f29a5/c197561d4a4b409590c7b0c00ab84172.mp4",
+    "rendered_at": "2026-10-13T15:49:47.570865+00:00",
+    "scene_timing": "narration",
+    "caption_timing": "provider"
+  },
+  "events": [
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200,
+      "seconds": 1.78
+    },
+    {
+      "method": "GET",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479",
+      "status": 200,
+      "seconds": 1.12
+    },
+    {
+      "method": "GET",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479",
+      "status": 200,
+      "seconds": 0.94
+    },
+    {
+      "method": "POST",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479/scenes/8dd413c0462e461c924e1fd61d763150/approve",
+      "status": 200,
+      "seconds": 2.82
+    },
+    {
+      "method": "POST",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479/scenes/b9b2104d6d79496d8238ab96648b6945/approve",
+      "status": 200,
+      "seconds": 2.85
+    },
+    {
+      "method": "POST",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479/scenes/20df974865194869880e8b1d29295942/approve",
+      "status": 200,
+      "seconds": 2.8
+    },
+    {
+      "method": "POST",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479/scenes/854110b455fa43cd970fa4b7e8e9edd3/approve",
+      "status": 200,
+      "seconds": 2.81
+    },
+    {
+      "method": "POST",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479/scenes/c6056a50b5ec4a2f947426fab6d390ad/approve",
+      "status": 200,
+      "seconds": 2.83
+    },
+    {
+      "method": "GET",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479",
+      "status": 200,
+      "seconds": 0.94
+    },
+    {
+      "method": "POST",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479/audio/ai",
+      "status": 200,
+      "seconds": 8.29
+    },
+    {
+      "method": "POST",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479/render",
+      "status": 200,
+      "seconds": 2.85
+    },
+    {
+      "method": "GET",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479",
+      "status": 200,
+      "seconds": 1.26
+    },
+    {
+      "method": "GET",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479",
+      "status": 200,
+      "seconds": 1.96
+    },
+    {
+      "method": "GET",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479",
+      "status": 200,
+      "seconds": 1.11
+    },
+    {
+      "method": "GET",
+      "path": "/projects/4a58783bd08d4d488ec3ad0733514479",
+      "status": 200,
+      "seconds": 0.93
+    }
+  ]
+}

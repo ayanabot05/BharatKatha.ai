@@ -1,0 +1,15 @@
+{
+  "status": "diagnostic, not approved for publishing",
+  "video": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\image_retest_2026-10-13\\diagnostic_retest.mp4",
+  "duration": 23.09,
+  "target": 30,
+  "scene_seconds": [
+    3.1333333333333333,
+    5.333333333333333,
+    4.033333333333333,
+    4.933333333333334,
+    5.7
+  ],
+  "caption_timing": "provider",
+  "caption_count": 13
+}

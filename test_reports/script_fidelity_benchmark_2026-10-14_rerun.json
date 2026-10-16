@@ -1,0 +1,211 @@
+{
+  "cases": [
+    {
+      "case": 2,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "Mira finds Grandma's anklet near the village well and returns it to Grandma before sunset. Do not add a reward.",
+      "script": {
+        "title": "అమ్మమ్మ పట్టీ",
+        "scenes": [
+          {
+            "narration": "ఊరి బావి దగ్గర ఆడుకుంటుండగా, మీరాకు తన అమ్మమ్మ కాలి పట్టీ దొరికింది.",
+            "visual": "Mira, a young girl in a blue cotton langa voni, standing near a stone village well and picking up a silver anklet from the red soil.",
+            "beat": "hook"
+          },
+          {
+            "narration": "సూర్యుడు అస్తమించకముందే ఆ పట్టీని అమ్మమ్మకు ఇవ్వాలని మీరా వేగంగా ఇంటికి బయలుదేరింది.",
+            "visual": "Mira running along a dirt path with granite boulders in the background, holding the silver anklet tightly in her hand.",
+            "beat": "setup"
+          },
+          {
+            "narration": "సూర్యుడు కొండల వెనుకకు వెళ్లేలోపు, మీరా తన అమ్మమ్మ దగ్గరకు చేరుకుంది.",
+            "visual": "The orange sunset light touching the village house, with Mira arriving and standing before her Grandma who sits on a wooden cot.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "మీరా ఆ పట్టీని అమ్మమ్మ చేతిలో పెట్టింది.",
+            "visual": "Mira placing the silver anklet into the palm of her Grandma's hand as the golden sunset light casts shadows around them.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 52.47,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The time condition must be shown in the same scene as: Mira returns the anklet to Grandma."
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 101.95
+    },
+    {
+      "case": 4,
+      "language": "te",
+      "region": "Telangana",
+      "idea": "A girl and her father discover seeds in an old clay pot. They identify the seeds together and decide to save them for the next planting season. No magical reveal.",
+      "script": {
+        "title": "పాత కుండలో కొత్త ఆశ",
+        "scenes": [
+          {
+            "narration": "మన పాత సామాన్ల గదిలో ఈ మట్టి కుండ దొరికింది, లోపల ఏముందో చూద్దామా?",
+            "visual": "A young girl named Anvita and her father Ramayya standing in a dusty room, looking at an old, round clay pot sitting on the floor.",
+            "beat": "hook"
+          },
+          {
+            "narration": "ఇద్దరూ కలిసి జాగ్రత్తగా మూత తీసి చూశారు, లోపల కొన్ని రకాల విత్తనాలు ఉన్నాయి.",
+            "visual": "Ramayya carefully lifts the lid of the old clay pot while Anvita watches closely as they discover a handful of brown seeds inside.",
+            "beat": "setup"
+          },
+          {
+            "narration": "అవి మన ఊరి సొరకాయ విత్తనాలు అని నాన్న వెంటనే గుర్తుపట్టారు.",
+            "visual": "Ramayya holds a seed up in his palm to show Anvita, and both look at them, identifying the seeds together.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "మంచి విత్తనాలను వృథా చేయకూడదు కదా, వచ్చే వానాకాలంలో నాటడానికి వాటిని ఒక డబ్బాలో భద్రపరిచారు.",
+            "visual": "Anvita and Ramayya carefully transfer the seeds from the old clay pot into a clean metal tin to save them for the next planting season.",
+            "beat": "twist"
+          },
+          {
+            "narration": "పాత గింజలే కదా అని వదిలేయకుండా, కొత్త పంట కోసం దాచుకున్న ఈ బంధం ఎంత బాగుందో కదా!",
+            "visual": "Anvita and Ramayya smiling at each other while holding the metal tin filled with seeds, standing in the bright sunlight of their courtyard.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 20.95,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 42.27
+    },
+    {
+      "case": 5,
+      "language": "hi",
+      "region": "Rajasthan",
+      "idea": "Two sisters find a lost school bag at the bus stop and return it unopened to its owner before the bus leaves. Do not invent a cash reward.",
+      "script": {
+        "title": "सच्ची ईमानदारी",
+        "scenes": [
+          {
+            "narration": "बस स्टैंड की बेंच पर मीरा और राधा को अचानक एक नीला स्कूल बैग पड़ा हुआ दिखा।",
+            "visual": "A medium shot of Mira and Radha standing by a rustic wooden bench at a Rajasthan bus stop, pointing at a blue school bag resting on the seat.",
+            "beat": "hook"
+          },
+          {
+            "narration": "दोनों बहनें जानती थीं कि बैग खोलना गलत है, इसलिए उन्होंने बस उसे वापस करने का फैसला किया।",
+            "visual": "A close-up shot of Mira and Radha looking at the blue school bag without touching the zippers, their faces showing genuine concern.",
+            "beat": "setup"
+          },
+          {
+            "narration": "बस छूटने ही वाली थी कि पास खड़ी एक स्कूली छात्रा परेशान होकर अपने बैग को ढूंढती हुई दिखाई दी।",
+            "visual": "A shot of the two sisters looking at a girl in a school uniform standing near the bus, the girl is looking under the bus seats with a worried expression.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "मीरा ने बिना देरी किए वह बैग उठाया और बस की सीढ़ियों पर चढ़ती हुई उस छात्रा को पकड़ा दिया।",
+            "visual": "A shot of Mira handing the blue school bag to the schoolgirl just as she stands on the first step of the bus, before the bus doors move.",
+            "beat": "twist"
+          },
+          {
+            "narration": "बस चलते ही उस लड़की ने मुस्कुराकर हाथ हिलाया और बहनें खुशी-खुशी अपने घर की ओर चल दीं।",
+            "visual": "A wide shot of the bus starting to pull away from the stop, with the girl waving from the window, and Mira and Radha walking away together on the dusty road.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 42.66,
+      "review": {
+        "overall": 75,
+        "content_aligned": false,
+        "all_passed": false,
+        "content_gaps": [
+          "The script does not provide verifiable scene evidence for: The protagonists are two sisters."
+        ],
+        "concept_misses": []
+      },
+      "passed": false,
+      "seconds": 71.92
+    },
+    {
+      "case": 6,
+      "language": "hi",
+      "region": "Uttar Pradesh",
+      "idea": "Tell the legend of Ghatotkacha protecting Arjuna during the Kurukshetra war, clearly as traditional storytelling. Show his sacrifice before the ending.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: दृश्य 1: कर्ण के अस्त्र छोड़ने का दृश्य पहले दिखना चाहिए, जबकि नरेशन उसे साथ-साथ बता रहा है, यह तालमेल का मामूली अभाव है।; दृश्य 3: नरेशन में 'बलिदान' का उल्लेख है, लेकिन विजुअल में केवल प्रहार दिख रहा है, बलिदान की पूर्णता (मृत्यु या पतन) स्पष्ट रूप से द",
+      "seconds": 58.37
+    },
+    {
+      "case": 7,
+      "language": "ta",
+      "region": "Tamil Nadu",
+      "idea": "A grandmother teaches her grandson to repair a torn kite. Show the paper patch being attached before the kite flies again. Keep the same kite color.",
+      "passed": false,
+      "error": "RuntimeError: The draft still misses the selected content: The script does not provide verifiable scene evidence for: The kite maintains its original color throughout the story; காட்சி 3: காட்சி முடிவதற்கு முன்பே (ஒட்டும்போது) 'சரி செஞ்சு முடிச்சிட்டாங்க' என்று வருணனை முன்கூட்டியே முடிவைச் சொல்கிறது.",
+      "seconds": 51.37
+    },
+    {
+      "case": 8,
+      "language": "mr",
+      "region": "Maharashtra",
+      "idea": "A potter's daughter finds a crack in a clay water pot, sets that pot aside, and makes a new pot with her father. Do not claim the cracked pot was repaired.",
+      "script": {
+        "title": "मातीचा नवा आकार",
+        "scenes": [
+          {
+            "narration": "कुंभार असलेल्या बाबांसोबत सई रोज मातीशी खेळत वाढली.",
+            "visual": "Sai and her father are standing together inside their rustic pottery shed, surrounded by rows of drying clay pots, sharing a smile while working.",
+            "beat": "setup"
+          },
+          {
+            "narration": "आज मडकी तपासताना सईला एका मातीच्या रांजणात बारीक भेग दिसली.",
+            "visual": "Sai runs her small fingers along the side of a large clay water pot until she stops at a visible jagged crack on its surface.",
+            "beat": "hook"
+          },
+          {
+            "narration": "पाणी गळू नये म्हणून, सईने ते मडकं सावधपणे बाजूला काढून ठेवलं.",
+            "visual": "Sai lifts the cracked clay water pot carefully from the main table and places it aside on a low, dusty wooden stool.",
+            "beat": "conflict"
+          },
+          {
+            "narration": "मग सईने बाबांच्या हातावर हात ठेवून, चाकावर पुन्हा एकदा नवीन मडकं घडवायला सुरुवात केली.",
+            "visual": "Close-up of Sai and her father guiding the wet clay together on the spinning potter's wheel to form the shape of a new pot.",
+            "beat": "twist"
+          },
+          {
+            "narration": "मेहनत करून बनवलेला हा नवा आकार आता पाणी साठवायला अगदी सज्ज आहे.",
+            "visual": "Sai and her father stand next to the spinning wheel, looking proudly at the perfectly shaped, moist new clay pot they just finished.",
+            "beat": "ending"
+          }
+        ]
+      },
+      "generation_seconds": 38.83,
+      "review": {
+        "overall": 86,
+        "content_aligned": true,
+        "all_passed": true,
+        "content_gaps": [],
+        "concept_misses": []
+      },
+      "passed": true,
+      "seconds": 61.97
+    }
+  ],
+  "definition": "pass = generated script receives content_aligned and all_passed from independent app review",
+  "summary": {
+    "passed": 2,
+    "total": 6,
+    "pass_rate": 0.333
+  }
+}

@@ -1,5 +1,6 @@
 """FFmpeg composer: scene images + Ken Burns motion + narration + burned-in captions -> 720x1280 MP4."""
 import re
+import os
 import io
 import shutil
 import subprocess
@@ -10,7 +11,7 @@ from pathlib import Path
 import imageio_ffmpeg
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-FF = imageio_ffmpeg.get_ffmpeg_exe()
+FF = os.environ.get("FFMPEG_BINARY") or imageio_ffmpeg.get_ffmpeg_exe()
 W, H, FPS = 720, 1280, 30
 FONTS = Path(__file__).parent / "fonts"
 FONT_BY_LANG = {"te": "NotoSansTelugu.ttf", "hi": "NotoSansDevanagari.ttf", "mr": "NotoSansDevanagari.ttf",
@@ -59,6 +60,12 @@ def concat_audio(files, dst):
     lst = Path(dst).with_suffix(".txt")
     lst.write_text("".join(f"file '{f}'\n" for f in files))
     run(["-f", "concat", "-safe", "0", "-i", str(lst), "-ac", "1", "-ar", "44100", "-b:a", "128k", str(dst)])
+
+
+def pad_audio(src, dst, target_seconds):
+    """Add a brief silent tail without changing the spoken words or their timing."""
+    run(["-i", str(src), "-af", "apad", "-t", f"{target_seconds:.2f}",
+         "-ac", "1", "-ar", "44100", "-b:a", "128k", str(dst)])
 
 
 def prep_image(src, dst):
@@ -199,10 +206,13 @@ SCRIPT_FONT_CONFIG = {
 def caption_ass(caps, lang, dst, placement="bottom"):
     family = font_family(lang)
     cfg = SCRIPT_FONT_CONFIG.get(lang, {"size": 46, "margin": 320})
-    if placement == "top":
+    if placement == "disclosure":
+        alignment, margin, size = 8, 42, 26
+    elif placement == "top":
         alignment, margin, size = 8, 80, round(cfg["size"] * 1.5)
     else:
-        alignment, margin, size = 2, cfg["margin"], cfg["size"]
+        # Keep subtitles below the center action area while clearing platform controls.
+        alignment, margin, size = 2, 140, cfg["size"]
     header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {W}
@@ -253,7 +263,7 @@ def camera_motion(idx: int, frames: int):
         return f"min(1.0+{step:.6f}*on,1.12)", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
 
 
-def scene_clip(img, dur, caps, lang, out, idx, work: Path):
+def scene_clip(img, dur, caps, lang, out, idx, work: Path, ai_voice_disclosure=False):
     frames = max(round(dur * FPS), 1)
     z, x, y = camera_motion(idx, frames)
     inputs = ["-i", str(img)]
@@ -265,6 +275,13 @@ def scene_clip(img, dur, caps, lang, out, idx, work: Path):
         caption_ass(caps, lang, work / ass_name)
         graph.append(f"[{last}]ass=filename={ass_name}:fontsdir=.[v1]")
         last = "v1"
+    if ai_voice_disclosure:
+        copy_caption_fonts(work, lang)
+        ass_name = f"ai_voice_{idx}.ass"
+        caption_ass([{"text": "AI-generated narration", "start": 0, "end": dur}],
+                    lang, work / ass_name, placement="disclosure")
+        graph.append(f"[{last}]ass=filename={ass_name}:fontsdir=.[v2]")
+        last = "v2"
     run([*inputs, "-filter_complex", ";".join(graph), "-map", f"[{last}]", "-t", f"{dur:.2f}",
          "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-r", str(FPS), str(out)], cwd=work)
 

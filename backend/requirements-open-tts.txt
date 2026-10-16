@@ -1,0 +1,2 @@
+# Optional local Hindi TTS runtime. The ONNX weights have separate OpenRAIL-M terms.
+supertonic==1.3.1

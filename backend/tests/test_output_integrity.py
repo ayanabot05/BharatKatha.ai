@@ -1,7 +1,9 @@
 """Adversarial regressions: verify failures that happy-path language checks missed."""
 import asyncio
 import base64
+import hashlib
 import io
+import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -114,7 +116,9 @@ def test_managed_voice_uses_recognized_word_times_for_captions():
                  {"text": "world", "start": .7, "end": 1.5}]
         def concat(_locals, combined):
             combined.write_bytes(b"combined-mp3")
-        with (patch.dict("os.environ", {"TTS_PROVIDER": "google_chirp"}),
+        with (patch.dict("os.environ", {"TTS_PROVIDER": "google_chirp",
+                                         "TTS_PREMIUM_RATES_JSON": '{"google_chirp":{"model_id":"chirp3-hd","all_in_inr_per_1000_chars":"2","includes_caption_stt":true}}',
+                                         "TTS_PREMIUM_MAX_REQUEST_INR": "1"}),
               patch.object(projects, "owned", new=AsyncMock(return_value=project)),
               patch.object(projects, "upd", new=AsyncMock()) as update,
               patch.object(projects, "save_media", new=AsyncMock(return_value="saved.mp3")),
@@ -123,7 +127,8 @@ def test_managed_voice_uses_recognized_word_times_for_captions():
               patch.object(projects.render, "duration", return_value=2.0),
               patch.object(projects.render, "concat_audio", side_effect=concat),
               patch.object(projects, "review_fingerprint", return_value="same")):
-            await projects.audio_ai("voice-timing", SimpleNamespace(voice="coral", speed=1.0), {"id": "user"})
+            await projects.audio_ai("voice-timing", SimpleNamespace(voice="coral", speed=1.0,
+                provider="google_chirp", max_cost_inr=0.03), {"id": "user"})
         timing.assert_awaited_once_with(b"mock-mp3", "en", "Hello world")
         scene = update.await_args.kwargs["scenes"][0]
         assert scene["caption_timing"] == "cloud_stt"
@@ -239,6 +244,17 @@ def test_story_context_edit_invalidates_review_audio_and_render(key, value):
             assert fields["validation"] is None and fields["audio"] is None
             assert fields["approved"] is False and fields["render"]["status"] == "idle"
     asyncio.run(check())
+
+
+def test_legacy_review_without_brief_remains_current_only_for_same_story():
+    p = {"idea": "Water repair", "language": "te", "region": "Andhra Pradesh", "duration": 30,
+         "script": {"scenes": [{"narration": "Close the valve"}]}, "brief": None}
+    legacy = {key: p[key] for key in ("script", "idea", "language", "region", "duration")}
+    p["validation"] = {"all_passed": True, "content_fingerprint": hashlib.sha256(
+        json.dumps(legacy, sort_keys=True, ensure_ascii=False).encode()).hexdigest()}
+    assert projects.review_is_current(p)
+    assert not projects.review_is_current({**p, "brief": {"audience": "Farmers"}})
+    assert not projects.review_is_current({**p, "idea": "A different story"})
 
 
 def test_audio_upload_invalidates_old_export_and_returns_updated_project():

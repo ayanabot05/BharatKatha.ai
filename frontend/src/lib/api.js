@@ -20,6 +20,7 @@ api.interceptors.response.use(
 
 export function errMsg(e) {
   if (!e?.response) return "We couldn’t reach the studio. Check your connection and try again. Your saved work is safe.";
+  if (e.response.data?.detail?.code === "generation_failed") return e.response.data.detail.message;
   if (e.response.status === 429) return e.response.data?.detail || "Please wait a moment before trying again.";
   if (e.response.status >= 500) return "The studio couldn’t finish this request. Please try again shortly. Your saved work is safe.";
   const d = e?.response?.data?.detail;

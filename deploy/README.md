@@ -7,7 +7,7 @@ bucket access and HTTPS must pass before inviting users. No model was trained.
 
 ## Local checks
 
-Run the frontend on port 3003 and API on 8000. The cloud image builds the frontend
+Run the frontend on port 3004 and API on 8000. The cloud image builds the frontend
 with `/api` on the same origin and serves it through FastAPI. Do not use the local
 development build unchanged in production; it targets localhost.
 

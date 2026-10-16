@@ -9,7 +9,7 @@ await route.fulfill({json:data});});
 for(const width of [320,390,768,1440]){
 await page.setViewportSize({width,height:900});
 for(const route of ['/','/dashboard','/coach','/settings']){
-await page.goto('http://localhost:3003'+route);await page.waitForTimeout(700);
+await page.goto('http://localhost:3004'+route);await page.waitForTimeout(700);
 const box=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
 if(box.scroll>box.width+1)errors.push(`${route} overflows at ${width}: ${box.scroll}`);
 if(width===390||width===1440)await page.screenshot({path:`test_reports/phase0-${route.replace('/','')||'landing'}-${width}.png`,fullPage:true});

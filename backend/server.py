@@ -1,4 +1,5 @@
 import os
+import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
@@ -19,7 +20,7 @@ from projects import router as projects_router
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 # httpx INFO logs include the full YouTube URL, including its API key.
 logging.getLogger("httpx").setLevel(logging.WARNING)
-app = FastAPI(title="VidBharat Studio")
+app = FastAPI(title="BharatKatha Studio")
 api = APIRouter(prefix="/api")
 
 
@@ -97,20 +98,55 @@ async def me(user=Depends(current_user)):
 
 # ---------- media ----------
 @api.get("/media/{path:path}")
-async def media(path: str, user=Depends(media_user)):
+async def media(path: str, download: bool = False, user=Depends(media_user)):
     rec = await db.files.find_one({"storage_path": path, "user_id": user["id"], "is_deleted": False})
     if not rec:
         raise HTTPException(404, "File not found")
     data, ct = await get_object(path)
-    return Response(content=data, media_type=rec.get("content_type", ct), headers={"Cache-Control": "private, max-age=86400"})
+    headers = {"Cache-Control": "private, max-age=86400"}
+    if download:
+        filename = os.path.basename(path).replace('"', "")
+        headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return Response(content=data, media_type=rec.get("content_type", ct), headers=headers)
 
 
 # ---------- meta / ideas / voice ----------
 @api.get("/meta")
 async def meta():
-    voice_engine = ("Google Cloud Chirp 3 HD" if os.environ.get("TTS_PROVIDER", "edge").lower() == "google_chirp"
-                    else "Two Edge neural voices per language by default; optional OpenAI TTS when explicitly configured")
+    import piper_tts
+    import supertonic_tts
+    import premium_tts
+    try:
+        piper_languages = sorted(piper_tts.voices())
+    except RuntimeError as exc:
+        log.warning("Piper configuration is unavailable: %s", exc)
+        piper_languages = []
+    try:
+        premium_rates = premium_tts.pricing()
+    except RuntimeError as exc:
+        log.warning("Premium voice pricing is unavailable: %s", exc)
+        premium_rates = {}
+    configured_voice_provider = os.environ.get("TTS_PROVIDER", "edge").lower()
+    default_voice_provider = configured_voice_provider
+    if default_voice_provider in {"google_chirp", "openai"} and default_voice_provider not in premium_rates:
+        default_voice_provider = "edge"
+    voice_engine = {
+        "google_chirp": "Google Cloud Chirp 3 HD",
+        "openai": "OpenAI TTS",
+        "piper": "Operator-hosted Piper voice",
+        "supertonic": "Cloud-hosted Supertonic 3 voice" if os.environ.get("SUPERTONIC_HINDI_SERVICE_URL") else "Local Supertonic 3 voice",
+        "edge": "Two Edge neural voices per language",
+    }.get(default_voice_provider, "Unavailable voice provider")
     return {"voices": ai.VOICES, "languages": ai.LANGS, "styles": list(ai.STYLE_PROMPTS.keys()),
+            "premium_voice_rates": premium_rates,
+            "voice_providers": [
+                {"id": "piper", "name": "Piper (open source)", "type": "open", "languages": piper_languages},
+                {"id": "supertonic", "name": "Supertonic 3", "type": "open",
+                 "languages": ["hi", "en"] if supertonic_tts.available() else []},
+                {"id": "edge", "name": "Edge neural voice", "type": "hosted", "languages": [] if os.environ.get("APP_ENV") == "production" else sorted(ai.EDGE_VOICES)},
+                {"id": "google_chirp", "name": "Google Chirp 3 HD (premium)", "type": "premium", "languages": sorted(ai.CHIRP_LANGUAGES) if configured_voice_provider == "google_chirp" and "google_chirp" in premium_rates else []},
+                {"id": "openai", "name": "OpenAI TTS (premium)", "type": "premium", "languages": sorted(ai.EDGE_VOICES) if configured_voice_provider == "openai" and "openai" in premium_rates and os.environ.get("OPENAI_API_KEY") else []},
+            ], "default_voice_provider": default_voice_provider,
             "engines": {"script": "Gemini text API", "images": "Vertex AI image worker" if ai.IMAGE_PROVIDER == "worker" else "Gemini image API",
                         "voice": voice_engine, "captions": "Script timing or Whisper"},
             "ram_ai": {"version": "2.0", "kind": "rule-guided prompt layer",
@@ -161,12 +197,21 @@ class PreviewIn(BaseModel):
     text: str = Field(min_length=1, max_length=300)
     speed: float = 1.0
     language: str = ""
+    provider: Optional[str] = None
+    max_cost_inr: Optional[float] = Field(default=None, gt=0)
 
 
 @api.post("/voice/preview")
 async def voice_preview(body: PreviewIn, user=Depends(current_user)):
+    import premium_tts
     try:
-        data = await ai.tts(body.text, body.voice, body.speed, body.language)
+        premium_tts.authorize((body.provider or os.environ.get("TTS_PROVIDER", "edge")).lower(),
+                              [body.text], body.max_cost_inr)
+    except RuntimeError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    try:
+        data = await ai.tts(body.text, body.voice, body.speed, body.language,
+                            provider=body.provider or "", max_cost_inr=body.max_cost_inr)
     except Exception as e:
         raise HTTPException(502, f"Voice preview failed: {e}")
     return Response(content=data, media_type="audio/mpeg")
@@ -264,15 +309,35 @@ async def coach_reports(user=Depends(current_user)):
 @api.get("/health")
 @api.get("/")
 async def root():
-    return {"app": "VidBharat Studio", "ok": True}
+    return {"app": "BharatKatha Studio", "ok": True}
+
+
+@api.get("/ready")
+async def ready():
+    """Check database and persistent storage without exposing configuration."""
+    try:
+        if os.environ.get("DATABASE_URL"):
+            await db.execute("SELECT 1", fetchall=True)
+        else:
+            await db.command("ping")
+        bucket_name = os.environ.get("GCS_BUCKET")
+        if os.environ.get("APP_ENV") == "production" and not bucket_name:
+            raise RuntimeError("Persistent storage is unconfigured")
+        if bucket_name:
+            from cloud_storage import client
+            if not await asyncio.to_thread(lambda: client().bucket(bucket_name).exists(timeout=10)):
+                raise RuntimeError("Persistent storage is unavailable")
+    except Exception:
+        log.error("Readiness check failed: database or storage unavailable")
+        raise HTTPException(503, "Service dependencies are unavailable")
+    return {"ok": True}
 
 
 app.include_router(api)
 app.include_router(projects_router)
 
-cors_origins = [
-    "http://localhost:3003",
-    "http://127.0.0.1:3003",
+cors_origins = [] if os.environ.get("APP_ENV") == "production" else [
+    "http://localhost:3004", "http://127.0.0.1:3004",
 ]
 env_frontend = os.environ.get("FRONTEND_URL", "").strip()
 if env_frontend:
@@ -318,6 +383,7 @@ async def startup():
         if not os.environ.get("DATABASE_URL"):
             raise RuntimeError("Phase 0 production requires Supabase DATABASE_URL")
         await db.execute("SELECT brief, content_contract FROM projects LIMIT 0", fetchall=True)
+        await db.execute("SELECT scene_job_started_at, scene_job_token FROM projects LIMIT 0", fetchall=True)
         await db.execute("SELECT bucket FROM request_limits LIMIT 0", fetchall=True)
         if not os.environ.get("GCS_BUCKET"):
             raise RuntimeError("Cloud beta requires GCS_BUCKET for persistent media")

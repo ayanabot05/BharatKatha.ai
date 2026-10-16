@@ -205,7 +205,17 @@ async def _text_models(system, prompt):
                         model=model, contents=prompt,
                         config=types.GenerateContentConfig(system_instruction=system, response_mime_type="application/json"),
                     ), timeout=TEXT_CALL_TIMEOUT)
-                return response.text or ""
+                output = response.text or ""
+                if not output.strip():
+                    # A successful HTTP response can still contain no JSON (for
+                    # example when generation ends before the final answer).
+                    # Treat it as a failed model attempt so the next configured
+                    # model can answer instead of turning it into a review 502.
+                    last_err = RuntimeError(f"Text model {model} returned an empty response")
+                    log.warning("Text model %s/%s returned no text (round %d)",
+                                provider, model, round_no + 1)
+                    continue
+                return output
             except asyncio.TimeoutError:
                 transient_seen = True
                 last_err = RuntimeError(f"503 UNAVAILABLE: {model} did not respond within {TEXT_CALL_TIMEOUT:g}s")
@@ -509,15 +519,27 @@ Return JSON only: {{"keeps_promise":true/false,
         if not complete:
             continue
         invalid_quotes = []
+        seen_numbers = set()
         for check in checks:
-            if not isinstance(check, dict) or not check.get("delivered"):
+            if not isinstance(check, dict) or type(check.get("number")) is not int:
+                invalid_quotes.append("number")
+                continue
+            num = check["number"]
+            if num in seen_numbers or not 1 <= num <= len(contract["requirements"]) or type(check.get("delivered")) is not bool:
+                invalid_quotes.append(num)
+                continue
+            seen_numbers.add(num)
+            if not check.get("delivered"):
+                gap = check.get("gap")
+                if not isinstance(gap, str) or not gap.strip():
+                    invalid_quotes.append(num)
                 continue
             scene, field, quote = check.get("scene"), check.get("field"), check.get("quote")
             if field == "all_scenes" and quote in ("", None):
                 continue
             if (type(scene) is not int or not 1 <= scene <= len(scenes)
                     or field not in ("narration", "visual") or not isinstance(quote, str)
-                    or not quote.strip() or quote not in scenes[scene - 1].get(field, "")):
+                    or not quote.strip() or quote.strip() not in scenes[scene - 1].get(field, "")):
                 invalid_quotes.append(check.get("number"))
         if not invalid_quotes or attempt == 2:
             break
@@ -597,7 +619,7 @@ Return JSON only: {{"keeps_promise":true/false,
                 characters = script.get("characters") or []
                 if (len(characters) != 2 or type(scene) is not int or not 1 <= scene <= len(scenes)
                         or not isinstance(quote, str) or not quote.strip()
-                        or quote not in scenes[scene - 1].get(field, "")):
+                        or quote.strip() not in scenes[scene - 1].get(field, "")):
                     gaps.append(f"The script does not provide verifiable character evidence for: {description}")
                 continue
             if exclusion or continuity or cast_size:
@@ -606,7 +628,7 @@ Return JSON only: {{"keeps_promise":true/false,
                     gaps.append(f"The script audit did not inspect every scene for the {scope}: {requirement['requirement']}")
                 continue
             if (type(scene) is not int or not 1 <= scene <= len(scenes) or field not in ("narration", "visual")
-                    or not isinstance(quote, str) or not quote.strip() or quote not in scenes[scene - 1].get(field, "")):
+                    or not isinstance(quote, str) or not quote.strip() or quote.strip() not in scenes[scene - 1].get(field, "")):
                 gaps.append(f"The script does not provide verifiable scene evidence for: {contract['requirements'][number - 1]['requirement']}")
                 continue
             action_words = contract["requirements"][number - 1].get("action_words") or []
@@ -807,10 +829,32 @@ Return exactly one decision per proposed problem. Do not assign an accuracy scor
     raise RuntimeError("Story fidelity review returned invalid evidence; please retry")
 
 
+_RETRYABLE_REVIEW_TOKENS = (
+    "evidence",
+    "citation",
+    "suggestions",
+    "scene check",
+    "every scene",
+    "repeated a scene",
+    "scene mismatch",
+    "requirement",
+    "invalid json",
+    "invalid review",
+    "explicit safety",
+    "explicit concept",
+    "invalid score",
+)
+
+
+def _is_retryable_review_error(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    return any(token in msg for token in _RETRYABLE_REVIEW_TOKENS)
+
+
 async def _concept_preflight_gaps(script, language, region, idea):
     """Use the same semantic scene reviewer before saving that approval uses later."""
     key, name, brief = AGENTS[0]
-    for attempt in range(2):
+    for attempt in range(3):
         try:
             review = await _agent(key, name, brief, script, language, region, idea, verify_evidence=False)
             if review["aligned"]:
@@ -819,8 +863,8 @@ async def _concept_preflight_gaps(script, language, region, idea):
                 "Scene narration and visuals do not deliver the selected idea in the same order"]
         except RuntimeError as exc:
             # A model sometimes paraphrases a citation instead of copying it.
-            # Retry the review once; never turn invalid evidence into a pass.
-            if attempt or not any(token in str(exc).lower() for token in ("evidence", "scene check", "citation")):
+            # Retry the review; never turn invalid evidence into a pass.
+            if attempt == 2 or not _is_retryable_review_error(exc):
                 raise
     return []
 
@@ -1015,9 +1059,9 @@ def validate_concept_evidence(review, script, idea):
         checked_numbers.add(number)
         narration_quote, visual_quote = entry.get("narration_quote"), entry.get("visual_quote")
         if (not isinstance(narration_quote, str) or not narration_quote.strip()
-                or narration_quote not in scenes[number - 1].get("narration", "")
+                or narration_quote.strip() not in scenes[number - 1].get("narration", "")
                 or not isinstance(visual_quote, str) or not visual_quote.strip()
-                or visual_quote not in scenes[number - 1].get("visual", "")
+                or visual_quote.strip() not in scenes[number - 1].get("visual", "")
                 or type(entry.get("aligned")) is not bool):
             raise RuntimeError("Concept review cited invalid scene alignment evidence")
         if not entry["aligned"]:
@@ -1032,6 +1076,11 @@ def validate_concept_evidence(review, script, idea):
         source = requirement.get("source")
         status = requirement.get("status")
         evidence = requirement.get("evidence")
+        if isinstance(source, str) and source.strip() and source not in idea:
+            source_match = re.search(re.escape(source.strip()), idea, flags=re.IGNORECASE)
+            if source_match:
+                source = source_match.group(0)
+                requirement["source"] = source
         if not isinstance(source, str) or not source.strip() or source not in idea or status not in {"met", "missing", "contradicted"}:
             raise RuntimeError("Concept review cited a requirement outside your original idea")
         if not isinstance(evidence, list) or (status == "met" and not evidence):
@@ -1041,7 +1090,7 @@ def validate_concept_evidence(review, script, idea):
                 raise RuntimeError("Concept review returned an invalid scene citation")
             number, field, quote = citation.get("scene"), citation.get("field"), citation.get("quote")
             if (type(number) is not int or not 1 <= number <= len(scenes) or field not in {"visual", "narration"}
-                    or not isinstance(quote, str) or not quote.strip() or quote not in scenes[number - 1].get(field, "")):
+                    or not isinstance(quote, str) or not quote.strip() or quote.strip() not in scenes[number - 1].get(field, "")):
                 raise RuntimeError("Concept review cited scene evidence that does not exist")
         if status != "met":
             review["aligned"] = False
@@ -1052,19 +1101,20 @@ def validate_concept_evidence(review, script, idea):
 
 async def validate_script(script, language, region, duration=45, idea="", content_contract=None):
     # Keep review requests below the provider's short-burst limit.
-    slots = asyncio.Semaphore(2)
+    # A single review at a time avoids the short-burst limit and lets each
+    # evidence-heavy review use the model's full response budget.
+    slots = asyncio.Semaphore(1)
     async def review(key, name, brief):
         async with slots:
-            for attempt in range(2):
+            for attempt in range(3):
                 try:
                     return await _agent(key, name, brief, script, language, region, idea)
                 except RuntimeError as exc:
-                    # Retry malformed reviewer output once. A missing story beat
+                    # Retry malformed reviewer output. A missing story beat
                     # remains a failure and is never changed into a pass here.
-                    if attempt or not any(token in str(exc).lower() for token in
-                                          ("evidence", "citation", "suggestions", "scene check", "requirement")):
+                    if attempt == 2 or not _is_retryable_review_error(exc):
                         raise
-    agents = await asyncio.gather(*[review(k, n, b) for k, n, b in AGENTS])
+    agents = [await review(k, n, b) for k, n, b in AGENTS]
     safety = next(a for a in agents if a["key"] == "safety")
     concept = next(a for a in agents if a["key"] == "concept")
     ram_checks = ram_ai.run_ram_ai_checks(script, language, duration)
@@ -1170,12 +1220,18 @@ async def gen_image(prompt: str, refs=None):
             payload = {"prompt": prompt, "refs": [base64.b64encode(data).decode("ascii") for data in (refs or [])]}
             async with httpx.AsyncClient(timeout=180) as worker_client:
                 for attempt in range(2):
-                    worker_response = await worker_client.post(
-                        f"{url}/generate", json=payload, headers={"Authorization": f"Bearer {token}"})
-                    if worker_response.status_code != 429 or attempt == 1:
+                    try:
+                        worker_response = await worker_client.post(
+                            f"{url}/generate", json=payload, headers={"Authorization": f"Bearer {token}"})
+                    except httpx.ConnectError:
+                        if attempt == 1:
+                            raise
+                        await asyncio.sleep(2)
+                        continue
+                    if worker_response.status_code not in (429, 502, 503, 504) or attempt == 1:
                         break
-                    log.warning("Image worker returned 429; retrying once after a cooldown")
-                    await asyncio.sleep(IMAGE_WORKER_RETRY_DELAY)
+                    log.warning("Image worker returned %s; retrying once", worker_response.status_code)
+                    await asyncio.sleep(IMAGE_WORKER_RETRY_DELAY if worker_response.status_code == 429 else 2)
             try:
                 body = worker_response.json()
             except ValueError:
@@ -1184,7 +1240,7 @@ async def gen_image(prompt: str, refs=None):
                 detail = str(body.get("detail", "Image worker request failed"))[:300]
                 if worker_response.status_code == 429:
                     raise ImageQuotaError("Image provider is at capacity or quota. Remaining pictures are paused; try Generate missing pictures after the provider recovers.")
-                raise RuntimeError(f"Cloud image worker: {detail}")
+                raise RuntimeError(f"Cloud image worker HTTP {worker_response.status_code}: {detail}")
             image_data = base64.b64decode(body["image_base64"], validate=True)
             if not image_data:
                 raise RuntimeError("Cloud image worker returned an empty image")
@@ -1666,17 +1722,37 @@ async def cloud_word_timestamps(audio: bytes, language: str, expected_text: str)
     return await asyncio.to_thread(_cloud_word_timestamps, audio, language, expected_text)
 
 
-async def tts(text: str, voice: str, speed: float, language: str = "") -> bytes:
-    return (await tts_timed(text, voice, speed, language))["audio"]
+async def tts(text: str, voice: str, speed: float, language: str = "", provider: str = "",
+              max_cost_inr=None) -> bytes:
+    return (await tts_timed(text, voice, speed, language, provider=provider,
+                            max_cost_inr=max_cost_inr))["audio"]
 
 
-async def tts_timed(text: str, voice: str, speed: float, language: str = "") -> dict:
-    """Use the free Indic voice route by default; OpenAI requires an explicit provider choice."""
+async def tts_timed(text: str, voice: str, speed: float, language: str = "", provider: str = "",
+                    max_cost_inr=None) -> dict:
+    """Route only to the selected speech provider; never switch providers on failure."""
     global _openai_tts_auth_failed
-    if os.environ.get("TTS_PROVIDER", "edge").lower() == "google_chirp":
+    selected = (provider or os.environ.get("TTS_PROVIDER", "edge")).lower()
+    configured = os.environ.get("TTS_PROVIDER", "edge").lower()
+    if selected in {"google_chirp", "openai"} and not provider:
+        raise RuntimeError("Select the premium voice provider explicitly before generating audio")
+    if selected in {"google_chirp", "openai"} and selected != configured:
+        raise RuntimeError(f"{selected} is not enabled by the operator")
+    if selected in {"google_chirp", "openai"}:
+        import premium_tts
+        premium_tts.authorize(selected, [text], max_cost_inr)
+    if selected == "piper":
+        import piper_tts
+        return await piper_tts.synthesize(text, speed, language or _detect_lang(text))
+    if selected == "supertonic":
+        import supertonic_tts
+        return await supertonic_tts.synthesize(text, speed, language or _detect_lang(text), voice)
+    if selected == "google_chirp":
         return await asyncio.to_thread(_google_chirp_speech, text, voice, speed, language)
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if os.environ.get("TTS_PROVIDER", "edge").lower() == "openai" and openai_key and not _openai_tts_auth_failed:
+    if selected == "openai":
+        if not openai_key or _openai_tts_auth_failed:
+            raise RuntimeError("OpenAI TTS is unavailable; select another voice provider")
         try:
             async with AsyncOpenAI(api_key=openai_key) as client:
                 response = await client.audio.speech.create(
@@ -1686,8 +1762,12 @@ async def tts_timed(text: str, voice: str, speed: float, language: str = "") -> 
         except Exception as e:
             if getattr(e, "status_code", None) == 401:
                 _openai_tts_auth_failed = True
-            log.warning("OpenAI TTS failed (%s); falling back to edge-tts", type(e).__name__)
-    return await _edge_speech(text, voice, speed, language)
+            raise RuntimeError(f"OpenAI TTS failed ({type(e).__name__}); no fallback was used") from e
+    if selected == "edge":
+        if os.environ.get("APP_ENV") == "production":
+            raise RuntimeError("Edge Read Aloud voice is not cleared for production use")
+        return await _edge_speech(text, voice, speed, language)
+    raise RuntimeError(f"Unknown voice provider: {selected}")
 
 
 async def transcribe(local_path, language):

@@ -1,6 +1,6 @@
 """Small-beta admission controls. PostgreSQL counters are atomic across requests.
 
-Generation workers still require one API process; these counters do not make jobs durable.
+Generation jobs persist independently; these counters enforce beta limits across API instances.
 """
 import hashlib
 import os

@@ -13,6 +13,14 @@ backend/media_cache/
 *.log
 deploy/beta.env
 backend/evaluations/
+backend/.piper-eval/
+backend/.piper-models/
+backend/.hindi-eval-venv/
+backend/.hindi-eval-packages/
+backend/.hindi-eval-model/
+backend/.hindi-eval-hf/
+test_reports/supertonic-hindi-*/
+test_reports/piper-audio-*/
 
 # Credentials and test accounts must never be committed.
 memory/test_credentials.md
@@ -28,3 +36,4 @@ backend/training/data/*.zip
 test_reports/output_proof_*/
 test_reports/independent_review/*.png
 deliverables/
+frontend/.cache/

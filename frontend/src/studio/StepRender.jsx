@@ -26,11 +26,17 @@ function Meta({ label, value, testid }) {
 export default function StepRender({ project, update }) {
   const { t } = useLocale();
   const [busy, setBusy] = useState(false);
+  const [capsBusy, setCapsBusy] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+  const [previewAttempt, setPreviewAttempt] = useState(0);
   const [thumbnailScene, setThumbnailScene] = useState(project.scenes?.find((scene) => scene.image_path && !scene.placeholder && scene.approved)?.id || "");
   const [thumbnailTitle, setThumbnailTitle] = useState(project.script?.thumbnail_title || project.script?.title || "");
   const r = project.render || {};
   const s = project.script || {};
+  useEffect(() => { setPreviewError(false); }, [r.video_path]);
   const rendering = r.status === "rendering";
+  const videoReady = r.status === "done" && Boolean(r.video_path);
   const scriptApproved = project.approved && project.validation?.all_passed;
   const scenesApproved = (project.scenes || []).length > 0 && project.scenes.every((scene) => scene.status === "ready" && scene.image_path && !scene.placeholder && scene.approved);
   const unfinishedScenes = (project.scenes || []).flatMap((scene, index) => {
@@ -48,9 +54,45 @@ export default function StepRender({ project, update }) {
   const start = async () => {
     setBusy(true);
     try { const { data } = await api.post(`/projects/${project.id}/render`); update(data); }
-    catch (e) { toast.error(errMsg(e)); } finally { setBusy(false); }
+    catch (e) {
+      // A lost response can happen after the cloud job was submitted. Read the
+      // persisted state before suggesting another click.
+      try {
+        const { data } = await api.get(`/projects/${project.id}`);
+        update(data);
+        if (["rendering", "done"].includes(data.render?.status)) {
+          toast.info("Your video request reached the studio. Progress will update here.");
+        } else toast.error(errMsg(e));
+      } catch (_) {
+        toast.error("Could not confirm the render status. Reopen this project before trying again.");
+      }
+    } finally { setBusy(false); }
   };
-  const toggleCaps = async (v) => { const { data } = await api.patch(`/projects/${project.id}`, { captions_on: v }); update(data); };
+  const toggleCaps = async (v) => {
+    setCapsBusy(true);
+    try { const { data } = await api.patch(`/projects/${project.id}`, { captions_on: v }); update(data); }
+    catch (e) { toast.error(errMsg(e)); }
+    finally { setCapsBusy(false); }
+  };
+  const downloadVideo = async () => {
+    setDownloading(true);
+    try {
+      const response = await fetch(`${mediaUrl(r.video_path)}?download=1`, { credentials: "include" });
+      if (!response.ok) throw new Error(response.status === 401 ? "Your session expired. Sign in and try downloading again." : "The video could not be downloaded. Please try again.");
+      if (!/^(video\/mp4|application\/octet-stream)/i.test(response.headers.get("content-type") || "")) {
+        throw new Error("The studio returned an unexpected file. Please try again.");
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${(s.title_en || s.title || "bharatkatha-video").replace(/[\\/:*?"<>|]/g, "-")}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) { toast.error(e.message || "The video could not be downloaded."); }
+    finally { setDownloading(false); }
+  };
   const createThumbnail = async () => {
     setBusy(true);
     try {
@@ -64,7 +106,7 @@ export default function StepRender({ project, update }) {
       if (!response.ok) throw new Error("Could not load video");
       const file = new File([await response.blob()], `${s.title_en || "video"}.mp4`, { type: "video/mp4" });
       if (!navigator.canShare?.({ files: [file] })) return toast.error("Sharing files is unavailable here. Download the MP4 instead.");
-      await navigator.share({ title: s.title || "VidBharat video", files: [file] });
+      await navigator.share({ title: s.title || "BharatKatha video", files: [file] });
     } catch (e) { if (e.name !== "AbortError") toast.error(e.message); }
   };
   const [srtUrl, setSrtUrl] = useState(null);
@@ -84,13 +126,13 @@ export default function StepRender({ project, update }) {
       <div className="mt-6 grid lg:grid-cols-[300px_1fr] gap-8">
         <div>
           <div className="aspect-[9/16] rounded-2xl overflow-hidden bg-[#e7efe7] relative grain" data-testid="video-preview">
-            {r.status === "done" && scenesApproved ? <video controls src={mediaUrl(r.video_path)} poster={mediaUrl(project.scenes?.[0]?.image_path)} className="w-full h-full object-cover" data-testid="final-video" />
-              : <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 text-center text-[#587168]"><Film size={36} /><span className="text-sm">{rendering ? "Rendering your video…" : r.status === "failed" ? "Render failed. See the message beside the preview." : scenesApproved ? "No video rendered yet. Select Render my video." : "No video yet. Finish scene pictures and approvals first."}</span></div>}
+            {videoReady && scenesApproved && !previewError ? <video key={previewAttempt} controls preload="metadata" src={mediaUrl(r.video_path)} poster={mediaUrl(project.scenes?.[0]?.image_path)} onError={() => setPreviewError(true)} className="w-full h-full object-cover" data-testid="final-video" />
+              : <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 text-center text-[#587168]"><Film size={36} /><span className="text-sm">{previewError ? "The video preview could not load. Your saved video may still be available to download." : rendering ? "Rendering your video…" : r.status === "failed" ? "Render failed. See the message beside the preview." : r.status === "done" ? "Video details are temporarily unavailable. Please reopen this project." : scenesApproved ? "No video rendered yet. Select Render my video." : "No video yet. Finish scene pictures and approvals first."}</span>{previewError && <button type="button" onClick={() => { setPreviewError(false); setPreviewAttempt((n) => n + 1); }} className="text-sm font-semibold underline">Retry preview</button>}</div>}
           </div>
-          {r.status === "done" && scenesApproved && (
+          {videoReady && scenesApproved && (
             <div className="mt-3 flex gap-2">
-              <a data-testid="download-mp4-btn" href={mediaUrl(r.video_path)} download={`${s.title_en || "video"}.mp4`} className="flex-1 btn-primary text-sm font-semibold py-2.5 flex items-center justify-center gap-2"><Download size={14} />MP4</a>
-              {srtUrl && <a data-testid="download-srt-btn" href={srtUrl} download="captions.srt" className="flex-1 rounded-full border border-[#c4d8c9] text-sm font-semibold py-2.5 flex items-center justify-center gap-2"><FileText size={14} />SRT</a>}
+              <button type="button" data-testid="download-mp4-btn" onClick={downloadVideo} disabled={downloading} className="flex-1 btn-primary text-sm font-semibold py-2.5 flex items-center justify-center gap-2 disabled:opacity-50">{downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}{downloading ? "Downloading…" : "Download MP4"}</button>
+              {(r.caption_path || srtUrl) && <a data-testid="download-srt-btn" href={r.caption_path ? `${mediaUrl(r.caption_path)}?download=1` : srtUrl} download="captions.srt" className="flex-1 rounded-full border border-[#c4d8c9] text-sm font-semibold py-2.5 flex items-center justify-center gap-2"><FileText size={14} />SRT</a>}
               <button onClick={shareVideo} className="rounded-full border border-[#c4d8c9] px-3" title="Share video"><Share2 size={16} /></button>
             </div>
           )}
@@ -118,10 +160,10 @@ export default function StepRender({ project, update }) {
             </div>}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-semibold"><Captions size={16} />{t("burn_in_captions")}</div>
-              <Switch data-testid="captions-switch" checked={project.captions_on !== false} onCheckedChange={toggleCaps} disabled={rendering} />
+              <Switch data-testid="captions-switch" checked={project.captions_on !== false} onCheckedChange={toggleCaps} disabled={rendering || capsBusy} />
             </div>
             {project.audio?.mode !== "ai" && <p className="mt-3 text-sm text-[#587168]">Scene cuts for uploaded or recorded narration are estimated. Watch the final video to check that each picture matches your words.</p>}
-            {r.caption_timing === "estimated" && <p className="mt-3 text-sm text-amber-800">Caption timing is estimated for this narration. Regenerate the AI voice to use speech timestamps, then render again.</p>}
+            {r.caption_timing === "estimated" && <p className="mt-3 text-sm text-amber-800">Caption timing is estimated from the script and narration length. Review the rendered subtitles before sharing.</p>}
             {!project.audio && <p className="mt-3 text-sm text-amber-800">Add narration in Audio Studio before rendering.</p>}
             <button data-testid="render-btn" onClick={start} disabled={busy || rendering || !scenesApproved || !scriptApproved || !project.audio}
               className="mt-5 w-full btn-primary py-3 flex items-center justify-center gap-2 disabled:opacity-50">
@@ -129,9 +171,10 @@ export default function StepRender({ project, update }) {
               {rendering ? "Rendering…" : r.status === "done" ? "Re-render video" : t("render_my_video")}
             </button>
             {(rendering || r.status === "failed") && (
-              <div className="mt-4" data-testid="render-progress">
-                <Progress value={r.progress || 0} />
-                <p className={`mt-2 text-xs ${r.status === "failed" ? "text-rose-400" : "text-[#587168]"}`} data-testid="render-message">{r.message}</p>
+              <div className="mt-4" data-testid="render-progress" role="status" aria-live="polite">
+                <Progress value={Math.max(0, Math.min(100, Number(r.progress) || 0))} />
+                <p className={`mt-2 text-sm ${r.status === "failed" ? "text-rose-700" : "text-[#587168]"}`} data-testid="render-message">{r.status === "failed" ? r.message || "Rendering stopped. You can try again." : `${Math.round(Number(r.progress) || 0)}% · ${r.message || "Preparing your video"}`}</p>
+                {rendering && <p className="mt-2 text-xs text-[#587168]">You can leave this page. Your video will remain in My videos when it is ready.</p>}
               </div>
             )}
           </div>

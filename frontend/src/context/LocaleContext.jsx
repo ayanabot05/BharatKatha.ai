@@ -1,7 +1,10 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { LANGUAGES } from "@/constants/studio";
+import { translateStudioTelugu } from "./studioTelugu";
 
 const DICTIONARY = {
+  audio_duration_note: { en: "Narration is {actual} seconds; your target is {target} seconds. Adjust the script or speaking speed if you need that duration." },
+  audio_paced_note: { en: "Paced to {speed}x after measuring the first read." },
   dashboard_greeting: { en: "Welcome", te: "స్వాగతం", hi: "स्वागत है", ta: "வரவேற்கிறோம்", bn: "স্বাগতম", mr: "स्वागत", gu: "સ્વાગત છે", ur: "خوش آمدید", kn: "ಸ್ವಾಗತ", ml: "സ്വാഗതം", or: "ସ୍ୱାଗତ" },
   create_video: { en: "Create a video", te: "వీడియో తయారు చేయండి", hi: "वीडियो बनाएं", ta: "வீடியோ உருவாக்குங்கள்", bn: "ভিডিও তৈরি করুন", mr: "व्हिडिओ तयार करा", gu: "વિડિયો બનાવો", ur: "ویڈیو بنائیں", kn: "ವೀಡಿಯೊ ರಚಿಸಿ", ml: "വീഡിയോ നിർമ്മിക്കുക", or: "ଭିଡିଓ ତିଆରି କରନ୍ତୁ" },
   continue_story: { en: "Continue story", te: "కథను కొనసాగించండి", hi: "कहानी जारी रखें", ta: "கதையைத் தொடருங்கள்", bn: "গল্প চালিয়ে যান", mr: "कथा पुढे सुरू ठेवा", gu: "વાર્તા આગળ વધારો", ur: "کہانی جاری رکھیں", kn: "ಕಥೆಯನ್ನು ಮುಂದುವರಿಸಿ", ml: "കഥ തുടരുക", or: "କାହାଣୀ ଜାରି ରଖନ୍ତୁ" },
@@ -69,8 +72,9 @@ export function LocaleProvider({ children }) {
     document.documentElement.dir = locale === "ur" ? "rtl" : "ltr";
   }, [locale]);
 
-  const t = (key) => {
-    return DICTIONARY[key]?.[locale] || DICTIONARY[key]?.en || key;
+  const t = (key, values = {}) => {
+    const text = (locale === "te" && translateStudioTelugu(key)) || DICTIONARY[key]?.[locale] || DICTIONARY[key]?.en || key;
+    return String(text ?? "").replace(/\{(\w+)\}/g, (match, name) => values[name] ?? match);
   };
 
   return (

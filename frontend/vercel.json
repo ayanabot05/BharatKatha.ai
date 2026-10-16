@@ -3,10 +3,51 @@
   "framework": "create-react-app",
   "buildCommand": "npm run build",
   "outputDirectory": "build",
-  "rewrites": [{"source": "/((?!api/|static/|styles/|showcase/).*)", "destination": "/index.html"}],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://bharatkatha-api-3biemw3ouq-el.a.run.app/api/:path*"
+    },
+    {
+      "source": "/((?!api/|static/|styles/|showcase/).*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
-    {"source": "/static/:path*", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]},
-    {"source": "/api/:path*", "headers": [{"key": "Cache-Control", "value": "private, no-store"}]},
-    {"source": "/:path*", "headers": [{"key": "X-Content-Type-Options", "value": "nosniff"}, {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}, {"key": "X-Frame-Options", "value": "DENY"}]}
+    {
+      "source": "/static/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        }
+      ]
+    },
+    {
+      "source": "/:path*",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
+      ]
+    }
   ]
 }

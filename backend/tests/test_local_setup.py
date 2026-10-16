@@ -156,9 +156,9 @@ class LocalSetupTests(unittest.TestCase):
     def test_health_and_anonymous_auth(self):
         async def check():
             async with AsyncClient(transport=ASGITransport(app=server.app), base_url="http://localhost:8000") as client:
-                response = await client.get("/api/health", headers={"Origin": "http://localhost:3003"})
+                response = await client.get("/api/health", headers={"Origin": "http://localhost:3004"})
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.headers["access-control-allow-origin"], "http://localhost:3003")
+                self.assertEqual(response.headers["access-control-allow-origin"], "http://localhost:3004")
                 self.assertEqual((await client.get("/api/auth/me")).status_code, 401)
                 self.assertEqual((await client.post("/api/auth/refresh")).status_code, 401)
                 response = await client.post("/api/auth/logout")

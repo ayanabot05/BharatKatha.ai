@@ -571,6 +571,43 @@ def test_script_review_reuses_the_project_content_contract():
     asyncio.run(run())
 
 
+def test_script_review_retries_bad_citations_without_skipping_evidence():
+    async def run():
+        script = {"scenes": [{"narration": "She waters the tree", "visual": "Girl beside the tree"}]}
+        seen = {"concept": 0}
+
+        async def agent(key, name, brief, script, language, region, idea):
+            if key == "concept":
+                seen["concept"] += 1
+                if seen["concept"] < 3:
+                    raise RuntimeError("Concept review cited invalid scene alignment evidence")
+            return {"key": key, "name": name, "score": 90, "fixes": [],
+                    **({"aligned": True, "misses": []} if key == "concept" else {}),
+                    **({"safe": True} if key == "safety" else {})}
+
+        checks = {"all_passed": True, "safety_passed": True, "checks": [], "fixes": [], "disclaimer": ""}
+        with (patch.object(ai, "_agent", side_effect=agent),
+              patch.object(ai.ram_ai, "run_ram_ai_checks", return_value=checks)):
+            result = await ai.validate_script(script, "te", "Andhra Pradesh", 45)
+        assert seen["concept"] == 3
+        assert result["all_passed"]
+    asyncio.run(run())
+
+
+def test_script_review_never_accepts_persistently_bad_citations():
+    async def run():
+        with patch.object(ai, "_agent", AsyncMock(side_effect=RuntimeError(
+                "Concept review cited invalid scene alignment evidence"))) as agent:
+            try:
+                await ai.validate_script({"scenes": []}, "te", "Andhra Pradesh", 45)
+            except RuntimeError as exc:
+                assert "invalid scene alignment evidence" in str(exc)
+            else:
+                raise AssertionError("Malformed evidence must block approval")
+        assert agent.await_count == 3
+    asyncio.run(run())
+
+
 def test_independent_content_gap_blocks_an_optimistic_concept_review():
     async def run():
         contract = {"promise": "Fit the clamp", "requirements": [
@@ -750,3 +787,51 @@ def test_image_quota_is_not_hidden_by_unsupported_fallback():
             with pytest.raises(ai.ImageQuotaError):
                 await ai.gen_image("a pipe")
     asyncio.run(run())
+
+
+def test_script_review_retries_incomplete_scene_inspection_and_case_only_source():
+    async def run():
+        idea = "A girl waters a small mango sapling."
+        script = {"scenes": [{"narration": "ఆమె మొక్కకు నీరు పోసింది", "visual": "A girl waters a small mango sapling"}]}
+        seen = {"concept": 0}
+
+        async def agent(key, name, brief, script, language, region, idea):
+            if key == "concept":
+                seen["concept"] += 1
+                if seen["concept"] == 1:
+                    raise RuntimeError("Concept review did not inspect every scene; please retry")
+                if seen["concept"] == 2:
+                    raise RuntimeError("Concept review skipped or repeated a scene")
+                review = {
+                    "key": key, "name": name, "score": 90, "fixes": [], "aligned": True, "misses": [],
+                    "requirements": [{
+                        "source": "a girl waters a small mango sapling",
+                        "status": "met",
+                        "evidence": [{"scene": 1, "field": "visual", "quote": " A girl waters a small mango sapling "}],
+                    }],
+                    "scene_checks": [{
+                        "scene": 1, "aligned": True,
+                        "narration_quote": " ఆమె మొక్కకు నీరు పోసింది ",
+                        "visual_quote": " A girl waters a small mango sapling ",
+                        "issue": "",
+                    }],
+                }
+                ai.validate_concept_evidence(review, script, idea)
+                return review
+            return {"key": key, "name": name, "score": 90, "fixes": [],
+                    **({"safe": True} if key == "safety" else {})}
+
+        checks = {"all_passed": True, "safety_passed": True, "checks": [], "fixes": [], "disclaimer": ""}
+        with (patch.object(ai, "_agent", side_effect=agent),
+              patch.object(ai.ram_ai, "run_ram_ai_checks", return_value=checks),
+              patch.object(ai, "extract_content_contract", AsyncMock(return_value={
+                  "promise": "Water the sapling",
+                  "requirements": [{"source": "A girl waters a small mango sapling", "requirement": "Water the sapling", "action_words": ["waters"]}],
+              })),
+              patch.object(ai, "audit_content_delivery", AsyncMock(return_value=[]))):
+            result = await ai.validate_script(script, "te", "Andhra Pradesh", 45, idea)
+        assert seen["concept"] == 3
+        assert result["all_passed"] is True
+        assert result["concept_aligned"] is True
+    asyncio.run(run())
+

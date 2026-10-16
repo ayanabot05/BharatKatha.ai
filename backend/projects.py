@@ -16,12 +16,19 @@ from pydantic import BaseModel, Field
 import ai
 import render
 import pulse
+from generation_reliability import access_error, transient_error, retry_transient, public_failure
 from core import db, current_user, now_iso, new_id, save_media, cached, get_object, log, CACHE
 
 router = APIRouter(prefix="/api/projects")
 _tasks = set()
 _active_renders = set()
 _active_generations = set()
+_active_audio = set()
+
+
+def assert_audio_idle(pid):
+    if pid in _active_audio:
+        raise HTTPException(409, "Wait for voice generation to finish before changing this story")
 
 def spawn(coro):
     t = asyncio.create_task(coro)
@@ -38,11 +45,36 @@ async def owned(pid, user):
     needs_update = False
     render = p.get("render") or {}
     if render.get("status") == "rendering" and pid not in _active_renders:
-        p["render"] = {"status": "failed", "progress": 0, "message": "Render was interrupted. Please click Render to try again."}
-        needs_update = True
+        stale_render = not os.environ.get("CLOUD_RENDER_JOB") or not render.get("queued_at")
+        if not stale_render and render.get("queued_at"):
+            try:
+                queued_at = datetime.fromisoformat(render["queued_at"])
+                stale_render = (datetime.now(timezone.utc) - queued_at).total_seconds() > 2700
+            except (TypeError, ValueError):
+                stale_render = True
+        if stale_render:
+            if os.environ.get("CLOUD_RENDER_JOB") and render.get("claim_token"):
+                await db.projects.fail_render_claim(pid, user["id"], render["claim_token"])
+                p = await db.projects.find_one({"id": pid, "user_id": user["id"]}, {"_id": 0})
+            else:
+                p["render"] = {"status": "failed", "progress": 0, "message": "Render was interrupted. Please click Render to try again."}
+                needs_update = True
 
     scenes = p.get("scenes") or []
-    if pid not in _active_generations:
+    cloud_scene_pending = bool(os.environ.get("CLOUD_SCENE_JOB") and p.get("scene_job_started_at"))
+    if cloud_scene_pending:
+        try:
+            raw_started = p["scene_job_started_at"]
+            started = raw_started if isinstance(raw_started, datetime) else datetime.fromisoformat(raw_started)
+            cloud_scene_pending = (datetime.now(timezone.utc) - started).total_seconds() < 1500
+        except (TypeError, ValueError):
+            cloud_scene_pending = False
+        if not cloud_scene_pending and p.get("scene_job_token"):
+            await db.projects.recover_expired_scene_job(pid, user["id"], p["scene_job_token"])
+            p = await db.projects.find_one({"id": pid, "user_id": user["id"]}, {"_id": 0})
+            scenes = p.get("scenes") or []
+            cloud_scene_pending = bool(p.get("scene_job_started_at"))
+    if pid not in _active_generations and not cloud_scene_pending and not (os.environ.get("CLOUD_SCENE_JOB") and p.get("scene_job_token")):
         for s in scenes:
             if s.get("status") in ("generating", "queued"):
                 s["status"] = "failed"
@@ -81,6 +113,14 @@ async def check_daily_limit(user: dict, action: str):
 async def upd(pid, **fields):
     fields["updated_at"] = now_iso()
     await db.projects.update_one({"id": pid}, {"$set": fields})
+
+
+async def log_noncritical_event(*args, **kwargs):
+    """An analytics outage must never undo a cloud job that already started."""
+    try:
+        await pulse.log_event(*args, **kwargs)
+    except Exception:
+        log.exception("Noncritical analytics event failed")
 
 
 class ProjectIn(BaseModel):
@@ -124,6 +164,8 @@ class EditIn(BaseModel):
 class VoiceIn(BaseModel):
     voice: str = "fable"
     speed: float = Field(default=1.0, ge=0.75, le=1.25)
+    provider: Optional[str] = None
+    max_cost_inr: Optional[float] = Field(default=None, gt=0)
 
 
 def clean_script_for_fingerprint(script):
@@ -146,22 +188,53 @@ def review_fingerprint(project):
 
 def review_is_current(project):
     review = project.get("validation") or {}
-    return review.get("all_passed") is True and review.get("content_fingerprint") == review_fingerprint(project)
+    if review.get("all_passed") is not True:
+        return False
+    fingerprint = review.get("content_fingerprint")
+    if fingerprint == review_fingerprint(project):
+        return True
+    # Reviews saved before `brief` joined the fingerprint still belong to the
+    # same story when the project has never had a brief. Keep those approvals
+    # usable without running a new (potentially paid) model review.
+    if project.get("brief") is None:
+        legacy_content = {
+            "script": clean_script_for_fingerprint(project.get("script")),
+            "idea": project.get("idea"),
+            "language": project.get("language"),
+            "region": project.get("region"),
+            "duration": project.get("duration"),
+        }
+        legacy_fingerprint = hashlib.sha256(
+            json.dumps(legacy_content, sort_keys=True, ensure_ascii=False).encode()
+        ).hexdigest()
+        return fingerprint == legacy_fingerprint
+    return False
 
 
 def scenes_from_script(script, old=None):
     old = old or []
     out = []
+    earlier_changed = False
     for i, s in enumerate(script.get("scenes", [])):
         candidate = old[i] if i < len(old) else {}
         # A rewritten visual cannot safely keep a picture from the earlier script.
         prev = candidate if (candidate.get("visual") == s.get("visual", "")
                              and candidate.get("narration") == s.get("narration", "")) else {}
+        earlier_changed = earlier_changed or (bool(candidate) and not prev)
         out.append({"id": prev.get("id") or new_id(), "narration": s.get("narration", ""), "visual": s.get("visual", ""),
                     "beat": s.get("beat", ""), "image_path": prev.get("image_path"), "status": prev.get("status", "pending"),
-                    "placeholder": prev.get("placeholder", False), "approved": prev.get("approved", False),
+                    "placeholder": prev.get("placeholder", False), "approved": prev.get("approved", False) and not earlier_changed,
+                    "continuity_needs_review": earlier_changed and bool(prev.get("image_path")),
                     "versions": prev.get("versions", []), "audio_path": None, "audio_duration": None})
     return out
+
+
+async def invalidate_following_pictures(pid, scenes, sid):
+    index = next(i for i, scene in enumerate(scenes) if scene["id"] == sid)
+    for scene in scenes[index + 1:]:
+        if scene.get("image_path"):
+            await db.projects.update_one({"id": pid, "scenes.id": scene["id"]},
+                                         {"$set": {"scenes.$.approved": False, "scenes.$.continuity_needs_review": True}})
 
 
 def script_with_scenes(script, scenes):
@@ -178,6 +251,8 @@ def script_with_scenes(script, scenes):
 
 @router.post("")
 async def create(body: ProjectIn, user=Depends(current_user)):
+    if os.environ.get("APP_ENV") == "production" and body.language not in {"te", "hi", "en"}:
+        raise HTTPException(400, "This language is coming soon")
     p = {"id": new_id(), "user_id": user["id"], "title": body.title or "Untitled story", "language": body.language,
          "region": body.region, "idea": "", "script": None, "content_contract": None,
          "validation": None, "approved": False, "style": None,
@@ -212,7 +287,13 @@ async def get_project(pid: str, user=Depends(current_user)):
 @router.patch("/{pid}")
 async def patch(pid: str, body: ProjectPatch, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
     fields = body.model_dump(exclude_none=True)
+    if os.environ.get("APP_ENV") == "production" and fields.get("language", p.get("language")) not in {"te", "hi", "en"}:
+        raise HTTPException(400, "This language is coming soon")
+    if pid in _active_generations or image_batch_active(p.get("scenes", [])):
+        if any(key in fields for key in ("script", "idea", "style", "language", "region")):
+            raise HTTPException(409, "Wait for picture generation to finish before changing the story")
     context_changed = any(key in fields and fields[key] != p.get(key) for key in ("language", "region", "idea"))
     if context_changed:
         if (p.get("render") or {}).get("status") == "rendering":
@@ -247,8 +328,13 @@ async def patch(pid: str, body: ProjectPatch, user=Depends(current_user)):
 @router.delete("/{pid}")
 async def delete(pid: str, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
+    if pid in _active_generations or pid in _active_renders or image_batch_active(p.get("scenes", [])) or (p.get("render") or {}).get("status") == "rendering":
+        raise HTTPException(409, "Wait for generation or rendering to finish before deleting this story")
     paths = []
     for s in p.get("scenes") or []:
+        if (s.get("image_candidate") or {}).get("path"):
+            paths.append(s["image_candidate"]["path"])
         if s.get("image_path"):
             paths.append(s["image_path"])
         for v in s.get("versions") or []:
@@ -259,6 +345,8 @@ async def delete(pid: str, user=Depends(current_user)):
         paths.append(p["audio"]["path"])
     if (p.get("render") or {}).get("video_path"):
         paths.append(p["render"]["video_path"])
+    if (p.get("render") or {}).get("caption_path"):
+        paths.append(p["render"]["caption_path"])
     if (p.get("script") or {}).get("thumbnail_path"):
         paths.append(p["script"]["thumbnail_path"])
 
@@ -285,9 +373,25 @@ async def delete(pid: str, user=Depends(current_user)):
 
 
 # ---------- script ----------
+@router.get("/{pid}/display-copy")
+async def display_copy(pid: str, language: str = "te", user=Depends(current_user)):
+    p = await owned(pid, user)
+    if language not in ai.LANGS:
+        raise HTTPException(400, "Unsupported display language")
+    from studio_copy import translated_copy
+    try:
+        return {"translations": await translated_copy(p, language)}
+    except Exception:
+        log.exception("Project %s: display translation failed", pid)
+        raise HTTPException(503, "Display translation is temporarily unavailable")
+
+
 @router.post("/{pid}/script/generate")
 async def gen_script(pid: str, body: ScriptIn, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
+    if pid in _active_generations or image_batch_active(p.get("scenes", [])):
+        raise HTTPException(409, "Wait for picture generation to finish before replacing the story")
     if (p.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "Wait for the current render to finish before making a new script")
     await check_daily_limit(user, "script_generated")
@@ -328,6 +432,9 @@ async def validate(pid: str, user=Depends(current_user)):
 @router.post("/{pid}/script/improve")
 async def improve(pid: str, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
+    if pid in _active_generations or image_batch_active(p.get("scenes", [])):
+        raise HTTPException(409, "Wait for picture generation to finish before revising the story")
     if (p.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "Wait for the current render to finish before revising the script")
     if not p.get("validation"):
@@ -395,6 +502,10 @@ async def reject(pid: str, user=Depends(current_user)):
 
 
 # ---------- scenes ----------
+class ImageServiceError(RuntimeError):
+    """Pause the batch when a shared provider dependency is unavailable."""
+
+
 async def _scene_job(pid, uid, sid, instruction=None, ref=None):
     """Returns (image_bytes, is_placeholder) on success, None on failure (scene is marked failed)."""
     p = await db.projects.find_one({"id": pid}, {"_id": 0})
@@ -413,12 +524,28 @@ async def _scene_job(pid, uid, sid, instruction=None, ref=None):
         else:
             prompt = ai.scene_prompt(p, scene, bool(ref))
             refs = [ref] if ref else None
+        candidate_key = hashlib.sha256(prompt.encode("utf-8") + b"".join(refs or [])).hexdigest()
+        candidate = scene.get("image_candidate") or {}
         for attempt in range(2):
-            data, mime, placeholder = await ai.gen_image(prompt, refs)
+            if attempt == 0 and candidate.get("key") == candidate_key:
+                data, mime = await get_object(candidate["path"])
+                placeholder = False
+            else:
+                data, mime, placeholder = await ai.gen_image(prompt, refs)
             if placeholder:
                 break
             review_scene = dict(scene, visual=f"{scene.get('visual', '')}. Also: {instruction}") if instruction else scene
-            gaps = await ai.audit_scene_image(p, review_scene, data, mime, ref)
+            # Retry the review of these same bytes, not a paid image generation.
+            try:
+                gaps = await retry_transient(
+                    lambda: ai.audit_scene_image(p, review_scene, data, mime, ref), "Scene image review")
+            except Exception:
+                # Retain paid image bytes if the reviewer is unavailable. A retry
+                # can review them again, but they cannot be approved or exported.
+                path = await save_media(uid, "scenes", data, "png" if "png" in mime else "jpg", mime)
+                await db.projects.update_one({"id": pid, "scenes.id": sid}, {"$set": {
+                    "scenes.$.image_candidate": {"path": path, "key": candidate_key}}})
+                raise
             if not gaps:
                 break
             if attempt == 1:
@@ -430,8 +557,20 @@ async def _scene_job(pid, uid, sid, instruction=None, ref=None):
         await db.projects.update_one({"id": pid, "scenes.id": sid},
                                      {"$set": {"scenes.$.image_path": path, "scenes.$.status": "ready",
                                                "scenes.$.placeholder": placeholder, "scenes.$.approved": False,
+                                               "scenes.$.continuity_needs_review": False,
+                                               "scenes.$.image_candidate": None,
                                                "scenes.$.error": "Placeholder image (Gemini quota). Not a real scene." if placeholder else None},
                                       "$push": {"scenes.$.versions": path}})
+        if instruction and not placeholder:
+            # Persist the new concept so later regeneration/review does not silently
+            # revert to the old description. A changed concept needs a fresh review.
+            visual = f"{scene.get('visual', '')}. Creator edit: {instruction}"
+            await db.projects.update_one({"id": pid, "scenes.id": sid},
+                                         {"$set": {"scenes.$.visual": visual}})
+            await invalidate_following_pictures(pid, p["scenes"], sid)
+            current = await db.projects.find_one({"id": pid}, {"_id": 0})
+            await upd(pid, script=script_with_scenes(current.get("script"), current.get("scenes") or []),
+                      validation=None, approved=False, render={"status": "idle", "progress": 0})
         return data, placeholder
     except ai.ImageQuotaError as e:
         await db.projects.update_one({"id": pid, "scenes.id": sid},
@@ -440,9 +579,13 @@ async def _scene_job(pid, uid, sid, instruction=None, ref=None):
         raise
     except Exception as e:
         log.exception("scene image")
+        service_failure = access_error(e) or transient_error(e)
+        message = public_failure(e, "Picture generation") if service_failure else str(e)[:200]
         await db.projects.update_one({"id": pid, "scenes.id": sid},
                                      {"$set": {"scenes.$.status": "failed", "scenes.$.approved": False,
-                                               "scenes.$.error": str(e)[:200]}})
+                                               "scenes.$.error": message}})
+        if service_failure:
+            raise ImageServiceError(message) from e
         return None
 
 
@@ -498,7 +641,7 @@ async def _all_scenes_job(pid, uid, ids):
         selected = set(ids)
         references = []
         generated = 0
-        gap = max(0.0, float(os.environ.get("IMAGE_SCENE_GAP_SECONDS", "20")))
+        gap = max(0.0, float(os.environ.get("IMAGE_SCENE_GAP_SECONDS", "0")))
         for index, current in enumerate(project["scenes"]):
             sid = current["id"]
             if sid not in selected:
@@ -511,7 +654,7 @@ async def _all_scenes_job(pid, uid, ids):
             try:
                 result = await _scene_job(pid, uid, sid,
                                           ref=best_scene_reference(project, current, references))
-            except ai.ImageQuotaError as exc:
+            except (ai.ImageQuotaError, ImageServiceError) as exc:
                 for remaining in project["scenes"][index + 1:]:
                     if remaining["id"] in selected:
                         await db.projects.update_one({"id": pid, "scenes.id": remaining["id"]},
@@ -520,19 +663,16 @@ async def _all_scenes_job(pid, uid, ids):
                 break
             generated += 1
             if not result or result[1]:
-                for remaining in project["scenes"][index + 1:]:
-                    if remaining["id"] in selected:
-                        await db.projects.update_one({"id": pid, "scenes.id": remaining["id"]},
-                                                     {"$set": {"scenes.$.status": "pending",
-                                                               "scenes.$.error": "An earlier picture failed. Retry missing pictures after resolving it."}})
-                break
+                # A scene-specific failure must not strand all later pictures.
+                # Continue using the latest successful continuity reference.
+                continue
             references.append((current, result[0]))
     finally:
         try:
             # A cancelled worker must not leave later scenes permanently queued.
             for sid in ids:
                 await db.projects.update_one(
-                    {"id": pid, "scenes": {"$elemMatch": {"id": sid, "status": "queued"}}},
+                    {"id": pid, "scenes": {"$elemMatch": {"id": sid, "status": {"$in": ["queued", "generating"]}}}},
                     {"$set": {"scenes.$.status": "pending",
                                "scenes.$.error": "Generation was interrupted. Retry missing pictures to continue."}})
         finally:
@@ -544,7 +684,7 @@ async def _single_scene_job(pid, uid, sid, instruction=None, ref=None):
     try:
         try:
             await _scene_job(pid, uid, sid, instruction, ref)
-        except ai.ImageQuotaError:
+        except (ai.ImageQuotaError, ImageServiceError):
             pass  # The scene is pending with a clear provider message.
     finally:
         _active_generations.discard(pid)
@@ -574,20 +714,37 @@ async def gen_scenes(pid: str, user=Depends(current_user)):
     if pid in _active_generations:
         raise HTTPException(409, "Wait for the current generation to finish")
     _active_generations.add(pid)
+    token = new_id() if os.environ.get("APP_ENV") == "production" else ""
+    claimed = False
+    dispatch_attempted = False
     try:
+        if token and not await db.projects.claim_scene_job(pid, user["id"], token):
+            raise HTTPException(409, "A scene job is already active")
+        claimed = bool(token)
         await mark_scene_status(pid, ids, "queued")
         await upd(pid, step=max(p.get("step", 1), 4), render={"status": "idle", "progress": 0})
-        spawn(_all_scenes_job(pid, user["id"], ids))
-        await pulse.log_event(user["id"], "scene_generated", p.get("language", ""), p.get("region", ""), project_id=pid)
+        if os.environ.get("APP_ENV") == "production":
+            import cloud_scene_dispatch
+            dispatch_attempted = True
+            await asyncio.to_thread(cloud_scene_dispatch.start, pid, user["id"], "", token)
+        else:
+            spawn(_all_scenes_job(pid, user["id"], ids))
+        await log_noncritical_event(user["id"], "scene_generated", p.get("language", ""), p.get("region", ""), project_id=pid)
     except Exception:
+        if claimed and not dispatch_attempted:
+            await db.projects.release_scene_job(pid, user["id"], token)
+            await mark_scene_status(pid, ids, "pending")
         _active_generations.discard(pid)
         raise
+    if os.environ.get("APP_ENV") == "production":
+        _active_generations.discard(pid)
     return await owned(pid, user)
 
 
 @router.post("/{pid}/scenes/{sid}/regenerate")
 async def regen_scene(pid: str, sid: str, body: EditIn, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
     if not any(s["id"] == sid for s in p["scenes"]):
         raise HTTPException(404, "Scene not found")
     if p.get("render", {}).get("status") == "rendering" or pid in _active_generations or image_batch_active(p["scenes"]):
@@ -596,22 +753,41 @@ async def regen_scene(pid: str, sid: str, body: EditIn, user=Depends(current_use
     if pid in _active_generations:
         raise HTTPException(409, "Wait for the current generation to finish")
     _active_generations.add(pid)
+    token = new_id() if os.environ.get("APP_ENV") == "production" else ""
+    claimed = False
+    dispatch_attempted = False
     try:
+        if token and not await db.projects.claim_scene_job(pid, user["id"], token):
+            raise HTTPException(409, "A scene job is already active")
+        claimed = bool(token)
         ref = None
-        # Only real earlier images make useful continuity references.
-        scene_index = next(i for i, scene in enumerate(p["scenes"]) if scene["id"] == sid)
-        earlier = [s for s in p["scenes"][:scene_index] if s.get("image_path") and not s.get("placeholder")]
-        if earlier:
-            references = [(scene, (await get_object(scene["image_path"]))[0]) for scene in earlier]
-            ref = best_scene_reference(p, p["scenes"][scene_index], references)
-        await mark_scene_status(pid, [sid], "generating")
+        if os.environ.get("APP_ENV") != "production":
+            # Local runs can compute continuity in process. The cloud job recomputes it.
+            scene_index = next(i for i, scene in enumerate(p["scenes"]) if scene["id"] == sid)
+            earlier = [s for s in p["scenes"][:scene_index] if s.get("image_path") and not s.get("placeholder")]
+            if earlier:
+                references = [(scene, (await get_object(scene["image_path"]))[0]) for scene in earlier]
+                ref = best_scene_reference(p, p["scenes"][scene_index], references)
+        await mark_scene_status(pid, [sid], "queued" if os.environ.get("APP_ENV") == "production" else "generating")
         await upd(pid, render={"status": "idle", "progress": 0})
-        spawn(_single_scene_job(pid, user["id"], sid, body.instruction, ref))
+        if os.environ.get("APP_ENV") == "production":
+            import cloud_scene_dispatch
+            await db.projects.update_one({"id": pid, "scenes.id": sid},
+                                         {"$set": {"scenes.$.pending_instruction": body.instruction}})
+            dispatch_attempted = True
+            await asyncio.to_thread(cloud_scene_dispatch.start, pid, user["id"], sid, token)
+        else:
+            spawn(_single_scene_job(pid, user["id"], sid, body.instruction, ref))
     except Exception:
+        if claimed and not dispatch_attempted:
+            await db.projects.release_scene_job(pid, user["id"], token)
+            await mark_scene_status(pid, [sid], "pending")
         _active_generations.discard(pid)
         raise
-    await pulse.log_event(user["id"], "scene_regenerated", p.get("language", ""), p.get("region", ""), project_id=pid)
-    await pulse.log_event(user["id"], "scene_generated", p.get("language", ""), p.get("region", ""), project_id=pid)
+    if os.environ.get("APP_ENV") == "production":
+        _active_generations.discard(pid)
+    await log_noncritical_event(user["id"], "scene_regenerated", p.get("language", ""), p.get("region", ""), project_id=pid)
+    await log_noncritical_event(user["id"], "scene_generated", p.get("language", ""), p.get("region", ""), project_id=pid)
     return await owned(pid, user)
 
 
@@ -627,7 +803,19 @@ async def approve_scene(pid: str, sid: str, user=Depends(current_user)):
         raise HTTPException(404, "Scene not found")
     if scene.get("status") != "ready" or not scene.get("image_path") or scene.get("placeholder"):
         raise HTTPException(400, "Generate a real scene image before approving it")
+    if scene.get("continuity_needs_review"):
+        index = next(i for i, item in enumerate(p["scenes"]) if item["id"] == sid)
+        prior = p["scenes"][:index]
+        if any(not item.get("approved") for item in prior):
+            raise HTTPException(409, "Approve the earlier pictures first so continuity can be checked")
+        refs = [(item, (await get_object(item["image_path"]))[0]) for item in prior if item.get("image_path")]
+        data, mime = await get_object(scene["image_path"])
+        gaps = await ai.audit_scene_image(p, scene, data, mime, best_scene_reference(p, scene, refs))
+        if gaps:
+            raise HTTPException(409, "This picture no longer matches the updated story. Regenerate it: " + "; ".join(gaps))
     await db.projects.update_one({"id": pid, "scenes.id": sid}, {"$set": {"scenes.$.approved": True}})
+    if scene.get("continuity_needs_review"):
+        await db.projects.update_one({"id": pid, "scenes.id": sid}, {"$set": {"scenes.$.continuity_needs_review": False}})
     await upd(pid, render={"status": "idle", "progress": 0})
     return await owned(pid, user)
 
@@ -640,6 +828,7 @@ class SceneTextIn(BaseModel):
 @router.patch("/{pid}/scenes/{sid}")
 async def patch_scene(pid: str, sid: str, body: SceneTextIn, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
     scene = next((s for s in p.get("scenes", []) if s["id"] == sid), None)
     if not scene:
         raise HTTPException(404, "Scene not found")
@@ -662,6 +851,8 @@ async def patch_scene(pid: str, sid: str, body: SceneTextIn, user=Depends(curren
     await db.projects.update_one({"id": pid, "scenes.id": sid}, {"$set": fields})
     if fields:
         current = await owned(pid, user)
+        if any(k in fields for k in ("scenes.$.image_path", "scenes.$.audio_path")):
+            await invalidate_following_pictures(pid, current.get("scenes") or [], sid)
         await upd(pid, script=script_with_scenes(current.get("script"), current.get("scenes") or []),
                   validation=None, approved=False)
     return await owned(pid, user)
@@ -676,6 +867,7 @@ class SceneCreateIn(BaseModel):
 @router.post("/{pid}/scenes")
 async def add_scene(pid: str, body: SceneCreateIn, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
     if p.get("render", {}).get("status") == "rendering" or image_batch_active(p.get("scenes", [])):
         raise HTTPException(409, "Wait for current generation or rendering to finish")
     scenes = list(p.get("scenes") or [])
@@ -718,6 +910,7 @@ async def make_thumbnail(pid: str, body: ThumbnailIn, user=Depends(current_user)
 @router.delete("/{pid}/scenes/{sid}")
 async def remove_scene(pid: str, sid: str, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
     scenes = p.get("scenes") or []
     if not any(s["id"] == sid for s in scenes):
         raise HTTPException(404, "Scene not found")
@@ -733,16 +926,72 @@ async def remove_scene(pid: str, sid: str, user=Depends(current_user)):
 
 
 # ---------- audio ----------
+def audio_caption_status(scenes, captions_on=True):
+    if any(scene.get("caption_error") for scene in scenes):
+        return "failed"
+    if captions_on and any(not scene.get("audio_words") for scene in scenes):
+        return "estimated"
+    return "ready"
+
+
 @router.post("/{pid}/audio/ai")
 async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
+    await owned(pid, user)
+    assert_audio_idle(pid)
+    _active_audio.add(pid)
+    try:
+        return await _audio_ai(pid, body, user)
+    finally:
+        _active_audio.discard(pid)
+
+
+async def _audio_ai(pid, body, user):
     p = await owned(pid, user)
     if (p.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "Wait for the render to finish before replacing narration")
     if not p["scenes"]:
         raise HTTPException(400, "No scenes")
+    import premium_tts
+    selected_provider = (getattr(body, "provider", None) or os.environ.get("TTS_PROVIDER", "edge")).lower()
+    try:
+        premium_estimate = premium_tts.authorize(selected_provider,
+            [scene["narration"] for scene in p["scenes"]], getattr(body, "max_cost_inr", None))
+    except RuntimeError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    def speech_key(scene):
+        selected_provider = getattr(body, "provider", None) or os.environ.get("TTS_PROVIDER", "edge")
+        model_signature = None
+        if selected_provider == "piper":
+            import piper_tts
+            model_signature = piper_tts.model_signature(p.get("language", ""))
+        if selected_provider == "supertonic":
+            import supertonic_tts
+            model_signature = supertonic_tts.model_signature(p.get("language", ""))
+        return hashlib.sha256(json.dumps([scene["narration"], body.voice, body.speed,
+            p.get("language", ""), selected_provider, model_signature], ensure_ascii=False).encode()).hexdigest()
+    stage = "Voice generation"
     async def synthesize(speed, work):
-        clips = await asyncio.gather(*[ai.tts_timed(s["narration"], body.voice, speed, p.get("language", ""))
-                                       for s in p["scenes"]])
+        nonlocal stage
+        slots = asyncio.Semaphore(2)
+        async def speak(scene):
+            async with slots:
+                if scene.get("audio_source_key") == speech_key(scene) and scene.get("audio_path"):
+                    data, _ = await get_object(scene["audio_path"])
+                    return {"audio": data, "words": scene.get("audio_words") or [],
+                            "timing_source": scene.get("caption_timing", "estimated"),
+                            "reused_path": scene["audio_path"]}
+                async def generate():
+                    return await ai.tts_timed(scene["narration"], body.voice, speed, p.get("language", ""),
+                                              provider=getattr(body, "provider", None) or "",
+                                              max_cost_inr=(premium_tts.quote(selected_provider, [scene["narration"]])
+                                                            ["estimated_cost_inr"] if premium_estimate else None))
+                # A failed premium attempt may still be billed. Never retry it silently.
+                return await generate() if premium_estimate else await retry_transient(generate, "Voice generation")
+        # Await every task before releasing the project lock, including on failure.
+        clips = await asyncio.gather(*(speak(s) for s in p["scenes"]), return_exceptions=True)
+        for clip in clips:
+            if isinstance(clip, BaseException):
+                raise clip
         locals_, durations = [], []
         for index, speech in enumerate(clips):
             local = work / f"scene_{index}.mp3"
@@ -752,9 +1001,12 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
                 raise ValueError("Voice provider returned unreadable audio")
             locals_.append(local)
             durations.append(measured)
-        if os.environ.get("TTS_PROVIDER", "edge").lower() == "google_chirp" and p.get("captions_on", True):
+        if (getattr(body, "provider", None) or os.environ.get("TTS_PROVIDER", "edge")).lower() == "google_chirp" and p.get("captions_on", True):
+            stage = "Caption timing"
             slots = asyncio.Semaphore(2)
             async def time_words(index, speech):
+                if speech.get("timing_source") == "cloud_stt" and speech.get("words"):
+                    return
                 async with slots:
                     words = await ai.cloud_word_timestamps(
                         speech["audio"], p.get("language", ""), p["scenes"][index]["narration"])
@@ -762,7 +1014,16 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
                         raise RuntimeError("Cloud word timestamps exceed the narration duration")
                     speech["words"] = words
                     speech["timing_source"] = "cloud_stt"
-            await asyncio.gather(*(time_words(index, speech) for index, speech in enumerate(clips)))
+            timings = await asyncio.gather(*(time_words(index, speech) for index, speech in enumerate(clips)), return_exceptions=True)
+            for index, result in enumerate(timings):
+                if isinstance(result, BaseException):
+                    if not isinstance(result, Exception):
+                        raise result
+                    log.warning("Project %s scene %s: caption timing failed: %s", pid, index + 1, result)
+                    clips[index]["words"] = []
+                    clips[index]["timing_source"] = "unavailable"
+                    clips[index]["caption_error"] = public_failure(result, "Caption timing")
+        stage = "Audio assembly"
         combined = work / "combined.mp3"
         await asyncio.to_thread(render.concat_audio, locals_, combined)
         return clips, durations, combined.read_bytes(), round(await asyncio.to_thread(render.duration, combined), 2)
@@ -775,24 +1036,35 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
             # provider work and often made the delivery sound hurried or stretched.
             clips, durations, combined_data, measured_total = await synthesize(body.speed, work)
     except Exception as e:
-        raise HTTPException(502, f"Voice generation failed: {e}")
+        log.exception("Project %s: %s failed", pid, stage)
+        raise HTTPException(502, {"code": "generation_failed", "message": public_failure(e, stage)})
     current = await owned(pid, user)
     if review_fingerprint(current) != review_fingerprint(p) or (current.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "The story changed while narration was generating. Generate it again for the current scenes.")
     scenes = p["scenes"]
     for s, speech, duration in zip(scenes, clips, durations):
-        s["audio_path"] = await save_media(user["id"], "audio", speech["audio"], "mp3", "audio/mpeg")
+        s["audio_path"] = speech.get("reused_path") or await save_media(user["id"], "audio", speech["audio"], "mp3", "audio/mpeg")
         s["audio_duration"] = duration
         s["audio_captions"] = render.timed_captions(speech["words"], duration) if speech["words"] else []
         s["caption_timing"] = speech["timing_source"]
+        s["audio_source_key"] = speech_key(s)
+        s["audio_words"] = speech["words"]
+        s["caption_error"] = speech.get("caption_error")
+        s["audio_model_id"] = speech.get("model_id") or (s.get("audio_model_id") if speech.get("reused_path") else None)
+        s["audio_synthesis_ms"] = speech.get("synthesis_ms") or (s.get("audio_synthesis_ms") if speech.get("reused_path") else None)
     path = await save_media(user["id"], "audio", combined_data, "mp3", "audio/mpeg")
     # Preserve any image approvals or generation results that arrived while TTS ran.
-    timing = {s["id"]: {k: s[k] for k in ("audio_path", "audio_duration", "audio_captions", "caption_timing")} for s in scenes}
+    timing = {s["id"]: {k: s[k] for k in ("audio_path", "audio_duration", "audio_captions", "caption_timing", "audio_source_key", "audio_words", "caption_error", "audio_model_id", "audio_synthesis_ms")} for s in scenes}
     scenes = [{**s, **timing[s["id"]]} for s in current["scenes"]]
     await upd(pid, scenes=scenes, audio={"mode": "ai", "voice": body.voice, "speed": body.speed,
+                                         "provider": getattr(body, "provider", None) or os.environ.get("TTS_PROVIDER", "edge"),
                                          "requested_speed": body.speed,
                                          "duration_matched": False,
                                          "padded_seconds": 0.0,
+                                         "caption_status": audio_caption_status(scenes, p.get("captions_on", True)),
+                                         "premium_estimate": premium_estimate,
+                                         "premium_reason": "creator_selected_premium" if premium_estimate else None,
+                                         "actual_cost_inr": None,
                                          "path": path, "duration": measured_total},
               render={"status": "idle", "progress": 0}, srt=None, step=max(p.get("step", 1), 6))
     return await owned(pid, user)
@@ -800,6 +1072,16 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
 
 @router.post("/{pid}/audio/upload")
 async def audio_upload(pid: str, file: UploadFile = File(...), mode: str = "upload", user=Depends(current_user)):
+    await owned(pid, user)
+    assert_audio_idle(pid)
+    _active_audio.add(pid)
+    try:
+        return await _audio_upload(pid, file, mode, user)
+    finally:
+        _active_audio.discard(pid)
+
+
+async def _audio_upload(pid, file, mode, user):
     p = await owned(pid, user)
     if (p.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "Wait for the render to finish before replacing narration")
@@ -861,13 +1143,18 @@ async def render_timeline(project, audio_local):
 # ---------- render ----------
 async def _render_job(pid, uid):
     _active_renders.add(pid)
-    p = await db.projects.find_one({"id": pid}, {"_id": 0})
+    p = await db.projects.find_one({"id": pid, "user_id": uid}, {"_id": 0})
+    if not p:
+        _active_renders.discard(pid)
+        raise RuntimeError("Render project is missing or owned by another user")
     lang, scenes, audio = p["language"], p["scenes"], p["audio"]
+    job_meta = {k: (p.get("render") or {})[k] for k in ("claim_token", "queued_at")
+                if k in (p.get("render") or {})}
     work = CACHE / f"render_{pid}_{new_id()}"
     work.mkdir()
 
     async def prog(pct, msg):
-        await upd(pid, render={"status": "rendering", "progress": pct, "message": msg})
+        await upd(pid, render={**job_meta, "status": "rendering", "progress": pct, "message": msg})
     try:
         await prog(5, "Preparing narration")
         audio_local = await cached(audio["path"])
@@ -885,21 +1172,26 @@ async def _render_job(pid, uid):
                     if b - a > 0.15:
                         local_caps.append({"text": c["text"], "start": a - t0, "end": b - t0})
             out = work / f"clip_{i}.mp4"
-            await asyncio.to_thread(render.scene_clip, img, d, local_caps, lang, out, i, work)
+            await asyncio.to_thread(render.scene_clip, img, d, local_caps, lang, out, i, work,
+                                    audio.get("provider") == "supertonic")
             clips.append(out)
             t0 += d
         await prog(90, "Mixing voice + video")
         final = work / "final.mp4"
         await asyncio.to_thread(render.mux, clips, audio_local, final, work)
+        captions = render.srt(caps_all) if caps_all and p.get("captions_on", True) else ""
+        caption_path = await save_media(uid, "captions", captions.encode("utf-8"), "srt", "application/x-subrip") if captions else None
         path = await save_media(uid, "videos", final.read_bytes(), "mp4", "video/mp4")
+        final_duration = round(render.duration(final), 2)
         await upd(pid, render={"status": "done", "progress": 100, "message": "Your video is ready", "video_path": path,
-                               "duration": round(render.duration(final), 2), "rendered_at": now_iso(),
+                               "caption_path": caption_path,
+                               "duration": final_duration, "rendered_at": now_iso(),
                                "caption_timing": caption_timing,
                                "scene_timing": "narration" if audio["mode"] == "ai" else "estimated",
-                               "srt": render.srt(caps_all)},
-                  srt=render.srt(caps_all), step=6)
-        await pulse.log_event(uid, "render_done", lang, p.get("region", ""), project_id=pid,
-                              meta={"duration": round(render.duration(final), 2)})
+                               "srt": captions},
+                  srt=captions, step=6)
+        await log_noncritical_event(uid, "render_done", lang, p.get("region", ""), project_id=pid,
+                                    meta={"duration": final_duration})
     except Exception as e:
         log.exception("render")
         await upd(pid, render={"status": "failed", "progress": 0, "message": str(e)[:300]})
@@ -911,6 +1203,7 @@ async def _render_job(pid, uid):
 @router.post("/{pid}/render")
 async def start_render(pid: str, user=Depends(current_user)):
     p = await owned(pid, user)
+    assert_audio_idle(pid)
     if not p.get("approved") or not review_is_current(p):
         raise HTTPException(400, "Review and approve the current script before rendering")
     if not p.get("audio"):
@@ -928,13 +1221,34 @@ async def start_render(pid: str, user=Depends(current_user)):
         raise HTTPException(409, "Already rendering")
     await check_daily_limit(user, "render_started")
     _active_renders.add(pid)
+    token = new_id() if os.environ.get("APP_ENV") == "production" else ""
+    claimed = False
+    dispatch_attempted = False
     try:
-        await upd(pid, render={"status": "rendering", "progress": 1, "message": "Queued"})
-        spawn(_render_job(pid, user["id"]))
-        await pulse.log_event(user["id"], "render_started", p.get("language", ""), p.get("region", ""), project_id=pid)
+        if token:
+            claimed = await db.projects.claim_render_job(pid, user["id"], token, now_iso())
+            if not claimed:
+                raise HTTPException(409, "A render job is already active")
+        else:
+            await upd(pid, render={"status": "rendering", "progress": 1, "message": "Queued"})
+        if os.environ.get("APP_ENV") == "production":
+            import cloud_render_dispatch
+            dispatch_attempted = True
+            operation = await asyncio.to_thread(cloud_render_dispatch.start, pid, user["id"], token)
+            log.info("Queued cloud render for project %s as %s", pid, operation)
+        else:
+            spawn(_render_job(pid, user["id"]))
+        await log_noncritical_event(user["id"], "render_started", p.get("language", ""), p.get("region", ""), project_id=pid)
     except Exception:
+        if claimed and not dispatch_attempted:
+            await db.projects.fail_render_claim(pid, user["id"], token)
+        elif not token:
+            await upd(pid, render={"status": "failed", "progress": 0,
+                                   "message": "Could not queue render. Please retry."})
         _active_renders.discard(pid)
         raise
+    if os.environ.get("APP_ENV") == "production":
+        _active_renders.discard(pid)
     return await owned(pid, user)
 
 

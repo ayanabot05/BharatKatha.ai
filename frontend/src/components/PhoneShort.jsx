@@ -29,8 +29,8 @@ export default function PhoneShort({ className = "" }) {
   return (
     <div ref={ref} className={`relative ${className}`} data-testid="hero-phone">
       <div className="absolute -inset-6 rounded-[3rem] bg-rose-300/35 blur-2xl" />
-      <div className="relative w-[220px] sm:w-[300px] aspect-[9/19] rounded-[2.6rem] bg-[#e7efe7] p-2.5 shadow-2xl ring-1 ring-[#c4d8c9]">
-        <div className="relative h-full w-full rounded-[2.1rem] overflow-hidden bg-[#e7efe7]">
+      <div className="relative flex flex-col w-[220px] sm:w-[300px] aspect-[9/19] rounded-[2.6rem] bg-[#e7efe7] p-2.5 shadow-2xl ring-1 ring-[#c4d8c9]">
+        <div data-testid="hero-phone-screen" className=" absolute inset-2.5 rounded-[2.1rem] overflow-hidden bg-[#29443e]">
           <img key={i} src={s.img} alt="AI scene" className="absolute inset-0 h-full w-full object-cover kenburns" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#29443e]/50 via-transparent to-[#29443e]/70" />
           <div className="absolute top-3 inset-x-3 flex gap-1">

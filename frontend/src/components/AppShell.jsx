@@ -12,7 +12,7 @@ export const Logo = ({ light = false }) => (
       <Clapperboard size={18} className="text-white" />
     </div>
     <div className="leading-tight">
-      <div className={`font-display text-lg font-extrabold tracking-tight ${light ? "text-[#4a3f58]" : "text-white"}`}>VidBharat</div>
+      <div className={`font-display text-lg font-extrabold tracking-tight ${light ? "text-[#4a3f58]" : "text-white"}`}>BharatKatha</div>
       <div className={`text-[9px] uppercase tracking-[0.25em] font-mono ${light ? "text-[#8a7a86]" : "text-rose-100"}`}>AI Video Studio</div>
     </div>
   </div>
@@ -57,10 +57,10 @@ export default function AppShell({ children }) {
         <div className="relative mt-auto space-y-3">
           <div className="flex items-center gap-2.5 rounded-2xl bg-white/70 border border-[#f0dfd8] p-3">
             <RamAvatar state="idle" size={34} />
-            <div className="leading-tight"><div className="text-xs font-bold text-[#a23f58]">Ram AI</div><div className="text-[11px] text-[#7b7083]">Ready for your next story</div></div>
+            <div className="leading-tight"><div className="text-xs font-bold text-[#a23f58]">Ram AI</div><div className="text-[11px] text-[#7b7083]"> {t("Ready for your next story")} </div></div>
           </div>
           <div className="flex items-center justify-between px-1 text-xs text-[#7b7083]">
-            <span className="flex items-center gap-1"><Globe size={13} /> UI</span>
+            <span className="flex items-center gap-1"><Globe size={13} /> {t("UI")} </span>
             <select aria-label={t("language")} data-testid="ui-lang-switcher" value={locale} onChange={(e) => changeLocale(e.target.value)} className="max-w-32 rounded-lg bg-white px-2 py-1.5 text-xs font-semibold text-[#4a3f58] border border-[#f0dfd8]">
               {UI_LANGUAGES.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
             </select>
@@ -68,7 +68,7 @@ export default function AppShell({ children }) {
           <div className="rounded-2xl border border-[#f0dfd8] bg-white p-4">
             <div className="text-sm font-semibold text-[#4a3f58] truncate" data-testid="sidebar-user-name">{user?.name}</div>
             <div className="text-xs text-[#7b7083] truncate">{user?.email}</div>
-            <div className="mt-2 inline-flex rounded-full bg-[#fdeee3] text-[#a2603f] border border-[#f3d9c5] px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider" data-testid="sidebar-plan">{user?.plan} plan</div>
+            <div className="mt-2 inline-flex rounded-full bg-[#fdeee3] text-[#a2603f] border border-[#f3d9c5] px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider" data-testid="sidebar-plan">{t(user?.plan || "free")} {t("plan")}</div>
             <button data-testid="logout-btn" onClick={logout} className="mt-3 flex items-center gap-2 text-sm text-[#7b7083] hover:text-[#a23f58] transition-colors">
               <LogOut size={14} /> {t("sign_out")}
             </button>

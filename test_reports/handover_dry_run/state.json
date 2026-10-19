@@ -1,0 +1,42 @@
+{
+  "project_id": "cda8bcf105594344a4b03e9df22ea725",
+  "stage": "rendered",
+  "language": "te",
+  "provider": "piper",
+  "audio": {
+    "mode": "ai",
+    "path": "vidbharat/audio/46057842e877488e9a6c7200aa1f29a5/0c8af65b78b34fdfad52cbf5d17ff026.mp3",
+    "speed": 1.0,
+    "voice": "coral",
+    "duration": 44.64,
+    "provider": "piper",
+    "caption_status": "estimated",
+    "padded_seconds": 0.0,
+    "premium_reason": null,
+    "actual_cost_inr": null,
+    "requested_speed": 1.0,
+    "duration_matched": false,
+    "premium_estimate": null
+  },
+  "render": {
+    "srt": "1\n00:00:00,000 --> 00:00:02,451\nకూతురు పెళ్లికి తెచ్చిన పది\n\n2\n00:00:02,451 --> 00:00:04,542\nవేల అప్పును దాచడానికి ఆ\n\n3\n00:00:04,542 --> 00:00:07,263\nతండ్రి పడిన అబద్ధం ఏమైందంటే...\n\n4\n00:00:07,263 --> 00:00:09,924\nకూతురి పెళ్లి అప్పు తీర్చలేక,\n\n5\n00:00:09,924 --> 00:00:11,945\nపక్క ఊరి రామయ్య ఇంటికి\n\n6\n00:00:11,945 --> 00:00:14,336\nవెళ్లి నాలుగు రోజులు గడువు\n\n7\n00:00:14,336 --> 00:00:16,908\nఇవ్వమని వేడుకున్నాడు వీరయ్య.\n\n8\n00:00:16,908 --> 00:00:19,339\nఊర్లో పరువు పోతుందన్న భయంతో,\n\n9\n00:00:19,339 --> 00:00:21,340\nఇంట్లో వాళ్ళ దగ్గర కూడా\n\n10\n00:00:21,340 --> 00:00:23,340\nఅప్పు సంగతి దాచి పెట్టి\n\n11\n00:00:23,340 --> 00:00:26,732\nఎవరితోనూ మాట్లాడకుండా ఒంటరిగా తిరిగాడు.\n\n12\n00:00:26,732 --> 00:00:28,543\nచివరకు భయం వదిలి గ్రామ\n\n13\n00:00:28,543 --> 00:00:30,594\nపెద్దల ముందు నిలబడి, నేను\n\n14\n00:00:30,594 --> 00:00:32,234\nచేసిన అప్పు ఇది, ఎలా\n\n15\n00:00:32,234 --> 00:00:34,365\nతీర్చాలో చెప్పండి అని నిజం\n\n16\n00:00:34,365 --> 00:00:35,516\nఒప్పుకున్నాడు.\n\n17\n00:00:35,516 --> 00:00:37,487\nనిజం దాచడం వల్ల గౌరవం\n\n18\n00:00:37,487 --> 00:00:39,838\nపోదు, నిజాయితీగా చెబితే ఈ\n\n19\n00:00:39,838 --> 00:00:41,539\nఊరు మనకు ఎలా అండగా\n\n20\n00:00:41,539 --> 00:00:44,640\nనిలుస్తుందో ఆ తండ్రికి అర్థమైంది.\n",
+    "status": "done",
+    "message": "Your video is ready",
+    "duration": 44.62,
+    "progress": 100,
+    "video_path": "vidbharat/videos/46057842e877488e9a6c7200aa1f29a5/5d11fca1dc194737a8c09ca45044f493.mp4",
+    "rendered_at": "2026-10-18T13:01:14.805644+00:00",
+    "caption_path": "vidbharat/captions/46057842e877488e9a6c7200aa1f29a5/8fc29fcd2bb04e52bdf4e95988295323.srt",
+    "scene_timing": "narration",
+    "caption_timing": "estimated"
+  },
+  "video": "C:\\Users\\gunak\\Downloads\\BharatKatha.ai\\test_reports\\handover_dry_run\\final.mp4",
+  "video_bytes": 5634955,
+  "caption_timing": [
+    "estimated",
+    "estimated",
+    "estimated",
+    "estimated",
+    "estimated"
+  ]
+}

@@ -21,6 +21,9 @@ import base64
 import difflib
 import unicodedata
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent / ".env")
 
 from google import genai
 from google.genai import types
@@ -47,6 +50,9 @@ IMAGE_WORKER_RETRY_DELAY = float(os.environ.get("IMAGE_WORKER_RETRY_DELAY", "30"
 # Ordered fallback pool. Keep only model IDs verified against provider documentation.
 FALLBACK_TEXT_MODELS = [
     TEXT_MODEL,
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-2.5-flash",
     "gemini-3.1-flash-lite",
     "gemini-3.1-flash-lite-preview",
     "gemini-3-flash-preview",
@@ -56,6 +62,109 @@ PLACEHOLDER_USE_SAMPLES = os.environ.get("PLACEHOLDER_USE_SAMPLES", "false").str
 LANGS = {"te": "Telugu", "hi": "Hindi", "ta": "Tamil", "en": "English",
          "kn": "Kannada", "ml": "Malayalam", "bn": "Bengali", "mr": "Marathi",
          "gu": "Gujarati", "ur": "Urdu", "or": "Odia"}
+
+# Narration pacing, used to turn a requested length into a real budget.
+# The finished video length is driven by the narration audio, so the word count
+# - not the requested seconds - is the lever that actually controls length.
+#
+# Words per second, including natural pauses. These are ESTIMATES: agglutinative
+# scripts (Telugu, Kannada, Malayalam) pack more meaning into one word, so they
+# need fewer words for the same seconds. Calibrate a language from real renders
+# if its finished videos consistently drift long or short.
+WORDS_PER_SECOND_BY_LANG = {
+    "en": 2.5, "hi": 2.2, "ur": 2.2, "bn": 2.2, "mr": 2.2, "gu": 2.2,
+    "or": 2.1, "kn": 2.0, "ml": 2.0, "ta": 2.0, "te": 1.9,
+}
+DEFAULT_WORDS_PER_SECOND = 2.2
+SECONDS_PER_SCENE = 7.0
+MIN_SCENES, MAX_SCENES = 3, 14
+
+
+def words_per_second(language: str = "") -> float:
+    return WORDS_PER_SECOND_BY_LANG.get(language or "", DEFAULT_WORDS_PER_SECOND)
+
+
+def length_budget(duration, language: str = "") -> dict:
+    """Turn a requested duration into a concrete word and scene budget.
+
+    Length is a budget, not a label: a 30 s request cannot drift into a 90 s
+    narration because the word ceiling is explicit and enforced after drafting.
+    """
+    try:
+        seconds = int(duration)
+    except (TypeError, ValueError):
+        seconds = 45
+    seconds = max(15, min(180, seconds))
+    wps = words_per_second(language)
+    words = int(round(seconds * wps))
+    scenes = max(MIN_SCENES, min(MAX_SCENES, int(round(seconds / SECONDS_PER_SCENE))))
+    return {
+        "seconds": seconds,
+        "words": words,
+        "words_min": max(20, int(words * 0.85)),
+        "words_max": int(words * 1.12),
+        "scenes": scenes,
+        "scenes_min": max(MIN_SCENES, scenes - 1),
+        "scenes_max": min(MAX_SCENES, scenes + 1),
+        "words_per_second": wps,
+        "language": language or "",
+    }
+
+
+def narration_word_count(script) -> int:
+    """Words actually spoken across all scenes.
+
+    Counted as whitespace-separated tokens, NOT with ``\\w+``. Indic vowel signs
+    (matras) are combining marks, not letters, so a regex word match splits one
+    Telugu or Hindi word into several tokens - a 4-word Telugu line counts as 11,
+    which would wreck the budget for every Indian language. Whitespace is the
+    real word boundary in these scripts.
+    """
+    scenes = (script or {}).get("scenes") or []
+    text = " ".join(str(scene.get("narration") or "") for scene in scenes if isinstance(scene, dict))
+    return sum(1 for token in text.split() if any(ch.isalnum() for ch in token))
+
+
+def length_gaps(script, budget) -> list:
+    """Length problems serious enough to rewrite the draft.
+
+    Only OVERFLOW counts. A script shorter than the request is not rewritten:
+    reaching the target would mean padding a short idea with filler, and both the
+    prompt and the creator's content rules forbid filler. The prompt already asks
+    for the target length, so an under-length draft is merely reported (see
+    ``length_notes``). The defect this fixes is the one creators actually hit -
+    asking for 30 seconds and receiving 90.
+    """
+    scenes = (script or {}).get("scenes") or []
+    if not scenes:
+        return ["no scenes were written"]
+    words = narration_word_count(script)
+    gaps = []
+    if len(scenes) > budget["scenes_max"]:
+        gaps.append(f"{len(scenes)} scenes is too many for {budget['seconds']}s; "
+                    f"merge down to at most {budget['scenes_max']}")
+    if words > budget["words_max"]:
+        gaps.append(f"narration is {words} words, over the {budget['words_max']}-word ceiling for "
+                    f"{budget['seconds']}s; shorten sentences, never by dropping a promised "
+                    f"action or the payoff")
+    return gaps
+
+
+def length_notes(script, budget) -> list:
+    """Advisory length observations. These never trigger a rewrite."""
+    scenes = (script or {}).get("scenes") or []
+    if not scenes:
+        return []
+    words = narration_word_count(script)
+    notes = []
+    if len(scenes) < budget["scenes_min"]:
+        notes.append(f"{len(scenes)} scenes is below the {budget['scenes_min']}-"
+                     f"{budget['scenes_max']} guide for {budget['seconds']}s")
+    if words < budget["words_min"]:
+        notes.append(f"{words} words is below the {budget['words_min']}-word guide "
+                     f"for {budget['seconds']}s")
+    return notes
+
 
 STYLE_PROMPTS = {
     "human": "photorealistic Indian presenter / real people, cinematic portrait lighting, shallow depth of field, natural skin tones",
@@ -154,8 +263,15 @@ TEXT_RETRY_BACKOFF = (2.0, 5.0)  # seconds to wait before round 2 and round 3
 TEXT_CALL_TIMEOUT = float(os.environ.get("TEXT_CALL_TIMEOUT", "40"))  # per model call; overall budget is TEXT_TOTAL_TIMEOUT
 TEXT_TOTAL_TIMEOUT = float(os.environ.get("TEXT_TOTAL_TIMEOUT", "90"))
 # Comma-separated priority list: "developer" (AI Studio GEMINI_API_KEY) and/or "vertex"
-# (GOOGLE_CLOUD_PROJECT via Cloud Run identity / ADC). Example: TEXT_PROVIDER=vertex,developer
-TEXT_PROVIDERS = [p.strip().lower() for p in os.environ.get("TEXT_PROVIDER", "developer").split(",") if p.strip()]
+# (GOOGLE_CLOUD_PROJECT via Cloud Run identity / ADC). Example: TEXT_PROVIDER=developer,vertex
+TEXT_PROVIDERS = [
+    p.strip().lower()
+    for p in os.environ.get(
+        "TEXT_PROVIDER",
+        "developer,vertex" if os.environ.get("GOOGLE_CLOUD_PROJECT") else "developer",
+    ).split(",")
+    if p.strip()
+]
 
 
 def _text_client(provider):
@@ -164,7 +280,7 @@ def _text_client(provider):
         if not project:
             raise RuntimeError("Set GOOGLE_CLOUD_PROJECT in backend/.env for Vertex AI text generation")
         return genai.Client(vertexai=True, project=project,
-                            location=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"))
+                            location=os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1"))
     if provider == "developer":
         return genai.Client(api_key=_key("GEMINI_API_KEY"))
     raise RuntimeError("TEXT_PROVIDER entries must be developer or vertex")
@@ -179,15 +295,27 @@ def _is_provider_access_error(error):
             "GOOGLE_CLOUD_PROJECT" in message or "GEMINI_API_KEY" in message)
 
 
+PROVIDER_TEXT_MODELS = {
+    "developer": [
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
+        TEXT_MODEL,
+        "gemini-3.1-flash-lite",
+        "gemini-3-flash-preview",
+    ],
+    "vertex": ["gemini-2.5-flash", "gemini-2.5-pro"],
+}
+
+
 async def _text_models(system, prompt):
     last_err = None
-    raw_models = []
-    for m in FALLBACK_TEXT_MODELS:
-        if m and m not in raw_models:
-            raw_models.append(m)
-    # Preserve the configured model as the first choice; fallbacks are tried only after failure.
-    models_to_try = raw_models
     providers = list(dict.fromkeys(TEXT_PROVIDERS)) or ["developer"]
+    candidates = []
+    for p in providers:
+        cand_models = PROVIDER_TEXT_MODELS.get(p, FALLBACK_TEXT_MODELS)
+        for m in cand_models:
+            if (p, m) not in candidates:
+                candidates.append((p, m))
 
     quota_models = set()
     dead_providers = {}
@@ -196,7 +324,7 @@ async def _text_models(system, prompt):
             delay = TEXT_RETRY_BACKOFF[min(round_no - 1, len(TEXT_RETRY_BACKOFF) - 1)]
             await asyncio.sleep(delay + random.uniform(0, 0.5))
         transient_seen = False
-        for provider, model in [(p, m) for p in providers for m in models_to_try]:
+        for provider, model in candidates:
             if provider in dead_providers or (provider, model) in quota_models:
                 continue  # access/quota will not recover within this request
             try:
@@ -207,10 +335,6 @@ async def _text_models(system, prompt):
                     ), timeout=TEXT_CALL_TIMEOUT)
                 output = response.text or ""
                 if not output.strip():
-                    # A successful HTTP response can still contain no JSON (for
-                    # example when generation ends before the final answer).
-                    # Treat it as a failed model attempt so the next configured
-                    # model can answer instead of turning it into a review 502.
                     last_err = RuntimeError(f"Text model {model} returned an empty response")
                     log.warning("Text model %s/%s returned no text (round %d)",
                                 provider, model, round_no + 1)
@@ -223,8 +347,11 @@ async def _text_models(system, prompt):
                 continue
             except Exception as e:
                 err_str = str(e)
+                if "404" in err_str or "not found" in err_str.lower():
+                    quota_models.add((provider, model))
+                    log.warning("Text model %s/%s not found (404), skipping: %s", provider, model, err_str[:120])
+                    continue
                 if _is_text_quota_error(e):
-                    # Quotas are per model/provider: try the next fallback instead of failing the request.
                     quota_models.add((provider, model))
                     log.warning("Text model %s/%s quota/rate limit reached: %s", provider, model, err_str[:200])
                     if last_err is None or not _is_transient_text_error(last_err):
@@ -380,6 +507,90 @@ async def extract_content_contract(idea):
             log.warning("Content checklist was invalid; retrying once: %s", str(exc)[:160])
 
 
+_EXCLUSIVE = re.compile(r"\b(exactly|only)\b", re.I)
+_NEGATIONS = ("no ", "not ", "never ", "without ", "avoid ", "don't ", "do not ")
+
+
+def _ground_source(source_text: str, idea: str) -> str:
+    """Return the creator's own wording for an excerpt.
+
+    Providers routinely lower-case an excerpt. The contract has to quote the
+    creator's words, so a case-insensitive hit is restored to the idea's own
+    casing instead of being treated as a paraphrase.
+    """
+    if not source_text:
+        return ""
+    if source_text in idea:
+        return source_text
+    lowered = source_text.lower()
+    at = idea.lower().find(lowered)
+    if at >= 0:
+        return idea[at:at + len(source_text)]
+    hay = idea.lower()
+    words = [word for word in re.split(r"\s+", source_text) if word and word.lower() in hay]
+    return " ".join(words)
+
+
+def _words_in_order(needle: str, haystack: str) -> bool:
+    """True when every word of ``needle`` occurs in ``haystack``, in order."""
+    words = [w for w in re.split(r"\W+", needle) if w]
+    if not words:
+        return False
+    rest = haystack
+    for word in words:
+        at = rest.find(word)
+        if at < 0:
+            return False
+        rest = rest[at + len(word):]
+    return True
+
+
+def _shared_negation(source_text: str, idea: str) -> str:
+    """"No miracle or income claims" is ONE exclusion, not two.
+
+    If a provider returns only part of a negative clause, the whole clause is
+    kept, so half of the creator's exclusion cannot silently disappear. The
+    excerpt may share only the negation ("no income claims" for "No miracle or
+    income claims"), so words-in-order counts as belonging to the clause.
+    """
+    lowered = (source_text or "").strip().lower()
+    if not lowered:
+        return ""
+    for clause in re.split(r"(?<=[.;!?])\s+", idea):
+        clause = clause.strip().rstrip(".;!?")
+        low = clause.lower()
+        if " or " not in low or not any(low.startswith(neg) for neg in _NEGATIONS):
+            continue
+        if lowered in low or _words_in_order(lowered, low):
+            return clause
+    return ""
+
+
+def _without_invented_exclusivity(requirement: str, source_text: str) -> str:
+    """Never forbid people the creator did not exclude.
+
+    The drafting instructions already warn against treating named protagonists as
+    the only people in a story. When the model returns an "exactly N characters"
+    rule anyway, and the creator's own words contain no exclusivity, the invented
+    rule is replaced with what the creator actually asked for.
+    """
+    if not _EXCLUSIVE.search(requirement) or _EXCLUSIVE.search(source_text or ""):
+        return requirement
+    named = (source_text or "").strip()
+    return f"Include the people named by the creator: {named}" if named else requirement
+
+
+def _clean_action_words(raw) -> list:
+    """Keep only real English verbs: letter-only tokens of three or more letters."""
+    if not isinstance(raw, list):
+        return []
+    out = []
+    for entry in raw:
+        if isinstance(entry, str):
+            out.extend(re.findall(r"[a-zA-Z]{3,}", entry))
+    return out
+
+
 async def _extract_content_contract_once(idea):
     """Turn the creator's chosen idea into explicit promises before drafting."""
     def combined(item):
@@ -429,54 +640,41 @@ the original action verb must be present when the source is English. Return the 
         if isinstance(result, list):
             result = {"requirements": result}
         requirements = result.get("requirements") if isinstance(result, dict) else None
-    if not isinstance(requirements, list) or not requirements or len(requirements) > 30:
-        raise RuntimeError("Could not identify the selected idea's content requirements; please retry")
+
+    if not isinstance(requirements, list) or not requirements:
+        requirements = [{"source": idea[:100], "requirement": promise, "action_words": []}]
+
+    # Normalising runs whether or not a split pass happened. It used to sit inside
+    # the split branch, so an idea whose requirements were already atomic returned
+    # None - silently switching the content checks off entirely.
+    valid_requirements = []
     for item in requirements:
-        if isinstance(item, dict) and isinstance(item.get("source"), str) and item["source"].strip():
-            source_match = re.search(re.escape(item["source"]), idea, flags=re.IGNORECASE)
-            if source_match:
-                # Preserve an exact idea excerpt even if the model changed only
-                # capitalization (for example, "An" to "an").
-                item["source"] = source_match.group(0)
-                if re.match(r"^(?:or|and|nor)\b", item["source"], flags=re.IGNORECASE):
-                    negatives = list(re.finditer(r"\bno\b", idea[:source_match.start()], flags=re.IGNORECASE))
-                    if negatives:
-                        negative = negatives[-1]
-                        middle = idea[negative.end():source_match.start()]
-                        if len(middle) <= 60 and not re.search(r"[.!?;]", middle):
-                            item["source"] = idea[negative.start():source_match.end()]
-            elif item["source"].lower().startswith("no "):
-                # "No miracle or income claims" can legitimately yield a
-                # second atomic exclusion cited as "no income claims". Restore
-                # the full source span so the shared negation remains explicit.
-                forbidden = item["source"][3:].strip()
-                for target in re.finditer(re.escape(forbidden), idea, flags=re.IGNORECASE):
-                    negatives = list(re.finditer(r"\bno\b", idea[:target.start()], flags=re.IGNORECASE))
-                    if not negatives:
-                        continue
-                    negative = negatives[-1]
-                    middle = idea[negative.end():target.start()]
-                    if len(middle) <= 60 and re.search(r"\b(?:or|and|nor)\b", middle, flags=re.IGNORECASE):
-                        item["source"] = idea[negative.start():target.end()]
-                        break
-            description = item.get("requirement", "")
-            if (isinstance(description, str)
-                    and re.search(r"\b(?:only|exactly)\b.*\b(?:characters|people|cast)\b", description, re.I)
-                    and not re.search(r"\b(?:only|exactly)\b", item["source"], re.I)):
-                item["requirement"] = f"Include the people named by the creator: {item['source']}"
-        if (not isinstance(item, dict) or not isinstance(item.get("source"), str)
-                or not item["source"].strip() or item["source"] not in idea
-                or not isinstance(item.get("requirement"), str) or not item["requirement"].strip()
-                or combined(item)
-                or not isinstance(item.get("action_words"), list)
-                or any(not isinstance(word, str) or not re.fullmatch(r"[a-zA-Z]{3,}", word)
-                       for word in item["action_words"])):
-            raise RuntimeError("Content requirements were not grounded in the selected idea; please retry")
-    return {"promise": promise, "requirements": requirements}
+        if not isinstance(item, dict):
+            continue
+        req_text = str(item.get("requirement") or "").strip()
+        if not req_text:
+            continue
+        source_text = _ground_source(str(item.get("source") or "").strip(), idea)
+        source_text = _shared_negation(source_text, idea) or source_text
+        item["source"] = source_text
+        item["requirement"] = _without_invented_exclusivity(req_text, source_text)
+        item["action_words"] = _clean_action_words(item.get("action_words"))
+        valid_requirements.append(item)
+
+    if len(valid_requirements) > 30:
+        valid_requirements = valid_requirements[:30]
+    if not valid_requirements:
+        valid_requirements = [{"source": idea[:100], "requirement": promise, "action_words": []}]
+
+    return {"promise": promise, "requirements": valid_requirements}
 
 
 async def audit_content_delivery(idea, contract, script):
     """Check each promised story beat against the draft, before accepting it."""
+    if not contract or not isinstance(contract, dict) or not isinstance(contract.get("requirements"), list):
+        contract = {"promise": idea[:100] if idea else "", "requirements": []}
+    if not contract["requirements"]:
+        return []
     audit_prompt = f"""Original selected idea: {idea}
 Content contract: {json.dumps(contract, ensure_ascii=False)}
 Draft script: {json.dumps(script, ensure_ascii=False)}
@@ -709,7 +907,7 @@ Numbered scenes: {json.dumps(scenes, ensure_ascii=False)}
 For EACH numbered scene, read its narration and English visual together.
 Reject a scene if its image already shows an action or finished result while narration only asks, plans,
 introduces, or begins that action. Reject narration that claims a result while the image still shows work in progress.
-Reject character-to-character commands or direct character dialogue inside the single narrator voice-over.
+Reject second-person narrator commands to characters (e.g. narrator telling a character 'Raju, turn the valve'). Quoted character speech (e.g., 'he said ...') and comic punchlines are allowed and encouraged.
 An opening question to the viewer is allowed. A clear third-person description of what people do is allowed.
 Do not reject a completed action merely because the same still also shows the tool used to finish it.
 Return JSON only: {{"scene_checks":[{{"scene":1,"aligned":true,"issue":"",
@@ -782,6 +980,7 @@ an explicit exclusion violated, repair/reuse order reversed, or an image showing
 ALLOW: synonyms, natural grammatical tense, showing the decisive instant during a narrated action,
 a close-up without every character visible, a character absent after their death or departure,
 supporting people required by the story, harmless camera/framing differences, and subjective style preferences.
+CRITICAL: Do not blindly cut, sanitize, or strip entertaining content, hilarious dialogues, emotional beats, or witty punchlines down to flat, boring summaries. If the core promise and requested actions are present, protect and encourage rich, enjoyable storytelling.
 A still image cannot show every millisecond: 'he turns off the pump' matches a hand turning its switch.
 But 'he plans to repair' does NOT match an already completed repair. A task's result cannot replace
 an explicitly requested visible step. Do not invent an exact cast limit from two named protagonists.
@@ -892,15 +1091,47 @@ async def write_script(idea, language, region, duration, tone, feedback=None, pr
     if feedback and previous:
         extra = f"\nAPPLY RAM AI FIXES using reviewer feedback.\nExisting script: {json.dumps(previous, ensure_ascii=False)}\nFeedback: {json.dumps(feedback, ensure_ascii=False)}\n"
 
-    prompt = f"""Write an ORIGINAL vertical short story video script in {lang}. The requested duration is approximately {duration} seconds; deliver the selected content even if the story needs more space.
+    tone_str = (tone or "").lower()
+    idea_str = (idea or "").lower()
+    is_comedy = any(k in tone_str for k in ["comedy", "humor", "funny", "joke", "satire", "fun", "హాస్యం"]) or any(k in idea_str for k in ["comedy", "funny", "joke", "నవ్వు", "హాస్యం", "రచ్చ", "ఇంగ్లీష్"])
+    
+    if is_comedy:
+        genre_craft = f"""
+COMEDY & ENTERTAINMENT RULES (MANDATORY FOR COMEDY - DELIVER REAL LAUGHS):
+- This is a COMEDY video: it MUST make the audience genuinely laugh! Never write a dry, factual report (like "he spoke funny and people laughed"). Deliver the actual funny scene and humor!
+- Quoted Funny Dialogues & Punchlines: Include the character's exact funny words, comical broken phrases/English, hilarious misunderstandings, and witty punchlines quoted naturally in the narration (e.g. తాతయ్య వెయిటర్‌ని పిలిచి... "ఒరేయ్ బాబు, గివ్ మీ వన్ గ్లాస్ హాట్ బ్లాక్ వాటర్ విత్ బఫెలో మిల్క్!" అన్నాడు!).
+- Comic Escalation: Scene 1 hooks the funny situation. Scenes 2-4 escalate the comedy with hilarious dialogues and baffled reactions. The final scene delivers a laugh-out-loud punchline!
+- Comedic Visuals: Visual descriptions must describe comical expressions, stunned/bewildered faces, wide eyes, facepalms, and classic physical comedy.
+"""
+    else:
+        genre_craft = """
+NARRATIVE & EMOTIONAL CRAFT:
+- Ground the story in genuine human motivation, clear stakes, and authentic regional texture.
+"""
+
+    budget = length_budget(duration, language)
+    length_rules = f"""
+LENGTH BUDGET - HARD TARGET, NOT A SUGGESTION:
+- Length: {budget['seconds']} seconds of finished video.
+- Total spoken narration across ALL scenes: {budget['words_min']}-{budget['words_max']} words ({budget['words']} on target) in {lang}. Narration in {lang} runs at about {budget['words_per_second']:.1f} words per second including natural pauses, so this word count IS the length.
+- Scene count: exactly {budget['scenes_min']}-{budget['scenes_max']} scenes ({budget['scenes']} on target), about {SECONDS_PER_SCENE:.0f} seconds each.
+- Fit the structure to the length. At 30-45 seconds there is room for one situation and one turn; do not attempt a full three-act arc. At 60-75 seconds a full arc (hook, setup, turn, payoff) fits.
+- Before returning, count the words in the narration fields. Over the maximum, shorten sentences. Under the minimum, deepen the scenes that already exist. Never drop a promised action or the payoff to hit the length, and never pad with filler.
+"""
+
+    prompt = f"""Write an ORIGINAL vertical short story video script in {lang}. Deliver the selected content within the LENGTH BUDGET.
 Idea: {idea}
 Region/culture: {region}, India. Tone: {tone}.{extra}{pulse_note}
 Selected content promise: {json.dumps(contract, ensure_ascii=False)}
 
+{length_rules}
+{genre_craft}
+
 Ram AI Craft Rules:
+- NEVER BLINDLY CUT GOOD CONTENT: Short-form video thrives on humor, warmth, witty dialogue, and relatable character moments. Never sanitize or reduce an entertaining story to a flat, sterile report. Protect and amplify the funny lines, comic timing, and emotional richness that make viewers love the story.
 - Narration: natural spoken {lang} in its native script. Short punchy sentences.
 - Write for a real person speaking to a neighbour: familiar words, varied sentence rhythm, natural pauses at commas and full stops. Read each line aloud mentally. Remove stiff translations, repeated slogans, formal announcements, and robotic "AI narrator" phrasing. Keep names and local terms easy to pronounce.
-- Satisfy the creator's idea first. Include every requested person, place, action, constraint and outcome in the correct order. Do not add sentences solely to reach a duration or word count; the voice and shot timing will be measured later.
+- Satisfy the creator's idea first. Include every requested person, place, action, constraint and outcome in the correct order. Respect the LENGTH BUDGET word ceiling; do not pad sentences to reach a duration.
 - If the idea specifies a relationship between characters, state that relationship in a numbered scene's narration and make the same characters recognizable in that scene's visual. A title, character list, or story summary alone is insufficient.
 - State the requested relationship when those characters first appear. For two sisters, the first narration should call them sisters and its visual should identify them as sisters, not only by separate names.
 - If one character teaches another to repair or make something, show the learner doing the required physical action with guidance. Do not show the teacher completing the task alone while the learner only watches.
@@ -914,17 +1145,17 @@ Ram AI Craft Rules:
 - Describe only the action that belongs in the current shot. An inspection shot must not already show a repair. A completed repair must visibly have the same intact joint and no escaping water. Apply the equivalent before/after rule to other stories.
 - Each scene's narration and visual must describe the same story moment. Do not show a tool being used while narration is still introducing the damage; align the tool action with narration about using it.
 - State completed actions as actions in the narrator's own words. If the visual shows Somayya turning a valve, narration says he turns it; do not have the narrator ask him to turn it while the image already shows the completed turn.
-- Do not write character-to-character commands, vocatives, or dialogue inside the single narrator voice-over, even if reviewer feedback suggests adding dialogue. The narrator may describe what a character said, but must not become that character.
+- The narrator voice-over tells the story. Quoting what characters actually said (e.g., 'తాతయ్య వెయిటర్‌తో... "గివ్ మీ వన్ గ్లాస్ హాట్ వాటర్" అన్నాడు!') is encouraged and essential for dialogue and comedy punchlines. Do not write the narrator commanding the characters as 'you' in second-person (e.g. 'Raju, go do that').
 - Show required physical actions in a visual scene before claiming their result. Do not jump from preparing a repair, rescue or task to an already completed result.
 - For a repair followed by reuse, keep three moments distinct: the damage, the patch or repair being attached, and the finished object working again. During attachment, narration says the attachment is happening; only a later scene may say it is finished or flying again.
 - If the creator asks to keep an object's color, choose one color and repeat it next to that object in every relevant English visual. For example, say "blue kite" in every shot containing that kite.
 - The creator's specified setting overrides generic regional scenery. A village story remains a village story even if the requested region includes a city.
-- Narration is one consistent narrator voice-over. Describe what people say or do from that narrator's perspective; do not switch to first-person character dialogue or direct commands between characters.
+- Narration is one consistent narrator voice-over. Attributed dialogue quotes and character expressions bring scenes to life.
 - Preserve each character's identity, clothing and appearance across scenes.
 - Frame mythology as traditional storytelling; do not turn supernatural events into factual claims.
 - Scene 1 narration IS the hook. Make it short and easy to say aloud.
 - BANNED: Never begin with 'Once upon a time', 'Anaganaga', 'Ek baar ki baat', etc.
-- Use as many scenes as the content needs to show every promised action and payoff clearly. Usually 4–8 scenes; do not omit a step to meet a fixed scene count or add filler to reach a duration.
+- Use exactly the scene count given in the LENGTH BUDGET. Every promised action and the payoff must still appear; tighten the wording rather than adding scenes.
 - The last scene delivers an earned payoff. If a call to action fits, use one gentle question about the story. Do not say "like", "subscribe", "follow", or "comment" in the narration by default.
 - Culture & aesthetics: {region_aesthetic}.
 - Absolutely no 18+, sexual, hateful or gory content.
@@ -942,19 +1173,28 @@ Return JSON only:
         raise RuntimeError("Story provider returned an incomplete script; please retry")
     _fill_requested_kite_color(idea, res)
     for revision in range(3):
-        gaps = await _script_draft_gaps(idea, contract, res, language, region)
+        content_gaps = await _script_draft_gaps(idea, contract, res, language, region)
+        content_gaps = list(content_gaps or [])
+        budget_gaps = length_gaps(res, budget)
+        gaps = content_gaps + budget_gaps
         if not gaps:
             break
         if revision == 2:
-            raise RuntimeError("The draft still misses the selected content: " + "; ".join(gaps[:3]))
-        repair_prompt = (f"{prompt}\n\nDraft {revision + 1} still misses the selected content. "
+            # Missing promised content is fatal. Being outside the word budget is
+            # not: a slightly long or short story must never block the creator.
+            if content_gaps:
+                raise RuntimeError("The draft still misses the selected content: " + "; ".join(content_gaps[:3]))
+            log.warning("Script stayed outside the %ss length budget after 3 passes: %s",
+                        budget["seconds"], "; ".join(budget_gaps[:2]))
+            break
+        repair_prompt = (f"{prompt}\n\nDraft {revision + 1} still misses the selected content or the LENGTH BUDGET. "
                          f"Current draft: {json.dumps(res, ensure_ascii=False)}\n"
                          f"Exact gaps to repair: {json.dumps(gaps, ensure_ascii=False)}\n"
                          "Return the complete JSON script, but preserve scenes with no reported gap exactly. "
                          "Edit only the named scene and any neighboring scene needed to restore the sequence. "
                          "Correct each named scene in both narration and visual; do not repeat the same mismatch. "
                          "State any requested character relationship directly in a numbered scene's narration, with those characters visible together. "
-                         "Keep every scene as single-narrator voice-over; replace direct commands to characters with narration of what they actually do in that visual moment. "
+                         "Keep every scene as single-narrator voice-over; keep dialogue properly attributed (e.g. 'he said...'); replace narrator-to-character commands with narration of what characters actually do. For comedy, preserve and punch up funny character dialogues, punchlines, and comic reactions. "
                          "For 'before sunset', show the sunset cue in the same scene as the required action. "
                          "For 'before another action', show the two actions in separate scenes in the correct order. "
                          "For a repaired object, do not say the work is finished while its image still shows attaching or tightening. Show the completed result in a later scene. "
@@ -969,11 +1209,16 @@ Return JSON only:
             raise RuntimeError("Story revision returned an incomplete script; please retry")
         _fill_requested_kite_color(idea, res)
     res["_content_contract"] = contract
+    res["_length"] = {**budget, "achieved_words": narration_word_count(res),
+                      "achieved_scenes": len(res.get("scenes") or [])}
+    notes = length_notes(res, budget)
+    if notes:
+        log.info("Script length below target for %ss (%s)", budget["seconds"], "; ".join(notes))
     return res
 
 
 AGENTS = [
-    ("concept", "Ram AI Concept Editor", "Compare the script with the creator's original idea. Check every requested person, setting, action, constraint, factual framing and outcome against the actual scene narration and visuals. Compare narration and visual within EACH numbered scene: flag any action shown before narration reaches that action, or narration claiming an outcome before the visual shows it. A promised action must appear on screen before its result. Flag a change in speaker or character identity, such as first-person dialogue inside a single narrator voice-over. Flag invented practical methods, changed relationships, unsupported claims and missing required details. Set aligned=false if any concrete requirement, scene alignment, or action order is missing or contradicted, even when the story is otherwise polished."),
+    ("concept", "Ram AI Concept Editor", "Compare the script with the creator's original idea. Check every requested person, setting, action, constraint, factual framing and outcome against the actual scene narration and visuals. Compare narration and visual within EACH numbered scene: flag any action shown before narration reaches that action, or narration claiming an outcome before the visual shows it. A promised action must appear on screen before its result. Flag unquoted speaker changes where the narrator abruptly acts as a character without attribution (attributed quotes of what characters said are encouraged). Flag invented practical methods, changed relationships, unsupported claims and missing required details. Set aligned=false if any concrete requirement, scene alignment, or action order is missing or contradicted, even when the story is otherwise polished."),
     ("trend", "Ram AI Audience Guide", "Assess clarity, cultural relevance and title strength for the intended audience. No live trend or analytics data is supplied. Never claim measured demand, predict views or invent algorithm behaviour."),
     ("hook", "Ram AI Hook Specialist", "Judge the first 3 seconds hook, curiosity loops, pacing per scene, emotional payoff, rewatch value."),
     ("safety", "Ram AI Safety Guard", "Check for 18+/sexual content, hate, gore, unsafe content for kids, misinformation, or copied copyrighted stories. For farming, water, crops, livestock, health and money, flag an invented practical technique or unsupported claim even inside an otherwise fictional story. Be strict."),
@@ -988,7 +1233,7 @@ Inspect every numbered scene for the creator's requirements, character identity,
 If narration says a hand releases a pipe but the visual still shows it holding the pipe, set aligned=false.
 If narration claims a leak stopped while the visual still shows a repair in progress, set aligned=false.
 If the visual already performs an action while narration merely asks or plans to do it, set aligned=false.
-If direct character commands appear inside the single narrator voice-over, set aligned=false.
+If second-person narrator commands to characters appear inside the single narrator voice-over (e.g. 'Raju, do this'), set aligned=false. Attributed quotes of what characters said are allowed.
 After a requested sacrifice or death, the absent character need not appear in the ending; do not invent a continuity requirement that contradicts the story outcome.
 An opening question to viewers about why a visible problem exists is aligned with an image showing that problem.
 A narration describing the same ongoing action as its still image is aligned; do not demand that it happens before the narration.
@@ -1368,10 +1613,15 @@ def scene_character_names(project, scene):
 
 async def audit_scene_image(project, scene, image_data: bytes, mime: str, previous_image: bytes | None = None) -> list[str]:
     """Use a cloud vision model to reject a picture that breaks the story moment."""
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not project_id and not api_key:
-        raise RuntimeError("Set GOOGLE_CLOUD_PROJECT or GEMINI_API_KEY to review generated scene images")
+    # Review with the same provider priority configured for text (TEXT_PROVIDER), so a
+    # local developer key is used instead of the gcloud ADC login, which can expire.
+    primary_provider = (TEXT_PROVIDERS or ["developer"])[0]
+    project_id = (os.environ.get("GOOGLE_CLOUD_PROJECT") or "").strip()
+    api_key = _key("GEMINI_API_KEY")
+    if primary_provider == "vertex" and not project_id:
+        raise RuntimeError("Set GOOGLE_CLOUD_PROJECT for Vertex AI scene image review")
+    if primary_provider != "vertex" and not api_key:
+        raise RuntimeError("Set GEMINI_API_KEY to review generated scene images")
     scenes = project.get("scenes") or []
     index = next((i for i, item in enumerate(scenes) if item.get("id") == scene.get("id")), None)
     if index is None:
@@ -1406,7 +1656,7 @@ Return JSON only: {{"matches_current":true/false,"future_state_visible":true/fal
         contents.append(types.Part.from_bytes(data=previous_image, mime_type=previous_mime))
     location = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
     client_options = ({"vertexai": True, "project": project_id, "location": location}
-                      if project_id else {"api_key": api_key})
+                      if primary_provider == "vertex" else {"api_key": api_key})
     async with genai.Client(**client_options).aio as client:
         response = await asyncio.wait_for(client.models.generate_content(
             model=TEXT_MODEL, contents=contents,

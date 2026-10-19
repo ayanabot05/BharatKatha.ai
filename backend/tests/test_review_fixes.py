@@ -51,7 +51,9 @@ def test_script_generation_keeps_short_topic_faithful_draft():
         assert generate.await_count == 1
         prompt = generate.await_args.args[1]
         assert "Satisfy the creator's idea first" in prompt
-        assert "Do not add sentences solely to reach a duration or word count" in prompt
+        # Length discipline: aim at the budget, but never pad a short idea with filler.
+        assert "LENGTH BUDGET" in prompt
+        assert "do not pad sentences to reach a duration" in prompt
     asyncio.run(run())
 
 

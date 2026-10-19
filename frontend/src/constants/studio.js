@@ -34,9 +34,6 @@ export const STEPS = [
   { n: 6, label: "Render" },
 ];
 
-export const PLANS = [
-  { id: "free", name: "Free", price: "₹0", note: "3 videos / month", badge: "Trial", features: ["Idea + script studio", "3 video styles", "Watermarked MP4"] },
-  { id: "creator", name: "Creator", price: "₹399", note: "30 videos / month", badge: "Popular", features: ["All 6 styles", "Regional AI voices", "Captions + tags", "No watermark"] },
-  { id: "pro", name: "Pro", price: "₹999", note: "100 videos / month", badge: "Best value", features: ["Everything in Creator", "AI Growth Coach", "Weekly content plan", "Priority renders"] },
-  { id: "studio", name: "Studio", price: "₹2,499", note: "Teams & agencies", badge: "Agency", features: ["Everything in Pro", "Brand presets", "Batch creation", "Multiple channels"] },
-];
+// Plan prices are NOT defined here. The single source of truth is the backend
+// plan catalog served by GET /api/billing/plans (see backend/billing.py and the
+// BILLING_PLANS_JSON env override). Read prices from the API; never hardcode them.

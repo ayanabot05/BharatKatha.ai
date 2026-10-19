@@ -13,12 +13,12 @@ export default function StudioStepper({ view, maxStep, setView, ramState = "idle
     <div data-testid="studio-stepper">
       <label htmlFor="studio-step-select" className="block sm:hidden text-sm font-semibold text-[#6c5a72] mb-2">{t("step")}</label>
       <select id="studio-step-select" data-testid="studio-step-select"
-        className="block sm:hidden w-full rounded-xl border border-[#ecd9d3] bg-white px-4 py-3 text-[#4a3f58] font-semibold"
+        className="block sm:hidden w-full rounded-xl border border-[#ecd9d3] bg-[#fbe4cd] px-4 py-3 text-[#4a3f58] font-semibold"
         value={view} onChange={(e) => { const next = Number(e.target.value); e.target.value = String(view); setView(next); }}>
         {STEPS.map((s) => <option key={s.n} value={s.n} disabled={s.n > maxStep}>{s.n}. {t(`step_${s.n}_label`) || s.label}</option>)}
       </select>
 
-      <div className="path hidden sm:block rounded-2xl bg-[#fffbf8] border border-[#f0e1db]">
+      <div className="path hidden sm:block rounded-2xl bg-[#fdf1e4] border border-[#f0e1db]">
         <div className="path-track"><div className="path-fill" style={{ width: `${fill * 100}%` }} /></div>
         <span className="path-marker" style={{ left: `calc(32px + (100% - 64px) * ${pos})` }} aria-hidden="true"><RamAvatar state={ramState} size={30} /></span>
         <ol className="path-nodes" data-testid="studio-step-list">

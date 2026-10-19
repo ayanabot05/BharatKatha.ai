@@ -1,6 +1,6 @@
 import FeedbackForm from "@/components/FeedbackForm";
 import { useEffect, useState } from "react";
-import { Loader2, Film, Download, Copy, Youtube, Captions, FileText, Image as ImageIcon, Share2 } from "lucide-react";
+import { Loader2, Film, Download, Copy, Youtube, Captions, FileText, Image as ImageIcon, Share2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { api, errMsg, mediaUrl } from "@/lib/api";
@@ -30,12 +30,31 @@ export default function StepRender({ project, update }) {
   const [downloading, setDownloading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
   const [previewAttempt, setPreviewAttempt] = useState(0);
+  // Camera motion for this render. Ken Burns is the default and the only mode
+  // offered when the depth engine is not installed on the server.
+  const [motion, setMotion] = useState(project.motion === "depth_parallax" ? "depth_parallax" : "ken_burns");
+  const [engines, setEngines] = useState(null);
   const [thumbnailScene, setThumbnailScene] = useState(project.scenes?.find((scene) => scene.image_path && !scene.placeholder && scene.approved)?.id || "");
   const [thumbnailTitle, setThumbnailTitle] = useState(project.script?.thumbnail_title || project.script?.title || "");
   const r = project.render || {};
   const s = project.script || {};
   useEffect(() => { setPreviewError(false); }, [r.video_path]);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await api.get("/projects/motion/engines");
+        if (alive) setEngines(data?.engines || []);
+      } catch {
+        // Capability probe only. If it fails we simply do not offer 2.5D.
+        if (alive) setEngines(null);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
   const rendering = r.status === "rendering";
+  const depthEngine = (engines || []).find((e) => e.id === "depth_parallax");
+  const depthAvailable = engines ? Boolean(depthEngine && depthEngine.available !== false) : null;
   const videoReady = r.status === "done" && Boolean(r.video_path);
   const scriptApproved = project.approved && project.validation?.all_passed;
   const scenesApproved = (project.scenes || []).length > 0 && project.scenes.every((scene) => scene.status === "ready" && scene.image_path && !scene.placeholder && scene.approved);
@@ -53,7 +72,7 @@ export default function StepRender({ project, update }) {
 
   const start = async () => {
     setBusy(true);
-    try { const { data } = await api.post(`/projects/${project.id}/render`); update(data); }
+    try { const { data } = await api.post(`/projects/${project.id}/render`, { motion }); update(data); }
     catch (e) {
       // A lost response can happen after the cloud job was submitted. Read the
       // persisted state before suggesting another click.
@@ -161,6 +180,24 @@ export default function StepRender({ project, update }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-semibold"><Captions size={16} />{t("burn_in_captions")}</div>
               <Switch data-testid="captions-switch" checked={project.captions_on !== false} onCheckedChange={toggleCaps} disabled={rendering || capsBusy} />
+            </div>
+            <div className="mt-5" data-testid="motion-picker">
+              <div className="flex items-center gap-2 font-semibold"><Sparkles size={16} />Camera motion</div>
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <button type="button" data-testid="motion-ken_burns" aria-pressed={motion === "ken_burns"}
+                  onClick={() => setMotion("ken_burns")} disabled={rendering}
+                  className={`rounded-xl border p-3 text-left text-sm transition-colors ${motion === "ken_burns" ? "border-[#a33d52] bg-[#f8d9c6] ring-1 ring-[#a33d52]" : "border-[#e8c7a6] bg-[#fbe6d6] hover:bg-[#f7ddc9]"} disabled:opacity-50`}>
+                  <span className="block font-semibold">Standard camera</span>
+                  <span className="mt-1 block text-xs text-[#587168]">Smooth zoom and pan. Fast and reliable.</span>
+                </button>
+                <button type="button" data-testid="motion-depth_parallax" aria-pressed={motion === "depth_parallax"}
+                  onClick={() => setMotion("depth_parallax")} disabled={rendering || depthAvailable === false}
+                  className={`rounded-xl border p-3 text-left text-sm transition-colors ${motion === "depth_parallax" ? "border-[#a33d52] bg-[#f8d9c6] ring-1 ring-[#a33d52]" : "border-[#e8c7a6] bg-[#fbe6d6] hover:bg-[#f7ddc9]"} disabled:opacity-50`}>
+                  <span className="block font-semibold">Depth (2.5D)</span>
+                  <span className="mt-1 block text-xs text-[#587168]">{depthAvailable === false ? "Not installed on this server." : "Real per-pixel depth. Slower on CPU."}</span>
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-[#587168]">Depth (2.5D) estimates a depth map for each picture and moves near and far areas at different speeds, so the scene has real depth. Pictures with no depth to separate fall back to the standard camera automatically.</p>
             </div>
             {project.audio?.mode !== "ai" && <p className="mt-3 text-sm text-[#587168]">Scene cuts for uploaded or recorded narration are estimated. Watch the final video to check that each picture matches your words.</p>}
             {r.caption_timing === "estimated" && <p className="mt-3 text-sm text-amber-800">Caption timing is estimated from the script and narration length. Review the rendered subtitles before sharing.</p>}

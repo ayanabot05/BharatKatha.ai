@@ -35,9 +35,9 @@ export default function PhoneShort({ className = "" }) {
           <div className="absolute inset-0 bg-gradient-to-b from-[#29443e]/50 via-transparent to-[#29443e]/70" />
           <div className="absolute top-3 inset-x-3 flex gap-1">
             {SHOWCASE.map((_, j) => (
-              <div key={j} className="h-0.5 flex-1 rounded bg-white/25 overflow-hidden">
-                {j === i && <div key={`b${i}`} className="h-full bg-white bar" />}
-                {j < i && <div className="h-full w-full bg-white" />}
+              <div key={j} className="h-0.5 flex-1 rounded bg-[#ffe6cf]/25 overflow-hidden">
+                {j === i && <div key={`b${i}`} className="h-full bg-[#ffe6cf] bar" />}
+                {j < i && <div className="h-full w-full bg-[#ffe6cf]" />}
               </div>
             ))}
           </div>

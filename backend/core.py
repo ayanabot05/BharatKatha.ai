@@ -39,6 +39,23 @@ def new_id():
     return uuid.uuid4().hex
 
 
+def is_operator(user) -> bool:
+    """True for operator accounts, which bypass the beta daily limits.
+
+    This replaces the old ``role == 'admin'`` bypass. Administrators no longer
+    have a row in ``users`` at all, so the exemption is now an explicit,
+    operator-configured email list (``OPERATOR_EMAILS``, plus ``ADMIN_EMAIL``).
+    """
+    email = ((user or {}).get("email") or "").strip().lower()
+    if not email:
+        return False
+    allowed = {e.strip().lower() for e in os.environ.get("OPERATOR_EMAILS", "").split(",") if e.strip()}
+    admin_email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
+    if admin_email:
+        allowed.add(admin_email)
+    return email in allowed
+
+
 # ---------- auth ----------
 def hash_password(p: str) -> str:
     return bcrypt.hashpw(p.encode(), bcrypt.gensalt()).decode()
@@ -122,9 +139,28 @@ def _storage_path(path):
     return target
 
 
+def remote_backend():
+    """Which remote object store serves media: "r2", "gcs" or "" for local disk.
+
+    R2 wins when configured because its egress is free and video playback is
+    almost entirely egress. Set R2_BUCKET to switch over; unset it to fall back
+    without a code change.
+    """
+    import r2_storage
+    if r2_storage.configured():
+        return "r2"
+    if os.environ.get("GCS_BUCKET"):
+        return "gcs"
+    return ""
+
+
 def _put(path, data, ct):
     target = _storage_path(path)
-    if os.environ.get("GCS_BUCKET"):
+    backend = remote_backend()
+    if backend == "r2":
+        import r2_storage
+        return r2_storage.upload(path, data, ct)
+    if backend == "gcs":
         from cloud_storage import upload
         return upload(os.environ["GCS_BUCKET"], path, data, ct)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -134,7 +170,14 @@ def _put(path, data, ct):
 
 def _get(path):
     target = _storage_path(path)
-    if os.environ.get("GCS_BUCKET"):
+    backend = remote_backend()
+    if backend == "r2":
+        import r2_storage
+        try:
+            return r2_storage.download(path)
+        except FileNotFoundError:
+            raise HTTPException(404, "Media object not found")
+    if backend == "gcs":
         from cloud_storage import download
         try:
             return download(os.environ["GCS_BUCKET"], path)
@@ -152,6 +195,35 @@ async def get_object(path):
     return await asyncio.to_thread(_get, path)
 
 
+def _delete(path):
+    backend = remote_backend()
+    if backend == "r2":
+        import r2_storage
+        r2_storage.delete(path)
+        return
+    if backend == "gcs":
+        from cloud_storage import client
+        client().bucket(os.environ["GCS_BUCKET"]).blob(path).delete()
+        return
+    target = _storage_path(path)
+    if target.is_file():
+        target.unlink()
+
+
+async def delete_object(path: str) -> bool:
+    """Best-effort media delete. A missing object is never an error.
+
+    Media soft-deleted in Postgres but left in the bucket keeps costing
+    storage, so callers that mark is_deleted should drop the object too.
+    """
+    try:
+        await asyncio.to_thread(_delete, path)
+        return True
+    except Exception as exc:  # noqa: BLE001 - deletion must not break a request
+        log.warning("Media delete failed for %s: %s", path, exc)
+        return False
+
+
 async def save_media(user_id: str, kind: str, data: bytes, ext: str, ct: str) -> str:
     path = f"{APP_NAME}/{kind}/{user_id}/{new_id()}.{ext}"
     res = await asyncio.to_thread(_put, path, data, ct)
@@ -167,3 +239,23 @@ async def cached(path: str) -> Path:
         data, _ = await get_object(path)
         local.write_bytes(data)
     return local
+
+
+async def presigned_media_url(path: str, expires_in: int = 3600, filename: str = "",
+                              content_type: str = "") -> str:
+    """Direct R2 URL so video and image playback skips this API entirely.
+
+    Egress is the expensive part of serving media and R2 charges nothing for
+    it. Returns "" when R2 is not the active backend so the caller can fall
+    back to proxying the bytes.
+    """
+    if remote_backend() != "r2":
+        return ""
+    import r2_storage
+    try:
+        return await asyncio.to_thread(
+            r2_storage.presigned_url, path, expires_in, filename, content_type)
+    except Exception as exc:  # noqa: BLE001 - a failed presign falls back to proxy
+        log.warning("Presign failed for %s: %s", path, exc)
+        return ""
+

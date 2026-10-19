@@ -47,14 +47,17 @@ const DICTIONARY = {
 
 export const UI_LANGUAGES = LANGUAGES.map(({ id, native }) => ({ id, label: native }));
 
+// A build may set REACT_APP_DEFAULT_UI_LANG to open in a specific language (e.g. a
+const DEFAULT_UI_LANG = process.env.REACT_APP_DEFAULT_UI_LANG || "en";
+
 const LocaleContext = createContext(null);
 
 export function LocaleProvider({ children }) {
   const [locale, setLocale] = useState(() => {
     try {
-      return localStorage.getItem("vidbharat_ui_lang") || "en";
+      return localStorage.getItem("vidbharat_ui_lang") || DEFAULT_UI_LANG;
     } catch {
-      return "en";
+      return DEFAULT_UI_LANG;
     }
   });
 

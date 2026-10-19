@@ -29,7 +29,7 @@ export default function AuthPage({ mode }) {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-[#f7f3e9] text-[#263b36]">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-[#f7e0cf] text-[#263b36]">
       <div className="relative flex flex-col p-6 sm:p-10 overflow-hidden">
         <Link to="/" className="relative"><Logo light /></Link>
         <form onSubmit={submit} className="relative m-auto w-full max-w-sm space-y-5 rise" data-testid="auth-form">
@@ -38,10 +38,17 @@ export default function AuthPage({ mode }) {
             <h1 className="mt-2 text-4xl font-black tracking-tight">{isLogin ? "Sign in to your studio" : "Create your studio"}</h1>
           </div>
           {!isLogin && (
-            <div className="space-y-1.5"><Label className="text-[#587168]">Name</Label><Input data-testid="auth-name-input" value={form.name} onChange={set("name")} required className="h-11 bg-white" /></div>
+            <div className="space-y-1.5"><Label className="text-[#587168]">Name</Label><Input data-testid="auth-name-input" value={form.name} onChange={set("name")} required className="h-11 bg-[#fdf1e4]" /></div>
           )}
-          <div className="space-y-1.5"><Label className="text-[#587168]">Email</Label><Input data-testid="auth-email-input" type="email" value={form.email} onChange={set("email")} required className="h-11 bg-white" /></div>
-          <div className="space-y-1.5"><Label className="text-[#587168]">Password</Label><Input data-testid="auth-password-input" type="password" minLength={6} value={form.password} onChange={set("password")} required className="h-11 bg-white" /></div>
+          <div className="space-y-1.5"><Label className="text-[#587168]">Email</Label><Input data-testid="auth-email-input" type="email" value={form.email} onChange={set("email")} required className="h-11 bg-[#fdf1e4]" /></div>
+          <div className="space-y-1.5"><Label className="text-[#587168]">Password</Label><Input data-testid="auth-password-input" type="password" minLength={6} value={form.password} onChange={set("password")} required className="h-11 bg-[#fdf1e4]" /></div>
+          {isLogin && (
+            <div className="text-right">
+              <Link data-testid="forgot-password-link" className="text-sm font-semibold text-teal-800" to="/forgot-password">
+                Forgot password?
+              </Link>
+            </div>
+          )}
           {err && <div data-testid="auth-error" className="text-sm text-rose-800 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{err}</div>}
           <button data-testid="auth-submit-btn" disabled={busy} className="btn-primary w-full">
             {busy ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />} {isLogin ? "Sign in" : "Create account"}

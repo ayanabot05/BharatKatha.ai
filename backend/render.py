@@ -1,12 +1,22 @@
-"""FFmpeg composer: scene images + Ken Burns motion + narration + burned-in captions -> 720x1280 MP4."""
+"""FFmpeg composer: scene images + motion + narration + burned-in captions -> 720x1280 MP4.
+
+Two motion engines are available per scene:
+  * ``ken_burns`` (default) - FFmpeg zoompan. Unchanged production behaviour.
+  * ``depth_parallax``      - opt-in 2.5D depth parallax (see ``motion.py``).
+The default is Ken Burns and every fallback lands back on it, so the presence
+of the 2.5D engine can never change output for a project that did not ask for it.
+"""
 import re
 import os
 import io
 import shutil
+import logging
 import subprocess
 import tempfile
 import math
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 import imageio_ffmpeg
 from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -263,7 +273,7 @@ def camera_motion(idx: int, frames: int):
         return f"min(1.0+{step:.6f}*on,1.12)", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
 
 
-def scene_clip(img, dur, caps, lang, out, idx, work: Path, ai_voice_disclosure=False):
+def ken_burns_clip(img, dur, caps, lang, out, idx, work: Path, ai_voice_disclosure=False):
     frames = max(round(dur * FPS), 1)
     z, x, y = camera_motion(idx, frames)
     inputs = ["-i", str(img)]
@@ -284,6 +294,27 @@ def scene_clip(img, dur, caps, lang, out, idx, work: Path, ai_voice_disclosure=F
         last = "v2"
     run([*inputs, "-filter_complex", ";".join(graph), "-map", f"[{last}]", "-t", f"{dur:.2f}",
          "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-r", str(FPS), str(out)], cwd=work)
+    return {"mode": "ken_burns", "frames": frames}
+
+
+def scene_clip(img, dur, caps, lang, out, idx, work: Path, ai_voice_disclosure=False,
+               motion: str = "ken_burns"):
+    """Render one scene clip with the selected motion engine.
+
+    Fail-soft by contract: if ``depth_parallax`` raises for any reason (missing
+    model, flat depth, OOM, ffmpeg error) we log it and silently render this
+    scene with Ken Burns. A render can never fail because of the 2.5D engine,
+    and the user is never shown an error for it.
+    """
+    if motion == "depth_parallax":
+        try:
+            import motion as _motion
+            info = _motion.scene_clip(img, dur, caps, lang, out, idx, work, ai_voice_disclosure)
+            log.info("scene %s: depth_parallax %s", idx, info)
+            return info
+        except Exception as exc:
+            log.warning("scene %s: depth_parallax unavailable (%s) - falling back to Ken Burns", idx, exc)
+    return ken_burns_clip(img, dur, caps, lang, out, idx, work, ai_voice_disclosure)
 
 
 def mux(clips, audio, out, work: Path, bgm: Path = None):

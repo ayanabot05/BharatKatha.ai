@@ -8,9 +8,14 @@ body {
     margin: 0;
     font-family: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Bengali", "Noto Sans Gujarati", "Noto Sans Kannada", "Noto Sans Malayalam", "Noto Sans Oriya", "Noto Naskh Arabic", sans-serif;
     -webkit-font-smoothing: antialiased;
-    background: #f7f3e9;
+    background: #f7e0cf;
     color: #263b36;
 }
+
+/* Keep the app from ever scrolling sideways. `clip` (not `hidden`) does not
+   create a scroll container, so `position: sticky` keeps working. Applied to
+   #root rather than body so it never propagates to the viewport. */
+#root { max-width: 100%; overflow-x: clip; }
 
 h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif; }
 .font-mono { font-family: "JetBrains Mono", monospace; }
@@ -19,18 +24,18 @@ h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto San
 
 @layer components {
     .btn-primary {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 font-bold text-white
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 font-bold text-[#ffe6cf]
                bg-[#A33D52] shadow-lg shadow-rose-950/20
                transition-[transform,box-shadow,opacity] duration-200 hover:bg-[#8D2C42] hover:shadow-rose-950/30 hover:-translate-y-0.5 active:scale-95
                disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed;
     }
     .btn-secondary {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 font-semibold text-[#35574c]
-               bg-white border border-[#c4d8c9] transition-colors duration-200 hover:border-[#78aa90] hover:text-[#21483a]
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 font-semibold text-[#4a3020]
+               bg-[#fbd3b4] border border-[#e8c7a6] transition-colors duration-200 hover:bg-[#f6c69c] hover:border-[#c9905c] hover:text-[#3a2418]
                disabled:opacity-40 disabled:cursor-not-allowed;
     }
-    .card { @apply bg-white border border-[#d6e2d7] rounded-2xl; }
-    .glass { @apply bg-white/80 backdrop-blur-xl border border-[#d6e2d7]; }
+    .card { @apply bg-[#fbd3b4] border border-[#e8c7a6] rounded-2xl; }
+    .glass { @apply bg-[#fbd3b4]/85 backdrop-blur-xl border border-[#e8c7a6]; }
     .label { @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-[#99613c] font-mono; }
     .text-gradient { @apply text-[#a33d52]; }
 }
@@ -40,7 +45,7 @@ h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto San
 .rise-1 { animation-delay: .07s; } .rise-2 { animation-delay: .14s; } .rise-3 { animation-delay: .21s; } .rise-4 { animation-delay: .28s; }
 
 @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
-.shimmer { background: linear-gradient(90deg, #e7efe7 0px, #f7f3e9 80px, #e7efe7 160px); background-size: 800px 100%; animation: shimmer 1.4s linear infinite; }
+.shimmer { background: linear-gradient(90deg, #e7efe7 0px, #fbe4cd 80px, #e7efe7 160px); background-size: 800px 100%; animation: shimmer 1.4s linear infinite; }
 
 @keyframes kenburns { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.18) translate(-2%, -3%); } }
 .kenburns { animation: kenburns 4s ease-out both; }
@@ -65,31 +70,39 @@ h1, h2, h3, .font-display { font-family: "Outfit", "Noto Sans Telugu", "Noto San
     content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .07; mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+/* Film-strip pattern — story frames + reel sprocket holes.
+   Replaces the old graph-paper grid so every backdrop is on-concept
+   for a video studio. */
 .grid-bg {
-    background-image: linear-gradient(rgba(38,59,54,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(38,59,54,.06) 1px, transparent 1px);
-    background-size: 48px 48px;
+    background-image:
+        linear-gradient(90deg, rgba(163, 61, 82, .22) 2px, transparent 2px),
+        linear-gradient(180deg, rgba(163, 61, 82, .18) 2px, transparent 2px),
+        radial-gradient(circle, rgba(163, 61, 82, .20) 3px, transparent 3.4px),
+        radial-gradient(circle, rgba(163, 61, 82, .20) 3px, transparent 3.4px);
+    background-size: 172px 214px, 172px 214px, 22px 214px, 22px 214px;
+    background-position: 0 0, 0 0, 0 10px, 0 194px;
 }
 
 @layer base {
     :root {
-        --background: 43 37% 94%;
-        --foreground: 163 22% 19%;
-        --card: 0 0% 100%;
-        --card-foreground: 163 22% 19%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 163 22% 19%;
+        --background: 24 74% 89%;
+        --foreground: 163 30% 20%;
+        --card: 20 82% 86%;
+        --card-foreground: 163 30% 20%;
+        --popover: 20 82% 86%;
+        --popover-foreground: 163 30% 20%;
         --primary: 348 45% 44%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 137 21% 93%;
-        --secondary-foreground: 163 22% 19%;
-        --muted: 137 21% 93%;
-        --muted-foreground: 155 11% 41%;
-        --accent: 137 21% 93%;
-        --accent-foreground: 163 22% 19%;
+        --primary-foreground: 45 100% 92%;
+        --secondary: 30 60% 84%;
+        --secondary-foreground: 163 30% 20%;
+        --muted: 30 60% 84%;
+        --muted-foreground: 20 22% 34%;
+        --accent: 30 60% 84%;
+        --accent-foreground: 163 30% 20%;
         --destructive: 345 100% 59%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 136 17% 84%;
-        --input: 136 17% 84%;
+        --destructive-foreground: 45 100% 92%;
+        --border: 24 45% 76%;
+        --input: 24 45% 76%;
         --ring: 348 45% 55%;
         --radius: 0.75rem;
     }

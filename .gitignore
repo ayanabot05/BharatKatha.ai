@@ -37,3 +37,11 @@ test_reports/output_proof_*/
 test_reports/independent_review/*.png
 deliverables/
 frontend/.cache/
+frontend/.jest-cache/
+backend/tmp*/
+backend/media_cache/
+
+# 2.5D depth map cache (content-hash keyed, regenerated on demand)
+backend/.depth_cache/
+backend/models/*.onnx
+

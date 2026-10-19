@@ -16,8 +16,11 @@ from pydantic import BaseModel, Field
 import ai
 import render
 import pulse
+import entitlements
 from generation_reliability import access_error, transient_error, retry_transient, public_failure
-from core import db, current_user, now_iso, new_id, save_media, cached, get_object, log, CACHE
+from core import (db, current_user, now_iso, new_id, save_media, cached, get_object, delete_object,
+                  log, CACHE, is_operator)
+import growth
 
 router = APIRouter(prefix="/api/projects")
 _tasks = set()
@@ -95,7 +98,7 @@ DAILY_LIMITS = {
 
 
 async def check_daily_limit(user: dict, action: str):
-    if user.get("role") == "admin":
+    if is_operator(user):
         return
     limit = DAILY_LIMITS.get(action, 50)
     since = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
@@ -259,6 +262,8 @@ async def create(body: ProjectIn, user=Depends(current_user)):
          "scenes": [], "audio": None, "captions_on": True, "render": {"status": "idle", "progress": 0},
          "step": 1, "created_at": now_iso(), "updated_at": now_iso()}
     await db.projects.insert_one(dict(p))
+    await growth.track("project_created", user_id=user["id"],
+                       language=p.get("language", ""), project_id=p["id"])
     return p
 
 
@@ -360,6 +365,11 @@ async def delete(pid: str, user=Depends(current_user)):
                     await db.files.update_one({"storage_path": path}, {"$set": {"is_deleted": True}})
         except Exception as e:
             log.warning(f"Could not mark media files deleted for project {pid}: {e}")
+        # Drop the bytes too. A row marked deleted while the object stays in the
+        # bucket still bills for storage every month.
+        if os.environ.get("MEDIA_DELETE_OBJECTS", "true").strip().lower() != "false":
+            for path in clean_paths:
+                await delete_object(path)
 
     try:
         if hasattr(db, "pulse_events"):
@@ -486,6 +496,8 @@ async def approve(pid: str, user=Depends(current_user)):
         user["id"], "script_approved", p.get("language", ""), p.get("region", ""),
         hook=((p.get("script") or {}).get("hook") or ""), project_id=pid,
     )
+    await growth.track("script_approved", user_id=user["id"],
+                       language=p.get("language", ""), project_id=pid)
     return await owned(pid, user)
 
 
@@ -1148,6 +1160,9 @@ async def _render_job(pid, uid):
         _active_renders.discard(pid)
         raise RuntimeError("Render project is missing or owned by another user")
     lang, scenes, audio = p["language"], p["scenes"], p["audio"]
+    motion_mode = p.get("motion") or (p.get("render") or {}).get("motion") or "ken_burns"
+    if motion_mode not in ("ken_burns", "depth_parallax"):
+        motion_mode = "ken_burns"
     job_meta = {k: (p.get("render") or {})[k] for k in ("claim_token", "queued_at")
                 if k in (p.get("render") or {})}
     work = CACHE / f"render_{pid}_{new_id()}"
@@ -1160,7 +1175,7 @@ async def _render_job(pid, uid):
         audio_local = await cached(audio["path"])
         await prog(10, "Preparing caption timing")
         durs, caps_all, caption_timing = await render_timeline(p, audio_local)
-        clips, t0 = [], 0.0
+        clips, t0, fell_back = [], 0.0, 0
         for i, (s, d) in enumerate(zip(scenes, durs)):
             await prog(15 + int(70 * i / len(scenes)), f"Animating scene {i + 1} of {len(scenes)}")
             img = work / f"img_{i}.jpg"
@@ -1172,8 +1187,10 @@ async def _render_job(pid, uid):
                     if b - a > 0.15:
                         local_caps.append({"text": c["text"], "start": a - t0, "end": b - t0})
             out = work / f"clip_{i}.mp4"
-            await asyncio.to_thread(render.scene_clip, img, d, local_caps, lang, out, i, work,
-                                    audio.get("provider") == "supertonic")
+            info = await asyncio.to_thread(render.scene_clip, img, d, local_caps, lang, out, i, work,
+                                           audio.get("provider") == "supertonic", motion_mode)
+            if motion_mode == "depth_parallax" and (info or {}).get("mode") != "depth_parallax":
+                fell_back += 1
             clips.append(out)
             t0 += d
         await prog(90, "Mixing voice + video")
@@ -1183,15 +1200,24 @@ async def _render_job(pid, uid):
         caption_path = await save_media(uid, "captions", captions.encode("utf-8"), "srt", "application/x-subrip") if captions else None
         path = await save_media(uid, "videos", final.read_bytes(), "mp4", "video/mp4")
         final_duration = round(render.duration(final), 2)
-        await upd(pid, render={"status": "done", "progress": 100, "message": "Your video is ready", "video_path": path,
+        message = "Your video is ready"
+        if motion_mode == "depth_parallax" and fell_back:
+            message = (f"Your video is ready ({fell_back} of {len(scenes)} scenes used the "
+                       "standard camera because their artwork had no depth to separate)")
+        await upd(pid, render={"status": "done", "progress": 100, "message": message, "video_path": path,
                                "caption_path": caption_path,
                                "duration": final_duration, "rendered_at": now_iso(),
+                               "motion": motion_mode, "motion_fallbacks": fell_back,
                                "caption_timing": caption_timing,
                                "scene_timing": "narration" if audio["mode"] == "ai" else "estimated",
                                "srt": captions},
                   srt=captions, step=6)
+        await entitlements.record_render(uid)
         await log_noncritical_event(uid, "render_done", lang, p.get("region", ""), project_id=pid,
-                                    meta={"duration": final_duration})
+                                    meta={"duration": final_duration, "motion": motion_mode,
+                                          "motion_fallbacks": fell_back})
+        await growth.track("render_completed", user_id=uid, language=lang, project_id=pid,
+                           duration=final_duration, motion=motion_mode)
     except Exception as e:
         log.exception("render")
         await upd(pid, render={"status": "failed", "progress": 0, "message": str(e)[:300]})
@@ -1200,9 +1226,46 @@ async def _render_job(pid, uid):
         shutil.rmtree(work, ignore_errors=True)
 
 
+class RenderIn(BaseModel):
+    """Per-request render options. Not persisted as schema - stored on the
+    project document as a plain key, so no migration is required."""
+    motion: str = "ken_burns"
+
+
+@router.get("/motion/engines")
+async def motion_engines():
+    """Which motion engines are actually usable on this machine.
+
+    The UI uses this so it never offers 2.5D where it would silently do nothing.
+    """
+    try:
+        import motion
+        depth_ok = motion.available()
+        detail = "" if depth_ok else "depth model or onnxruntime not installed"
+    except Exception as exc:
+        depth_ok, detail = False, str(exc)[:160]
+    return {"default": "ken_burns",
+            "engines": [
+                {"id": "ken_burns", "label": "Standard camera", "available": True, "detail": ""},
+                {"id": "depth_parallax", "label": "Depth (2.5D)", "available": depth_ok, "detail": detail},
+            ]}
+
+
 @router.post("/{pid}/render")
-async def start_render(pid: str, user=Depends(current_user)):
+async def start_render(pid: str, user=Depends(current_user), body: Optional[RenderIn] = None):
+    # ``user`` stays the second parameter: internal callers and the test suite
+    # pass it positionally. FastAPI binds the JSON body to ``body`` by name, so
+    # the HTTP contract is unchanged by this order.
     p = await owned(pid, user)
+    # Internal callers and tests pass a plain dict; HTTP passes the model.
+    # Accept both so the camera-motion option can never crash a render request.
+    if isinstance(body, dict):
+        motion_mode = body.get("motion")
+    else:
+        motion_mode = getattr(body, "motion", None)
+    motion_mode = motion_mode or "ken_burns"
+    if motion_mode not in ("ken_burns", "depth_parallax"):
+        raise HTTPException(400, "Unsupported motion mode")
     assert_audio_idle(pid)
     if not p.get("approved") or not review_is_current(p):
         raise HTTPException(400, "Review and approve the current script before rendering")
@@ -1220,17 +1283,23 @@ async def start_render(pid: str, user=Depends(current_user)):
     if p.get("render", {}).get("status") == "rendering" or pid in _active_renders:
         raise HTTPException(409, "Already rendering")
     await check_daily_limit(user, "render_started")
+    allowed, reason, _ent = await entitlements.can_render(user, p.get("duration"))
+    if not allowed:
+        raise HTTPException(402, reason)
     _active_renders.add(pid)
     token = new_id() if os.environ.get("APP_ENV") == "production" else ""
     claimed = False
     dispatch_attempted = False
     try:
+        # Top-level key (schemaless) so the mode survives a cloud job claim.
+        await upd(pid, motion=motion_mode)
         if token:
             claimed = await db.projects.claim_render_job(pid, user["id"], token, now_iso())
             if not claimed:
                 raise HTTPException(409, "A render job is already active")
         else:
-            await upd(pid, render={"status": "rendering", "progress": 1, "message": "Queued"})
+            await upd(pid, render={"status": "rendering", "progress": 1, "message": "Queued",
+                                   "motion": motion_mode})
         if os.environ.get("APP_ENV") == "production":
             import cloud_render_dispatch
             dispatch_attempted = True

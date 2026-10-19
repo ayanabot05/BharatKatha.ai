@@ -1,0 +1,5 @@
+file 'C:\Users\gunak\Downloads\BharatKatha.ai\test_reports\multilingual_proofs_2026-10-20\bn\work\voice_01.mp3'
+file 'C:\Users\gunak\Downloads\BharatKatha.ai\test_reports\multilingual_proofs_2026-10-20\bn\work\voice_02.mp3'
+file 'C:\Users\gunak\Downloads\BharatKatha.ai\test_reports\multilingual_proofs_2026-10-20\bn\work\voice_03.mp3'
+file 'C:\Users\gunak\Downloads\BharatKatha.ai\test_reports\multilingual_proofs_2026-10-20\bn\work\voice_04.mp3'
+file 'C:\Users\gunak\Downloads\BharatKatha.ai\test_reports\multilingual_proofs_2026-10-20\bn\work\voice_05.mp3'

@@ -27,8 +27,8 @@ from pathlib import PurePosixPath
 # Endpoint for the R2 S3 API. Derived from the account id unless set directly.
 ENDPOINT_TEMPLATE = "https://{account}.r2.cloudflarestorage.com"
 
-# R2 speaks S3 signature v4 only. "auto" is the region R2 expects.
-REGION = "auto"
+# R2 speaks S3 signature v4 only. "auto" or region identifier like "apac".
+REGION = os.environ.get("R2_REGION", "auto")
 
 
 def validate_object_name(name: str) -> str:
@@ -41,7 +41,7 @@ def validate_object_name(name: str) -> str:
 
 
 def bucket() -> str:
-    return os.environ.get("R2_BUCKET", "").strip()
+    return (os.environ.get("R2_BUCKET") or os.environ.get("R2_BUCKET_NAME") or "bharatchitra-media").strip()
 
 
 def endpoint() -> str:
@@ -70,7 +70,9 @@ def key_for(name: str) -> str:
     """Map an app storage path to an R2 object key."""
     name = validate_object_name(name)
     prefix_value = prefix()
-    return f"{prefix_value}/{name}" if prefix_value else name
+    if not prefix_value or name.startswith(f"{prefix_value}/"):
+        return name
+    return f"{prefix_value}/{name}"
 
 
 @lru_cache(maxsize=1)

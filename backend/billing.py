@@ -103,10 +103,10 @@ def _default_catalog() -> dict:
         "features": [
             "2 videos per month",
             "Videos up to 30 seconds",
-            "All 11 Indian languages",
+            "10 Indian launch languages",
             "All 6 art styles",
             "Burned-in captions and SRT download",
-            "BharatKatha watermark",
+            "BharatChitra AI watermark",
         ],
     }
     creator = {

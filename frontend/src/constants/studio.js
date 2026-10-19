@@ -16,9 +16,10 @@ export const LANGUAGES = [
   { id: "gu", label: "Gujarati", native: "ગુજરાતી" },
   { id: "ur", label: "Urdu", native: "اردو" },
   { id: "kn", label: "Kannada", native: "ಕನ್ನಡ" },
-  { id: "or", label: "Odia", native: "ଓଡ଼ିଆ" },
   { id: "ml", label: "Malayalam", native: "മലയാളം" },
   { id: "en", label: "English", native: "English" },
+  { id: "pa", label: "Punjabi", native: "ਪੰਜਾਬੀ", disabled: true, badge: "Coming Soon" },
+  { id: "or", label: "Odia", native: "ଓଡ଼ିଆ", disabled: true, badge: "Coming Soon" },
 ];
 
 export const TONES = ["Emotional", "Moral", "Funny", "Thriller", "Devotional", "Mythology", "Motivational", "Horror (kid-safe)"];

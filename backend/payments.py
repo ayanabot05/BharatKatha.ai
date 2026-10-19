@@ -129,7 +129,7 @@ async def _razorpay_order(plan_id, interval, amount, currency, notes) -> dict:
     return {"ready": True, "provider": "razorpay", "currency": currency, "amount": amount,
             "order_id": order_id, "key_id": _env("RAZORPAY_KEY_ID"),
             "plan": plan_id, "interval": interval, "email": notes.get("email"),
-            "description": f"BharatKatha {billing.plan(plan_id).get('name', plan_id)} "
+            "description": f"BharatChitra AI {billing.plan(plan_id).get('name', plan_id)} "
                            f"({interval}ly)"}
 
 

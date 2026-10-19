@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
  * telling someone to check an inbox that will stay empty.
  */
 export default function ForgotPassword() {
-  useSeo({ title: "Reset your password", path: "/forgot-password", description: "Reset your BharatKatha password." });
+  useSeo({ title: "Reset your password", path: "/forgot-password", description: "Reset your BharatChitra AI password." });
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");

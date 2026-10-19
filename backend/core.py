@@ -25,10 +25,10 @@ else:
     db = client[os.environ["DB_NAME"]]
 
 JWT_SECRET = os.environ["JWT_SECRET"]
-APP_NAME = "vidbharat"
+APP_NAME = os.environ.get("APP_STORAGE_PREFIX") or "bharatchitra"
 CACHE = ROOT / "media_cache"
 CACHE.mkdir(exist_ok=True)
-log = logging.getLogger("vidbharat")
+log = logging.getLogger("bharatchitra")
 
 
 def now_iso():
@@ -163,6 +163,8 @@ def _put(path, data, ct):
     if backend == "gcs":
         from cloud_storage import upload
         return upload(os.environ["GCS_BUCKET"], path, data, ct)
+    if os.environ.get("APP_ENV") == "production":
+        raise RuntimeError("Production media storage is not configured: Cloudflare R2 credentials required.")
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(data)
     return {"path": path}

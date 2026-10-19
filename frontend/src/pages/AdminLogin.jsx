@@ -42,7 +42,7 @@ export default function AdminLogin() {
             <ShieldCheck size={18} color="#ffe6cf" />
           </span>
           <div className="leading-tight">
-            <div className="font-bold">BharatKatha</div>
+            <div className="font-bold">BharatChitra AI</div>
             <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#7a5f52]">Administrator</div>
           </div>
         </div>

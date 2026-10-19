@@ -104,7 +104,7 @@ export default function StepRender({ project, update }) {
       const url = URL.createObjectURL(await response.blob());
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${(s.title_en || s.title || "bharatkatha-video").replace(/[\\/:*?"<>|]/g, "-")}.mp4`;
+      link.download = `${(s.title_en || s.title || "bharatchitra-video").replace(/[\\/:*?"<>|]/g, "-")}.mp4`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -125,7 +125,7 @@ export default function StepRender({ project, update }) {
       if (!response.ok) throw new Error("Could not load video");
       const file = new File([await response.blob()], `${s.title_en || "video"}.mp4`, { type: "video/mp4" });
       if (!navigator.canShare?.({ files: [file] })) return toast.error("Sharing files is unavailable here. Download the MP4 instead.");
-      await navigator.share({ title: s.title || "BharatKatha video", files: [file] });
+      await navigator.share({ title: s.title || "BharatChitra video", files: [file] });
     } catch (e) { if (e.name !== "AbortError") toast.error(e.message); }
   };
   const [srtUrl, setSrtUrl] = useState(null);

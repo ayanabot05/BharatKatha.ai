@@ -21,7 +21,7 @@ export default function Dashboard() {
   const [deleting, setDeleting] = useState("");
   useSeo({
     title: "My videos",
-    description: "Your BharatKatha stories: drafts, work in progress and finished videos.",
+    description: "Your BharatChitra AI stories: drafts, work in progress and finished videos.",
     path: "/dashboard",
     noindex: true,
   });

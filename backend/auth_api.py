@@ -82,8 +82,8 @@ async def forgot(body: ForgotIn, request: Request):
     link = mailer.reset_link(token)
     sent = await mailer.send(
         email,
-        "Reset your BharatKatha password",
-        ("Someone asked to reset the password for your BharatKatha account.\n\n"
+        "Reset your BharatChitra AI password",
+        ("Someone asked to reset the password for your BharatChitra AI account.\n\n"
          f"Open this link within {TOKEN_MINUTES} minutes to choose a new password:\n{link}\n\n"
          "If this was not you, you can ignore this message — the link expires on its own."),
         also_log=f"reset link for {email}: {link}")

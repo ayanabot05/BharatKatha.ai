@@ -21,7 +21,7 @@ export const Logo = ({ light = false }) => (
       <Clapperboard size={18} color="#ffe6cf" />
     </div>
     <div className="leading-tight">
-      <div className={`font-display text-lg font-extrabold tracking-tight ${light ? "text-[#3d2a33]" : "text-[#ffe6cf]"}`}>BharatKatha</div>
+      <div className={`font-display text-lg font-extrabold tracking-tight ${light ? "text-[#3d2a33]" : "text-[#ffe6cf]"}`}>BharatChitra AI</div>
       <div className={`text-[9px] uppercase tracking-[0.25em] font-mono ${light ? "text-[#7a5f52]" : "text-[#f0c9a8]"}`}>Storytelling Studio</div>
     </div>
   </div>

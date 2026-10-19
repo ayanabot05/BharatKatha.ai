@@ -8,8 +8,8 @@ import "./PhaseZero.css";
 
 export default function PricingPage() {
   useSeo({
-    title: "Pricing — BharatKatha storytelling studio",
-    description: "BharatKatha pricing: start free with 2 videos a month, then ₹549 or $8.99 a month for 8 videos up to 60 seconds. Studio adds 16 videos up to 75 seconds. Annual plans save 15%.",
+    title: "Pricing — BharatChitra AI storytelling studio",
+    description: "BharatChitra AI pricing: start free with 2 videos a month, then ₹549 or $8.99 a month for 8 videos up to 60 seconds. Studio adds 16 videos up to 75 seconds. Annual plans save 15%.",
     path: "/pricing",
   });
   return (

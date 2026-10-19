@@ -1,0 +1,334 @@
+{
+  "ta": {
+    "status": "OK",
+    "audio_bytes": 26352,
+    "duration": 4.39,
+    "word_count": 7,
+    "words": [
+      {
+        "text": "வணக்கம்",
+        "start": 0.1,
+        "end": 0.775
+      },
+      {
+        "text": "இன்று",
+        "start": 1.6375,
+        "end": 2.075
+      },
+      {
+        "text": "நாம்",
+        "start": 2.0875,
+        "end": 2.4375
+      },
+      {
+        "text": "ஒரு",
+        "start": 2.45,
+        "end": 2.6875
+      },
+      {
+        "text": "சிறிய",
+        "start": 2.7,
+        "end": 3.1
+      },
+      {
+        "text": "கதையைக்",
+        "start": 3.1125,
+        "end": 3.575
+      },
+      {
+        "text": "கேட்போம்",
+        "start": 3.5875,
+        "end": 4.2125
+      }
+    ],
+    "is_monotonic": true,
+    "last_word_end": 4.2125,
+    "audio_dur_diff": 0.17749999999999932
+  },
+  "kn": {
+    "status": "OK",
+    "audio_bytes": 30528,
+    "duration": 5.08,
+    "word_count": 7,
+    "words": [
+      {
+        "text": "ನಮಸ್ಕಾರ",
+        "start": 0.175,
+        "end": 0.6625
+      },
+      {
+        "text": "ಇಂದು",
+        "start": 1.7,
+        "end": 1.9125
+      },
+      {
+        "text": "ನಾವು",
+        "start": 2.0625,
+        "end": 2.4625
+      },
+      {
+        "text": "ಒಂದು",
+        "start": 2.5,
+        "end": 2.8
+      },
+      {
+        "text": "ಚಿಕ್ಕ",
+        "start": 2.8375,
+        "end": 3.1875
+      },
+      {
+        "text": "ಕಥೆಯನ್ನು",
+        "start": 3.2125,
+        "end": 3.7125
+      },
+      {
+        "text": "ಕೇಳೋಣ",
+        "start": 3.7625,
+        "end": 4.2
+      }
+    ],
+    "is_monotonic": true,
+    "last_word_end": 4.2,
+    "audio_dur_diff": 0.8799999999999999
+  },
+  "ml": {
+    "status": "OK",
+    "audio_bytes": 27504,
+    "duration": 4.58,
+    "word_count": 7,
+    "words": [
+      {
+        "text": "നമസ്കാരം",
+        "start": 0.125,
+        "end": 0.7375
+      },
+      {
+        "text": "ഇന്ന്",
+        "start": 1.725,
+        "end": 1.9875
+      },
+      {
+        "text": "നമുക്ക്",
+        "start": 2.0125,
+        "end": 2.4
+      },
+      {
+        "text": "ഒരു",
+        "start": 2.425,
+        "end": 2.6
+      },
+      {
+        "text": "ചെറിയ",
+        "start": 2.6,
+        "end": 2.9125
+      },
+      {
+        "text": "കഥ",
+        "start": 2.9625,
+        "end": 3.15
+      },
+      {
+        "text": "കേൾക്കാം",
+        "start": 3.1875,
+        "end": 3.6625
+      }
+    ],
+    "is_monotonic": true,
+    "last_word_end": 3.6625,
+    "audio_dur_diff": 0.9175
+  },
+  "bn": {
+    "status": "OK",
+    "audio_bytes": 29088,
+    "duration": 4.84,
+    "word_count": 7,
+    "words": [
+      {
+        "text": "নমস্কার",
+        "start": 0.15,
+        "end": 0.75
+      },
+      {
+        "text": "আজ",
+        "start": 1.625,
+        "end": 1.9375
+      },
+      {
+        "text": "আমরা",
+        "start": 1.9875,
+        "end": 2.3
+      },
+      {
+        "text": "একটি",
+        "start": 2.4,
+        "end": 2.65
+      },
+      {
+        "text": "ছোট",
+        "start": 2.6625,
+        "end": 2.975
+      },
+      {
+        "text": "গল্প",
+        "start": 3.05,
+        "end": 3.35
+      },
+      {
+        "text": "শুনব",
+        "start": 3.425,
+        "end": 3.7625
+      }
+    ],
+    "is_monotonic": true,
+    "last_word_end": 3.7625,
+    "audio_dur_diff": 1.0774999999999997
+  },
+  "mr": {
+    "status": "OK",
+    "audio_bytes": 30384,
+    "duration": 5.06,
+    "word_count": 7,
+    "words": [
+      {
+        "text": "नमस्कार",
+        "start": 0.1,
+        "end": 0.8125
+      },
+      {
+        "text": "आज",
+        "start": 1.725,
+        "end": 2.0625
+      },
+      {
+        "text": "आपण",
+        "start": 2.125,
+        "end": 2.425
+      },
+      {
+        "text": "एक",
+        "start": 2.4625,
+        "end": 2.625
+      },
+      {
+        "text": "छोटी",
+        "start": 2.6875,
+        "end": 3.1
+      },
+      {
+        "text": "गोष्ट",
+        "start": 3.1625,
+        "end": 3.5
+      },
+      {
+        "text": "ऐकूया",
+        "start": 3.55,
+        "end": 4.1625
+      }
+    ],
+    "is_monotonic": true,
+    "last_word_end": 4.1625,
+    "audio_dur_diff": 0.8975
+  },
+  "gu": {
+    "status": "OK",
+    "audio_bytes": 33408,
+    "duration": 5.56,
+    "word_count": 7,
+    "words": [
+      {
+        "text": "નમસ્તે",
+        "start": 0.1,
+        "end": 0.7375
+      },
+      {
+        "text": "આજે",
+        "start": 1.675,
+        "end": 2.0875
+      },
+      {
+        "text": "આપણે",
+        "start": 2.15,
+        "end": 2.6
+      },
+      {
+        "text": "એક",
+        "start": 2.65,
+        "end": 2.9
+      },
+      {
+        "text": "નાની",
+        "start": 2.9375,
+        "end": 3.3375
+      },
+      {
+        "text": "વાર્તા",
+        "start": 3.3625,
+        "end": 3.85
+      },
+      {
+        "text": "સાંભળીશું",
+        "start": 3.8625,
+        "end": 4.625
+      }
+    ],
+    "is_monotonic": true,
+    "last_word_end": 4.625,
+    "audio_dur_diff": 0.9349999999999996
+  },
+  "ur": {
+    "status": "OK",
+    "audio_bytes": 32400,
+    "duration": 5.4,
+    "word_count": 9,
+    "words": [
+      {
+        "text": "السلام",
+        "start": 0.102625,
+        "end": 0.721041
+      },
+      {
+        "text": "علیکم",
+        "start": 0.747375,
+        "end": 1.247375
+      },
+      {
+        "text": "آج",
+        "start": 2.157875,
+        "end": 2.473666
+      },
+      {
+        "text": "ہم",
+        "start": 2.513166,
+        "end": 2.789499
+      },
+      {
+        "text": "ایک",
+        "start": 2.828958,
+        "end": 2.986833
+      },
+      {
+        "text": "مختصر",
+        "start": 3.052625,
+        "end": 3.578958
+      },
+      {
+        "text": "کہانی",
+        "start": 3.657875,
+        "end": 4.039458
+      },
+      {
+        "text": "سنیں",
+        "start": 4.092125,
+        "end": 4.342125
+      },
+      {
+        "text": "گے",
+        "start": 4.421041,
+        "end": 4.513166
+      }
+    ],
+    "is_monotonic": true,
+    "last_word_end": 4.513166,
+    "audio_dur_diff": 0.8868340000000003
+  }
+}

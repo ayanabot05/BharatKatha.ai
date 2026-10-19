@@ -45,7 +45,7 @@ const DICTIONARY = {
   copied_package: { en: "Copied full metadata package for YouTube/Instagram!", te: "YouTube/Instagram వివరాలు కాపీ అయ్యాయి!", hi: "YouTube/Instagram पैकेज कॉपी किया गया!", ta: "YouTube/Instagram விவரங்கள் நகலெடுக்கப்பட்டன!" },
 };
 
-export const UI_LANGUAGES = LANGUAGES.map(({ id, native }) => ({ id, label: native }));
+export const UI_LANGUAGES = LANGUAGES.filter((l) => !l.disabled).map(({ id, native }) => ({ id, label: native }));
 
 // A build may set REACT_APP_DEFAULT_UI_LANG to open in a specific language (e.g. a
 const DEFAULT_UI_LANG = process.env.REACT_APP_DEFAULT_UI_LANG || "en";

@@ -1,4 +1,4 @@
-# BharatKatha.ai — robots.txt
+# BharatChitra.com — robots.txt
 # Public marketing pages are open to every crawler, including AI answer engines.
 
 User-agent: *
@@ -41,4 +41,4 @@ Allow: /
 User-agent: meta-externalagent
 Allow: /
 
-Sitemap: https://bharatkatha.ai/sitemap.xml
+Sitemap: https://bharatchitra.com/sitemap.xml

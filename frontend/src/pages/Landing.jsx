@@ -16,8 +16,8 @@ export default function Landing() {
   // One visit per browser session, recorded first-party on our own server.
   useEffect(() => { trackVisit("/"); }, []);
   useSeo({
-    title: "BharatKatha — Turn your idea into a narrated video in your language",
-    description: "BharatKatha is a storytelling studio for Indian creators. Turn a one-line idea into a narrated video with AI illustrations, captions and a voice — 11 Indian languages, AI narration in 10.",
+    title: "BharatChitra AI — Turn your idea into a narrated video in your language",
+    description: "BharatChitra AI is a storytelling studio for Indian creators. Turn a one-line idea into a narrated video with AI illustrations, captions and a voice — 10 Indian languages.",
     path: "/",
   });
   return <div className="phase-landing fx3d-root">

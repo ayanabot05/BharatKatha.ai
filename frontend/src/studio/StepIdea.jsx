@@ -99,7 +99,7 @@ export default function StepIdea({ project, update }) {
       </div>
 
       <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Pick label={t("language")} testid="idea-language-select" value={cfg.language} onChange={(v) => { setCfg({ ...cfg, language: v }); changeLocale(v); clearTrends(); }} items={LANGUAGES.map((l) => ({ v: l.id, l: `${locale === "en" ? `${l.native} · ${l.label}` : l.native}${l.id === "or" ? " · record your own voice" : ""}` }))} />
+        <Pick label={t("language")} testid="idea-language-select" value={cfg.language} onChange={(v) => { setCfg({ ...cfg, language: v }); changeLocale(v); clearTrends(); }} items={LANGUAGES.map((l) => ({ v: l.id, l: `${locale === "en" ? `${l.native} · ${l.label}` : l.native}${l.disabled ? " (Coming Soon)" : ""}`, disabled: l.disabled }))} />
         <CustomPick label={t("region")} testid="idea-region" value={cfg.region} options={REGIONS} placeholder={t("Enter your region")} onChange={(region) => { setCfg({ ...cfg, region }); clearTrends(); }} />
         <Pick label={t("length")} testid="idea-duration-select" value={cfg.duration} onChange={(v) => setCfg({ ...cfg, duration: v })} items={[30, 45, 60, 75].map((d) => ({ v: d, l: `${d} ${t("seconds")}` }))} />
         <Pick label={t("tone")} testid="idea-tone-select" value={cfg.tone} onChange={(v) => setCfg({ ...cfg, tone: v })} items={TONES.map((item) => ({ v: item, l: t(item) }))} />

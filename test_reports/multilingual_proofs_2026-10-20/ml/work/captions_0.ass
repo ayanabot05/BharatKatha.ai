@@ -1,0 +1,14 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 720
+PlayResY: 1280
+WrapStyle: 0
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Noto Sans Malayalam,42,&H00FFFFFF,&H00FFFFFF,&H00000000,&H990F172A,0,0,0,0,100,100,0,0,3,2,0,2,48,48,140,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.13,0:00:02.04,Default,,0,0,0,,വരൾച്ചാ സമയത്ത് ഗ്രാമത്തിലെ ഒരു
+Dialogue: 0,0:00:02.06,0:00:03.16,Default,,0,0,0,,പൈപ്പിൽ വിള്ളലുണ്ടായി

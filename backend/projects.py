@@ -29,6 +29,20 @@ _active_generations = set()
 _active_audio = set()
 
 
+LAUNCH_LANGUAGES = {"te", "hi", "en", "ta", "kn", "ml", "bn", "mr", "gu", "ur"}
+COMING_SOON_LANGUAGES = {"or", "pa"}
+
+
+def validate_language_selection(lang: Optional[str]):
+    if not lang:
+        return
+    l = lang.lower().strip()
+    if l in COMING_SOON_LANGUAGES:
+        raise HTTPException(400, f"Language '{lang}' is coming soon and not currently available for video generation")
+    if l not in LAUNCH_LANGUAGES:
+        raise HTTPException(400, f"Unsupported language '{lang}'. Supported launch languages: {', '.join(sorted(LAUNCH_LANGUAGES))}")
+
+
 def assert_audio_idle(pid):
     if pid in _active_audio:
         raise HTTPException(409, "Wait for voice generation to finish before changing this story")
@@ -254,8 +268,7 @@ def script_with_scenes(script, scenes):
 
 @router.post("")
 async def create(body: ProjectIn, user=Depends(current_user)):
-    if os.environ.get("APP_ENV") == "production" and body.language not in {"te", "hi", "en"}:
-        raise HTTPException(400, "This language is coming soon")
+    validate_language_selection(body.language)
     p = {"id": new_id(), "user_id": user["id"], "title": body.title or "Untitled story", "language": body.language,
          "region": body.region, "idea": "", "script": None, "content_contract": None,
          "validation": None, "approved": False, "style": None,
@@ -294,8 +307,8 @@ async def patch(pid: str, body: ProjectPatch, user=Depends(current_user)):
     p = await owned(pid, user)
     assert_audio_idle(pid)
     fields = body.model_dump(exclude_none=True)
-    if os.environ.get("APP_ENV") == "production" and fields.get("language", p.get("language")) not in {"te", "hi", "en"}:
-        raise HTTPException(400, "This language is coming soon")
+    if "language" in fields:
+        validate_language_selection(fields["language"])
     if pid in _active_generations or image_batch_active(p.get("scenes", [])):
         if any(key in fields for key in ("script", "idea", "style", "language", "region")):
             raise HTTPException(409, "Wait for picture generation to finish before changing the story")
@@ -386,8 +399,7 @@ async def delete(pid: str, user=Depends(current_user)):
 @router.get("/{pid}/display-copy")
 async def display_copy(pid: str, language: str = "te", user=Depends(current_user)):
     p = await owned(pid, user)
-    if language not in ai.LANGS:
-        raise HTTPException(400, "Unsupported display language")
+    validate_language_selection(language)
     from studio_copy import translated_copy
     try:
         return {"translations": await translated_copy(p, language)}
@@ -400,6 +412,7 @@ async def display_copy(pid: str, language: str = "te", user=Depends(current_user
 async def gen_script(pid: str, body: ScriptIn, user=Depends(current_user)):
     p = await owned(pid, user)
     assert_audio_idle(pid)
+    validate_language_selection(body.language)
     if pid in _active_generations or image_batch_active(p.get("scenes", [])):
         raise HTTPException(409, "Wait for picture generation to finish before replacing the story")
     if (p.get("render") or {}).get("status") == "rendering":
@@ -959,6 +972,7 @@ async def audio_ai(pid: str, body: VoiceIn, user=Depends(current_user)):
 
 async def _audio_ai(pid, body, user):
     p = await owned(pid, user)
+    validate_language_selection(p.get("language"))
     if (p.get("render") or {}).get("status") == "rendering":
         raise HTTPException(409, "Wait for the render to finish before replacing narration")
     if not p["scenes"]:

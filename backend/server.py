@@ -27,7 +27,7 @@ from projects import router as projects_router
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 # httpx INFO logs include the full YouTube URL, including its API key.
 logging.getLogger("httpx").setLevel(logging.WARNING)
-app = FastAPI(title="BharatKatha Studio")
+app = FastAPI(title="BharatChitra AI Studio")
 api = APIRouter(prefix="/api")
 
 
@@ -332,7 +332,7 @@ async def coach_reports(user=Depends(current_user)):
 @api.get("/health")
 @api.get("/")
 async def root():
-    return {"app": "BharatKatha Studio", "ok": True}
+    return {"app": "BharatChitra AI Studio", "ok": True}
 
 
 @api.get("/ready")

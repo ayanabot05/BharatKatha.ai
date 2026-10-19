@@ -8,11 +8,11 @@
  */
 import { useEffect } from "react";
 
-export const SITE_URL = "https://bharatkatha.ai";
-export const SITE_NAME = "BharatKatha";
-export const DEFAULT_TITLE = "BharatKatha — Storytelling studio for Indian creators";
+export const SITE_URL = "https://bharatchitra.com";
+export const SITE_NAME = "BharatChitra AI";
+export const DEFAULT_TITLE = "BharatChitra AI — Storytelling studio for Indian creators";
 export const DEFAULT_DESCRIPTION =
-  "Turn a one-line idea into a narrated video with AI illustrations, captions and a voice — 11 Indian languages, AI narration in 10.";
+  "Turn a one-line idea into a narrated video with AI illustrations, captions and a voice — 10 Indian languages.";
 
 const setMeta = (selector, attr, value) => {
   let el = document.head.querySelector(selector);

@@ -148,7 +148,7 @@ export default function Studio() {
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
-        <div key={`${id}-${view}`} className="min-w-0 rise" onChangeCapture={() => setHasEdits(true)}>
+        <div key={`${id}-${view}`} className="min-w-0 rise fx3d-step-in" onChangeCapture={() => setHasEdits(true)}>
           <ProjectCopyProvider project={project} enabled={view === 2 || view === 4}>
             <View project={project} update={update} reload={() => load(false)} />
           </ProjectCopyProvider>

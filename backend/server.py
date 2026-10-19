@@ -7,14 +7,21 @@ from typing import List, Optional
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, Response
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, RedirectResponse
 import beta_controls
 
 from core import (db, client, current_user, media_user, hash_password, verify_password, set_auth_cookies, decode,
-                  cookie_options, make_token, now_iso, new_id, get_object, init_storage, log)
+                  cookie_options, make_token, now_iso, new_id, get_object, presigned_media_url,
+                  init_storage, log)
 import ai
+import mailer
 import pulse
 import youtube
+import admin_auth
+from admin_auth import require_admin
+import auth_api
+import early_access
+import growth
 from projects import router as projects_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -52,6 +59,7 @@ async def register(body: RegisterIn, response: Response):
             "role": "user", "plan": "free", "created_at": now_iso()}
     await db.users.insert_one(dict(user))
     set_auth_cookies(response, user["id"])
+    await growth.track("signup", user_id=user["id"])
     return public(user)
 
 
@@ -105,12 +113,23 @@ async def media(path: str, download: bool = False, user=Depends(media_user)):
     rec = await db.files.find_one({"storage_path": path, "user_id": user["id"], "is_deleted": False})
     if not rec:
         raise HTTPException(404, "File not found")
+    content_type = rec.get("content_type", "")
+    filename = os.path.basename(path).replace('"', "") if download else ""
+    if download:
+        # Only an explicit download counts; inline playback must not inflate it.
+        await growth.track("download", user_id=user["id"],
+                           kind=content_type, path=filename)
+    # Prefer a short-lived direct R2 URL: playback then costs no backend
+    # bandwidth and no egress. Falls back to proxying bytes when R2 is off.
+    direct = await presigned_media_url(path, filename=filename, content_type=content_type)
+    if direct:
+        return RedirectResponse(direct, status_code=307,
+                                headers={"Cache-Control": "private, max-age=300"})
     data, ct = await get_object(path)
     headers = {"Cache-Control": "private, max-age=86400"}
     if download:
-        filename = os.path.basename(path).replace('"', "")
         headers["Content-Disposition"] = f'attachment; filename="{filename}"'
-    return Response(content=data, media_type=rec.get("content_type", ct), headers=headers)
+    return Response(content=data, media_type=content_type or ct, headers=headers)
 
 
 # ---------- meta / ideas / voice ----------
@@ -153,7 +172,12 @@ async def meta():
             "engines": {"script": "Gemini text API", "images": "Vertex AI image worker" if ai.IMAGE_PROVIDER == "worker" else "Gemini image API",
                         "voice": voice_engine, "captions": "Script timing or Whisper"},
             "ram_ai": {"version": "2.0", "kind": "rule-guided prompt layer",
-                       "note": "Stable prompt release. Feedback is collected for human review; no automatic training."}}
+                       "note": "Stable prompt release. Feedback is collected for human review; no automatic training."},
+            # "email" -> reset links are emailed; "manual" -> written to the server
+            # log for the operator to relay. The UI tells the user which is true.
+            "password_reset_delivery": mailer.delivery_mode(),
+            "video_motion": {"full_ai_available": False,
+                             "note": "Full AI video motion is not live yet; the studio animates stills with real camera motion."}}
 
 
 class IdeasIn(BaseModel):
@@ -222,17 +246,15 @@ async def voice_preview(body: PreviewIn, user=Depends(current_user)):
 
 # ---------- pulse ----------
 @api.get("/pulse/weekly")
-async def pulse_weekly(language: str = "", region: str = "", user=Depends(current_user)):
-    if user.get("role") != "admin":
-        raise HTTPException(403, "Admin access required")
+async def pulse_weekly(language: str = "", region: str = "", admin=Depends(require_admin)):
     return await pulse.weekly_pulse(language, region)
 
 
 @api.get("/pulse/report")
-async def pulse_report(user=Depends(current_user)):
-    if user.get("role") != "admin":
-        raise HTTPException(403, "Admin access required")
-    return await pulse.learning_report(user["id"])
+async def pulse_report(admin=Depends(require_admin)):
+    # Operator view: the whole deployment, not one account. An administrator is
+    # no longer a user, so there is no user id to scope this to.
+    return await pulse.learning_report()
 
 
 @api.get("/pulse/winners")
@@ -298,9 +320,7 @@ async def feedback(body: FeedbackIn, user=Depends(current_user)):
 
 
 @api.get("/feedback")
-async def feedback_inbox(user=Depends(current_user)):
-    if user.get("role") != "admin":
-        raise HTTPException(403, "Admin access required")
+async def feedback_inbox(admin=Depends(require_admin)):
     return await db.pulse_events.find({"event": "beta_feedback"}, {"_id": 0}).sort("created_at", -1).to_list(50)
 
 
@@ -323,10 +343,17 @@ async def ready():
             await db.execute("SELECT 1", fetchall=True)
         else:
             await db.command("ping")
+        import r2_storage
+        r2_on = r2_storage.configured()
         bucket_name = os.environ.get("GCS_BUCKET")
-        if os.environ.get("APP_ENV") == "production" and not bucket_name:
+        if os.environ.get("APP_ENV") == "production" and not (r2_on or bucket_name):
             raise RuntimeError("Persistent storage is unconfigured")
-        if bucket_name:
+        if r2_on:
+            # HeadBucket proves the bucket exists and the token can read it.
+            if not await asyncio.to_thread(
+                    lambda: r2_storage.client().head_bucket(Bucket=r2_storage.bucket())):
+                raise RuntimeError("Persistent storage is unavailable")
+        elif bucket_name:
             from cloud_storage import client
             if not await asyncio.to_thread(lambda: client().bucket(bucket_name).exists(timeout=10)):
                 raise RuntimeError("Persistent storage is unavailable")
@@ -338,6 +365,16 @@ async def ready():
 
 app.include_router(api)
 app.include_router(projects_router)
+
+import billing_api  # noqa: E402 - routers are attached after app construction
+app.include_router(billing_api.router)
+app.include_router(billing_api.admin_router)
+app.include_router(admin_auth.router)
+app.include_router(auth_api.router)
+app.include_router(early_access.router)
+app.include_router(early_access.admin_router)
+app.include_router(growth.router)
+app.include_router(growth.admin_router)
 
 cors_origins = [] if os.environ.get("APP_ENV") == "production" else [
     "http://localhost:3004", "http://127.0.0.1:3004",
@@ -399,14 +436,12 @@ async def startup():
     await db.projects.create_index([("user_id", 1), ("updated_at", -1)])
     await db.files.create_index("storage_path")
     await db.login_attempts.create_index("identifier")
-    email, pw = os.environ["ADMIN_EMAIL"].lower(), os.environ["ADMIN_PASSWORD"]
-    admin = await db.users.find_one({"email": email})
-    if not admin:
-        await db.users.insert_one({"id": new_id(), "email": email, "name": "Admin",
-                                   "password_hash": hash_password(pw), "role": "admin",
-                                   "plan": "studio", "created_at": now_iso()})
-    elif not verify_password(pw, admin["password_hash"]):
-        await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(pw)}})
+    # The administrator is a separate credential store, never a users row.
+    seeded = await admin_auth.ensure_admin(os.environ["ADMIN_EMAIL"],
+                                           os.environ["ADMIN_PASSWORD"])
+    if not seeded:
+        log.error("Administrator credentials were NOT stored. Run migrations/004_auth_growth_notify.sql "
+                  "against DATABASE_URL; admin sign-in stays closed until then.")
     try:
         init_storage()
     except Exception as e:

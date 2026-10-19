@@ -1,0 +1,250 @@
+/* ==========================================================================
+   BharatKatha fx3d — warm 3D depth layer
+   Palette-safe: no black anywhere. Uses the studio's cream / marigold /
+   rose / sage family so the 3D depth reads as part of the existing UI.
+   ========================================================================== */
+
+/* ------------------------------------------------------------------ root */
+.fx3d-root { position: relative; isolation: isolate; }
+.fx3d-root > *:not(.fx3d-aurora):not(.fx3d-filmfloor) { position: relative; z-index: 1; }
+
+/* ------------------------------------------------------- ambient aurora */
+.fx3d-aurora {
+  position: fixed; inset: 0; z-index: 0;
+  overflow: hidden; pointer-events: none;
+}
+/* Contained variant: stays inside its parent box instead of covering the
+   whole viewport. Use this anywhere the page sits inside the app shell,
+   otherwise the haze paints over the sidebar (and its logo). */
+.fx3d-aurora--local { position: absolute; }
+.fx3d-aurora i {
+  position: absolute; display: block; border-radius: 50%;
+  opacity: .55;
+}
+/* Soft gradients instead of a CSS blur(): identical look, but no giant
+   blurred compositing layer (avoids headless paint artefacts and is much
+   cheaper on low-end phones). */
+.fx3d-aurora i:nth-child(1) {
+  width: 52vmax; height: 52vmax; left: -16vmax; top: -20vmax;
+  background: radial-gradient(circle at 38% 38%, rgba(255, 217, 168, .95), rgba(255, 217, 168, .38) 42%, rgba(255, 217, 168, 0) 72%);
+  animation: fx3d-drift-a 27s ease-in-out infinite;
+}
+.fx3d-aurora i:nth-child(2) {
+  width: 46vmax; height: 46vmax; right: -14vmax; top: -10vmax;
+  background: radial-gradient(circle at 60% 40%, rgba(247, 188, 200, .85), rgba(247, 188, 200, .32) 42%, rgba(247, 188, 200, 0) 72%);
+  animation: fx3d-drift-b 33s ease-in-out infinite;
+}
+.fx3d-aurora i:nth-child(3) {
+  width: 50vmax; height: 50vmax; left: 16%; bottom: -26vmax;
+  background: radial-gradient(circle at 50% 50%, rgba(198, 226, 205, .9), rgba(198, 226, 205, .34) 42%, rgba(198, 226, 205, 0) 72%);
+  animation: fx3d-drift-c 38s ease-in-out infinite;
+}
+.fx3d-aurora i:nth-child(4) {
+  width: 36vmax; height: 36vmax; right: 4%; bottom: -16vmax;
+  background: radial-gradient(circle at 50% 50%, rgba(217, 194, 238, .85), rgba(217, 194, 238, .3) 42%, rgba(217, 194, 238, 0) 72%);
+  animation: fx3d-drift-a 44s ease-in-out infinite reverse;
+}
+@keyframes fx3d-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(4vmax, 5vmax, 0) scale(1.12); }
+}
+@keyframes fx3d-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.05); }
+  50%      { transform: translate3d(-5vmax, 3vmax, 0) scale(1); }
+}
+@keyframes fx3d-drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(3vmax, -4vmax, 0) scale(1.15); }
+}
+
+/* ------------------------------------------------------------ 3D stage */
+.fx3d-stage {
+  perspective: 1200px;
+  perspective-origin: 50% 45%;
+  transform-style: preserve-3d;
+}
+.fx3d-tilt {
+  position: relative;
+  transform-style: preserve-3d;
+}
+.fx3d-layer { transform-style: preserve-3d; }
+.fx3d-glare {
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; opacity: .3;
+}
+
+/* --------------------------------------------------------- hero accents */
+.fx3d-hero-stage { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.fx3d-hero-tilt { display: flex; flex-direction: column; align-items: center; }
+
+/* Neutralise the legacy CSS transform on the phone once it lives in a 3D
+   stage (framer-motion owns the motion there instead). */
+.phase-hero .fx3d-stage [data-testid="hero-phone"] { transform: none; animation: none; }
+
+.fx3d-hero-orb {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(34px); opacity: .55;
+  transform: translateZ(-40px);
+}
+.fx3d-hero-orb--a {
+  width: 62%; aspect-ratio: 1; left: -8%; top: 6%;
+  background: radial-gradient(circle at 40% 40%, #ffd9a8, rgba(255, 217, 168, 0) 70%);
+}
+.fx3d-chip {
+  position: absolute; z-index: 2;
+  padding: 7px 12px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+  color: #6a2b3a;
+  background: rgba(251, 211, 180, .94);
+  border: 1px solid rgba(163, 61, 82, .28);
+  box-shadow: 0 14px 30px rgba(122, 44, 58, .18);
+}
+.fx3d-chip--lang  { left: -26px; top: 22%;  transform: translateZ(78px); }
+.fx3d-chip--styles{ right: -22px; top: 62%; transform: translateZ(96px); }
+
+/* ----------------------------------------------------------- CTA sheen */
+.fx3d-shine { position: relative; overflow: hidden; }
+.fx3d-shine::after {
+  content: ""; position: absolute; top: -20%; bottom: -20%; width: 34%; left: -60%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .5), rgba(255, 255, 255, 0));
+  transform: skewX(-18deg); pointer-events: none;
+  animation: fx3d-shine 4.2s ease-in-out infinite;
+}
+@keyframes fx3d-shine {
+  0%, 58%   { left: -60%; }
+  78%, 100% { left: 135%; }
+}
+
+/* -------------------------------------------------------- 3D coverflow */
+.fx3d-cf { position: relative; overflow: hidden; max-width: 100%; }
+.fx3d-cf-track {
+  position: relative; height: 330px; max-width: 100%;
+  perspective: 1400px; transform-style: preserve-3d;
+  cursor: grab; touch-action: pan-y; outline: none;
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.fx3d-cf-track.is-grabbing { cursor: grabbing; }
+.fx3d-cf-track:focus-visible { outline: 3px solid #a33d52; outline-offset: 6px; border-radius: 18px; }
+.fx3d-cf-item {
+  position: absolute; top: 0; left: 50%; width: 200px; margin-left: -100px;
+  transform-style: preserve-3d;
+}
+.fx3d-cf-item > button {
+  all: unset; display: block; width: 100%; cursor: pointer;
+  border-radius: 18px;
+}
+.fx3d-cf-item > button:focus-visible {
+  outline: 3px solid #a33d52; outline-offset: 4px; border-radius: 20px;
+}
+.fx3d-cf-card {
+  display: block; background: #fbd3b4; border: 1px solid #e8c7a6;
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 20px 44px rgba(107, 53, 64, .16), 0 2px 0 rgba(255, 255, 255, .6) inset;
+}
+.fx3d-cf-card img { display: block; width: 100%; height: 250px; object-fit: cover; -webkit-user-drag: none; }
+.fx3d-cf-card figcaption {
+  font-size: 13px; font-weight: 700; color: #4a3b40; padding: 10px 4px;
+  text-align: center;
+}
+.fx3d-cf-nav {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin-top: 16px;
+}
+.fx3d-cf-dots { display: flex; gap: 8px; }
+.fx3d-cf-dot {
+  width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%;
+  background: #d9c6ca; cursor: pointer; transition: width .25s, background .25s;
+}
+.fx3d-cf-dot.on { width: 26px; border-radius: 999px; background: #a33d52; }
+.fx3d-cf-dot:focus-visible { outline: 2px solid #a33d52; outline-offset: 3px; }
+
+/* ------------------------------------------------------------- flip 3D */
+.fx3d-flip { perspective: 1200px; cursor: pointer; }
+.fx3d-flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+.fx3d-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  border-radius: 18px; overflow: hidden;
+}
+.fx3d-face--back { transform: rotateY(180deg); }
+.fx3d-flip:focus-visible { outline: 3px solid #a33d52; outline-offset: 4px; border-radius: 20px; }
+
+/* ------------------------------------------------- 3D step transition */
+@keyframes fx3d-step-in {
+  from { opacity: 0; transform: perspective(1000px) rotateX(7deg) translateY(14px) scale(.994); }
+  to   { opacity: 1; transform: perspective(1000px) rotateX(0deg) translateY(0) scale(1); }
+}
+.fx3d-step-in { animation: fx3d-step-in .5s cubic-bezier(.2, .7, .2, 1) both; }
+
+/* --------------------------------------------------------- responsive */
+@media (max-width: 767px) {
+  .fx3d-cf-track { height: 252px; }
+  .fx3d-cf-item { width: 148px; margin-left: -74px; }
+  .fx3d-cf-card img { height: 184px; }
+  .fx3d-cf-card figcaption { font-size: 12px; }
+  .fx3d-chip--lang   { left: -6px; top: 18%; font-size: 10px; padding: 6px 10px; }
+  .fx3d-chip--styles { right: -4px; top: 64%; font-size: 10px; padding: 6px 10px; }
+  .fx3d-aurora i { opacity: .4; }
+}
+
+/* ------------------------------------------------- reduced motion a11y */
+/* ── FilmFloor ────────────────────────────────────────────────────────────
+   A receding plane made of story frames and reel sprocket holes that slowly
+   rolls past, like film running through a projector. This is our replacement
+   for a generic perspective grid — the backdrop itself says "video studio".
+   Purely decorative: pointer-events none, aria-hidden. */
+.fx3d-filmfloor {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 62%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  perspective: 640px;
+  perspective-origin: 50% 0%;
+}
+.fx3d-hero { position: relative; }
+.fx3d-hero > *:not(.fx3d-filmfloor) { position: relative; z-index: 1; }
+
+.fx3d-filmfloor > i {
+  position: absolute;
+  inset: 0 -32% 0;
+  transform: rotateX(63deg);
+  transform-origin: 50% 0%;
+  background-image:
+    /* frame separators — one cell per story */
+    linear-gradient(90deg, rgba(163, 61, 82, .40) 2px, transparent 2px),
+    linear-gradient(180deg, rgba(163, 61, 82, .28) 2px, transparent 2px),
+    /* sprocket holes along the top rail of every frame */
+    radial-gradient(circle, rgba(163, 61, 82, .32) 3.2px, transparent 3.6px),
+    /* and along the bottom rail */
+    radial-gradient(circle, rgba(163, 61, 82, .32) 3.2px, transparent 3.6px);
+  background-size: 172px 214px, 172px 214px, 22px 214px, 22px 214px;
+  background-position: 0 0, 0 0, 0 10px, 0 194px;
+  /* fade toward the horizon so it never fights the copy */
+  mask-image: linear-gradient(to top, rgba(163, 61, 82, 1) 0%, rgba(163, 61, 82, .45) 46%, rgba(163, 61, 82, 0) 100%);
+  -webkit-mask-image: linear-gradient(to top, rgba(163, 61, 82, 1) 0%, rgba(163, 61, 82, .45) 46%, rgba(163, 61, 82, 0) 100%);
+  animation: fx3d-filmroll 24s linear infinite;
+}
+/* a second, slower reel further back for depth */
+.fx3d-filmfloor > i:nth-child(2) {
+  opacity: .5;
+  transform: rotateX(63deg) translateZ(-140px) scale(1.3);
+  animation-duration: 38s;
+  animation-direction: reverse;
+}
+@keyframes fx3d-filmroll {
+  from { background-position: 0 0, 0 0, 0 10px, 0 194px; }
+  to   { background-position: -172px 0, 0 0, -172px 10px, -172px 194px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx3d-filmfloor > i { animation: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx3d-aurora i { animation: none !important; }
+  .fx3d-shine::after { animation: none !important; display: none; }
+  .fx3d-tilt { transform: none !important; }
+  .fx3d-glare { display: none; }
+  .fx3d-step-in { animation: none !important; }
+}

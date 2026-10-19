@@ -1,0 +1,57 @@
+{
+  "s0": {
+    "src": "/showcase/s0.jpg",
+    "depth": "/depth/s0.png",
+    "w": 420,
+    "h": 753,
+    "min": 0,
+    "max": 254,
+    "mean": 132.2,
+    "std": 55.2,
+    "seconds": 2.49
+  },
+  "s1": {
+    "src": "/showcase/s1.jpg",
+    "depth": "/depth/s1.png",
+    "w": 420,
+    "h": 753,
+    "min": 0,
+    "max": 254,
+    "mean": 150.1,
+    "std": 61.1,
+    "seconds": 2.75
+  },
+  "s2": {
+    "src": "/showcase/s2.jpg",
+    "depth": "/depth/s2.png",
+    "w": 420,
+    "h": 753,
+    "min": 0,
+    "max": 254,
+    "mean": 141.8,
+    "std": 56.0,
+    "seconds": 2.91
+  },
+  "s3": {
+    "src": "/showcase/s3.jpg",
+    "depth": "/depth/s3.png",
+    "w": 420,
+    "h": 753,
+    "min": 0,
+    "max": 255,
+    "mean": 138.4,
+    "std": 51.5,
+    "seconds": 3.29
+  },
+  "s4": {
+    "src": "/showcase/s4.jpg",
+    "depth": "/depth/s4.png",
+    "w": 420,
+    "h": 753,
+    "min": 0,
+    "max": 255,
+    "mean": 144.3,
+    "std": 47.7,
+    "seconds": 2.8
+  }
+}

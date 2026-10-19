@@ -78,11 +78,11 @@ export default function StepIdea({ project, update }) {
     } catch (e) { if (request === trendRequest.current) toast.error(t(errMsg(e))); } finally { setBusy(""); }
   };
 
-  const write = async (text) => {
+  const write = async (text, key = "custom") => {
     if (busy || writing.current) return;
     if (!text || text.trim().length < 3) return toast.error(t("Describe your idea first"));
     writing.current = true;
-    setBusy("script");
+    setBusy(`script-${key}`);
     try {
       const { data } = await api.post(`/projects/${project.id}/script/generate`, { idea: text, ...find, ...cfg, duration: Number(cfg.duration) });
       toast.success(t("Script ready — review it with the AI agents"));
@@ -99,9 +99,9 @@ export default function StepIdea({ project, update }) {
       </div>
 
       <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Pick label={t("language")} testid="idea-language-select" value={cfg.language} onChange={(v) => { setCfg({ ...cfg, language: v }); changeLocale(v); clearTrends(); }} items={LANGUAGES.map((l) => ({ v: l.id, l: `${locale === "en" ? `${l.native} · ${l.label}` : l.native}${["te", "hi", "en"].includes(l.id) ? "" : " · Coming Soon"}`, disabled: !["te", "hi", "en"].includes(l.id) }))} />
+        <Pick label={t("language")} testid="idea-language-select" value={cfg.language} onChange={(v) => { setCfg({ ...cfg, language: v }); changeLocale(v); clearTrends(); }} items={LANGUAGES.map((l) => ({ v: l.id, l: `${locale === "en" ? `${l.native} · ${l.label}` : l.native}${l.id === "or" ? " · record your own voice" : ""}` }))} />
         <CustomPick label={t("region")} testid="idea-region" value={cfg.region} options={REGIONS} placeholder={t("Enter your region")} onChange={(region) => { setCfg({ ...cfg, region }); clearTrends(); }} />
-        <Pick label={t("length")} testid="idea-duration-select" value={cfg.duration} onChange={(v) => setCfg({ ...cfg, duration: v })} items={[30, 45, 60].map((d) => ({ v: d, l: `${d} ${t("seconds")}` }))} />
+        <Pick label={t("length")} testid="idea-duration-select" value={cfg.duration} onChange={(v) => setCfg({ ...cfg, duration: v })} items={[30, 45, 60, 75].map((d) => ({ v: d, l: `${d} ${t("seconds")}` }))} />
         <Pick label={t("tone")} testid="idea-tone-select" value={cfg.tone} onChange={(v) => setCfg({ ...cfg, tone: v })} items={TONES.map((item) => ({ v: item, l: t(item) }))} />
       </div>
 
@@ -115,9 +115,9 @@ export default function StepIdea({ project, update }) {
         <div className="mt-6 rise">
           <Textarea data-testid="idea-textarea" rows={4} value={idea} onChange={(e) => setIdea(e.target.value)} className="indic bg-[#f5f9f4] text-base"
             placeholder={t("e.g. A poor village boy finds a talking cow that teaches him honesty… (any language)")} />
-          <button data-testid="write-script-btn" onClick={() => write(idea)} disabled={!!busy}
+          <button data-testid="write-script-btn" onClick={() => write(idea, "custom")} disabled={!!busy}
             className="mt-4 inline-flex items-center gap-2 btn-primary px-6 py-3 disabled:opacity-60">
-            {busy === "script" ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />} {busy === "script" ? t("Ram AI is writing your story…") : t("write_script")}
+            {busy === "script-custom" ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />} {busy === "script-custom" ? t("Ram AI is writing your story…") : t("write_script")}
           </button>
         </div>
       )}
@@ -163,14 +163,14 @@ export default function StepIdea({ project, update }) {
                   {logline && <p className="indic mt-2 text-sm text-[#587168]">{logline}</p>}
                   {payoff && <p className="indic mt-2 text-xs text-teal-800">{t("Payoff")}: {payoff}</p>}
                   {why && <p className="mt-2 text-xs text-violet-800 bg-violet-500/10 rounded-lg px-2.5 py-1.5">{t("Why")}: {why}</p>}
-                  <button data-testid={`use-idea-btn-${i}`} disabled={!!busy} onClick={() => { setIdea(fullIdea); write(fullIdea); }}
-                    className="mt-3 text-sm font-semibold text-violet-800 hover:text-violet-800 inline-flex items-center gap-1 disabled:opacity-50"> {busy === "script" ? <><Loader2 size={14} className="animate-spin" /> {t("Writing your script…")}</> : <>{t("Use this idea")} <ArrowRight size={14} /></>}
+                  <button data-testid={`use-idea-btn-${i}`} disabled={!!busy} onClick={() => { setIdea(fullIdea); write(fullIdea, i); }}
+                    className="mt-3 text-sm font-semibold text-violet-800 hover:text-violet-800 inline-flex items-center gap-1 disabled:opacity-50"> {busy === `script-${i}` ? <><Loader2 size={14} className="animate-spin" /> {t("Writing your script…")}</> : <>{t("Use this idea")} <ArrowRight size={14} /></>}
                   </button>
                 </div>
               );
             })}
           </div>
-          {busy === "script" && <div className="mt-4 flex items-center gap-2 text-sm text-[#61736d]"><Loader2 size={14} className="animate-spin" /> {t("Writing your script…")} </div>}
+          {busy?.startsWith("script") && <div className="mt-4 flex items-center gap-2 text-sm text-[#61736d]"><Loader2 size={14} className="animate-spin" /> {t("Writing your script…")} </div>}
         </div>
       )}
       <StepArrow />

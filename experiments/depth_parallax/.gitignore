@@ -1,0 +1,8 @@
+# Experimental 2.5D PoC — keep large artifacts out of git.
+models/
+assets/
+out/
+__pycache__/
+*.onnx
+*.mp4
+*.png

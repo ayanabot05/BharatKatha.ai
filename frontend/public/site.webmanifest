@@ -1,0 +1,17 @@
+{
+  "name": "BharatKatha — Storytelling studio for Indian creators",
+  "short_name": "BharatKatha",
+  "description": "Turn a one-line idea into a narrated video with AI illustrations, captions and a voice in 11 Indian languages.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7e0cf",
+  "theme_color": "#a33d52",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["entertainment", "productivity", "video"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

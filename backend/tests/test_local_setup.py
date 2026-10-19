@@ -241,30 +241,45 @@ class LocalSetupTests(unittest.TestCase):
         asyncio.run(check())
 
 
-    def test_pulse_endpoints_require_admin_role(self):
+    def test_pulse_endpoints_require_isolated_admin_session(self):
+        """The operator surface is gated by the admin cookie, not by users.role.
+
+        An administrator is no longer a users row, so the strongest statement is
+        that a *user* token is rejected outright by the admin dependency even
+        when that user carries role='admin'.
+        """
+        import admin_auth
+        from datetime import timedelta
+        from types import SimpleNamespace
+
         async def check():
-            regular_user = {"id": "u-reg", "role": "user", "email": "reg@example.com"}
-            admin_user = {"id": "u-adm", "role": "admin", "email": "adm@example.com"}
+            # No admin cookie at all.
             with self.assertRaises(HTTPException) as ctx:
-                await server.pulse_weekly("te", "AP", user=regular_user)
-            self.assertEqual(ctx.exception.status_code, 403)
+                await admin_auth.require_admin(SimpleNamespace(cookies={}))
+            self.assertEqual(ctx.exception.status_code, 401)
 
-            with self.assertRaises(HTTPException) as ctx:
-                await server.pulse_report(user=regular_user)
-            self.assertEqual(ctx.exception.status_code, 403)
+            # A user access token, even one carrying role='admin', is not an
+            # administrator session: the token type does not match.
+            user_token = core.make_token("u-reg", "access", timedelta(minutes=15))
+            with patch.object(admin_auth, "find_by_id", new=AsyncMock(
+                    return_value={"id": "u-reg", "email": "reg@example.com", "role": "admin"})):
+                with self.assertRaises(HTTPException) as ctx:
+                    await admin_auth.require_admin(SimpleNamespace(cookies={"admin_token": user_token}))
+                self.assertEqual(ctx.exception.status_code, 401)
 
+            # With the handler's admin dependency satisfied, the route returns data.
             with patch.object(server.pulse, "weekly_pulse", new=AsyncMock(return_value={"total_events": 5})), \
                  patch.object(server.pulse, "learning_report", new=AsyncMock(return_value={"total_events": 5})):
-                w = await server.pulse_weekly("te", "AP", user=admin_user)
+                w = await server.pulse_weekly("te", "AP", admin={"id": "a1"})
                 self.assertEqual(w["total_events"], 5)
-                r = await server.pulse_report(user=admin_user)
+                r = await server.pulse_report(admin={"id": "a1"})
                 self.assertEqual(r["total_events"], 5)
         asyncio.run(check())
 
-    def test_daily_limits_enforced_for_users_bypassed_for_admin(self):
+    def test_daily_limits_enforced_for_users_bypassed_for_operator_email(self):
         async def check():
-            regular_user = {"id": "u-reg", "role": "user"}
-            admin_user = {"id": "u-adm", "role": "admin"}
+            regular_user = {"id": "u-reg", "email": "reg@example.com"}
+            operator_user = {"id": "u-op", "email": "op@example.com"}
             fake_db = unittest.mock.MagicMock()
 
             # Under limit: count = 5 < 15
@@ -280,10 +295,11 @@ class LocalSetupTests(unittest.TestCase):
                 self.assertEqual(ctx.exception.status_code, 429)
                 self.assertIn("Daily limit reached", ctx.exception.detail)
 
-            # Admin bypasses even if count would be huge
+            # Operators (by email allowlist) bypass even if the count is huge.
             fake_db.pulse_events.count_documents = AsyncMock(return_value=999)
-            with patch.object(projects, "db", fake_db):
-                await projects.check_daily_limit(admin_user, "script_generated")
+            with patch.object(projects, "db", fake_db), \
+                 patch.dict(os.environ, {"OPERATOR_EMAILS": "op@example.com"}, clear=False):
+                await projects.check_daily_limit(operator_user, "script_generated")
                 fake_db.pulse_events.count_documents.assert_not_called()
         asyncio.run(check())
 

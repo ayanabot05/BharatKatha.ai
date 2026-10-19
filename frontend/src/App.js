@@ -11,6 +11,11 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Studio = lazy(() => import("@/pages/Studio"));
 const Coach = lazy(() => import("@/pages/Coach"));
 const Settings = lazy(() => import("@/pages/Settings"));
+const PricingPage = lazy(() => import("@/pages/PricingPage"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 import { Loader2 } from "lucide-react";
 
 class PageBoundary extends Component {
@@ -46,6 +51,15 @@ export default function App() {
               <Route path="/login" element={<PublicOnly><AuthPage mode="login" /></PublicOnly>} />
               <Route path="/register" element={<PublicOnly><AuthPage mode="register" /></PublicOnly>} />
               <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+              <Route path="/pricing" element={<PricingPage />} />
+              {/* Password reset is reachable while signed out on purpose: a
+                  reset link has to work whatever the current session is. */}
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              {/* Administration is a separate surface with its own credentials,
+                  NOT the user session, so it is not wrapped in Protected. */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="/studio/:id" element={<Protected><Studio /></Protected>} />
               <Route path="/coach" element={<Protected><Coach /></Protected>} />
               <Route path="/settings" element={<Protected><Settings /></Protected>} />
